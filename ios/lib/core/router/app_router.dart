@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../features/auth/bloc/auth_bloc.dart';
+import '../../features/auth/ui/login_page.dart';
+import '../di/injection.dart';
 import '../storage/secure_storage.dart';
 import 'routes.dart';
 
@@ -21,12 +25,18 @@ class AppRouter {
       GoRoute(
         path: Routes.login,
         name: 'login',
-        builder: (context, state) => const _PlaceholderPage(title: 'Login'),
+        builder: (context, state) => BlocProvider(
+          create: (_) => getIt<AuthBloc>(),
+          child: const LoginPage(),
+        ),
       ),
       GoRoute(
         path: Routes.register,
         name: 'register',
-        builder: (context, state) => const _PlaceholderPage(title: 'Register'),
+        builder: (context, state) => BlocProvider(
+          create: (_) => getIt<AuthBloc>(),
+          child: const LoginPage(),
+        ),
       ),
 
       // Main shell with bottom navigation

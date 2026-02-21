@@ -72,24 +72,24 @@
 
 ### Тесты для User Story 5
 
-- [ ] T029 [P] [US5] Bloc-тест AuthBloc в ios/test/bloc/auth_bloc_test.dart
-- [ ] T030 [P] [US5] Widget-тест LoginPage в ios/test/widget/login_page_test.dart
+- [x] T029 [P] [US5] Bloc-тест AuthBloc в ios/test/bloc/auth_bloc_test.dart
+- [x] T030 [P] [US5] Widget-тест LoginPage в ios/test/widget/login_page_test.dart
 
 ### Реализация User Story 5
 
-- [ ] T031 [P] [US5] Создать freezed-модель User в ios/lib/features/auth/models/user.dart
-- [ ] T032 [P] [US5] Создать freezed-модели AuthTokens, AuthResponse в ios/lib/features/auth/models/auth_tokens.dart
-- [ ] T033 [US5] Создать Retrofit API для auth в ios/lib/features/auth/data/auth_api.dart
-- [ ] T034 [US5] Реализовать AuthRepository в ios/lib/features/auth/data/auth_repository.dart
-- [ ] T035 [US5] Реализовать Sign in with Apple в ios/lib/features/auth/data/apple_auth_service.dart
-- [ ] T036 [US5] Создать AuthEvent в ios/lib/features/auth/bloc/auth_event.dart
-- [ ] T037 [US5] Создать AuthState в ios/lib/features/auth/bloc/auth_state.dart
-- [ ] T038 [US5] Реализовать AuthBloc в ios/lib/features/auth/bloc/auth_bloc.dart
-- [ ] T039 [US5] Создать LoginPage с Sign in with Apple и email-формой в ios/lib/features/auth/ui/login_page.dart
-- [ ] T040 [P] [US5] Создать виджет AppleSignInButton в ios/lib/features/auth/ui/widgets/apple_sign_in_button.dart
-- [ ] T041 [P] [US5] Создать виджет EmailLoginForm в ios/lib/features/auth/ui/widgets/email_login_form.dart
-- [ ] T042 [US5] Добавить маршруты auth в app_router.dart
-- [ ] T043 [US5] Запустить build_runner для генерации auth-моделей
+- [x] T031 [P] [US5] Создать freezed-модель User в ios/lib/features/auth/models/user.dart
+- [x] T032 [P] [US5] Создать freezed-модели AuthTokens, AuthResponse в ios/lib/features/auth/models/auth_tokens.dart
+- [x] T033 [US5] Создать Dio API для auth в ios/lib/features/auth/data/auth_api.dart
+- [x] T034 [US5] Реализовать AuthRepository в ios/lib/features/auth/data/auth_repository.dart
+- [x] T035 [US5] Реализовать Sign in with Apple в ios/lib/features/auth/data/apple_auth_service.dart
+- [x] T036 [US5] Создать AuthEvent в ios/lib/features/auth/bloc/auth_event.dart
+- [x] T037 [US5] Создать AuthState в ios/lib/features/auth/bloc/auth_state.dart
+- [x] T038 [US5] Реализовать AuthBloc в ios/lib/features/auth/bloc/auth_bloc.dart
+- [x] T039 [US5] Создать LoginPage с Sign in with Apple и email-формой в ios/lib/features/auth/ui/login_page.dart
+- [x] T040 [P] [US5] Создать виджет AppleSignInButton в ios/lib/features/auth/ui/widgets/apple_sign_in_button.dart
+- [x] T041 [P] [US5] Создать виджет EmailLoginForm в ios/lib/features/auth/ui/widgets/email_login_form.dart
+- [x] T042 [US5] Добавить маршруты auth в app_router.dart
+- [x] T043 [US5] Запустить build_runner для генерации auth-моделей
 
 **Checkpoint**: Аутентификация работает, можно тестировать вход
 

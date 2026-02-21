@@ -48,6 +48,10 @@ dependencies:
   lottie: ^3.3.1
   shimmer: ^3.0.0
 
+  # Auth
+  crypto: ^3.0.6
+  sign_in_with_apple: ^6.1.4
+
   # Utils
   connectivity_plus: ^6.1.4
   equatable: ^2.0.7

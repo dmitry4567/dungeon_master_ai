@@ -15,21 +15,21 @@ class App extends StatelessWidget {
     final appRouter = getIt<AppRouter>();
 
     return MultiBlocProvider(
-      providers: const [
-        // Global BLoCs will be added here
+      providers: [
+        // Здесь можно добавить глобальные BlocProvider, если нужно
       ],
-      child: OfflineBanner(
-        child: MaterialApp.router(
-          title: 'AI Dungeon Master',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.dark,
-          routerConfig: appRouter.router,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(
-                MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.4),
-              ),
+      child: MaterialApp.router(
+        title: 'AI Dungeon Master',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark,
+        routerConfig: appRouter.router,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(
+              MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.4),
             ),
+          ),
+          child: OfflineBanner(
             child: child ?? const SizedBox.shrink(),
           ),
         ),
