@@ -65,23 +65,23 @@
 
 ### Тесты для User Story 3
 
-- [ ] T021 [P] [US3] Контрактные тесты POST /auth/register (успех, 409 duplicate email, 400 validation) в backend/tests/contract/test_auth_contract.py
-- [ ] T022 [P] [US3] Контрактный тест POST /auth/login в backend/tests/contract/test_auth_contract.py
-- [ ] T023 [P] [US3] Контрактный тест POST /auth/refresh в backend/tests/contract/test_auth_contract.py
-- [ ] T024 [P] [US3] Контрактный тест POST /auth/apple в backend/tests/contract/test_auth_contract.py
-- [ ] T025 [P] [US3] Контрактный тест GET/PATCH /users/me в backend/tests/contract/test_users_contract.py
+- [x] T021 [P] [US3] Контрактные тесты POST /auth/register (успех, 409 duplicate email, 400 validation) в backend/tests/contract/test_auth_contract.py
+- [x] T022 [P] [US3] Контрактный тест POST /auth/login в backend/tests/contract/test_auth_contract.py
+- [x] T023 [P] [US3] Контрактный тест POST /auth/refresh в backend/tests/contract/test_auth_contract.py
+- [x] T024 [P] [US3] Контрактный тест POST /auth/apple в backend/tests/contract/test_auth_contract.py
+- [x] T025 [P] [US3] Контрактный тест GET/PATCH /users/me в backend/tests/contract/test_users_contract.py
 
 ### Реализация User Story 3
 
-- [ ] T026 [P] [US3] Создать Pydantic-схемы аутентификации в backend/src/schemas/auth.py
-- [ ] T027 [P] [US3] Создать Pydantic-схемы пользователя в backend/src/schemas/user.py
-- [ ] T028 [US3] Реализовать AuthService (регистрация, логин, refresh) в backend/src/services/auth_service.py
-- [ ] T029 [US3] Реализовать верификацию Sign in with Apple в backend/src/services/auth_service.py
-- [ ] T030 [US3] Реализовать UserService (получение, обновление профиля) в backend/src/services/user_service.py
-- [ ] T031 [US3] Реализовать dependency для получения текущего пользователя в backend/src/api/dependencies.py
-- [ ] T032 [US3] Реализовать роуты /auth/* в backend/src/api/routes/auth.py
-- [ ] T033 [US3] Реализовать роуты /users/me в backend/src/api/routes/users.py
-- [ ] T034 [US3] Подключить роуты auth и users к main.py
+- [x] T026 [P] [US3] Создать Pydantic-схемы аутентификации в backend/src/schemas/auth.py
+- [x] T027 [P] [US3] Создать Pydantic-схемы пользователя в backend/src/schemas/user.py
+- [x] T028 [US3] Реализовать AuthService (регистрация, логин, refresh) в backend/src/services/auth_service.py
+- [x] T029 [US3] Реализовать верификацию Sign in with Apple в backend/src/services/auth_service.py
+- [x] T030 [US3] Реализовать UserService (получение, обновление профиля) в backend/src/services/user_service.py
+- [x] T031 [US3] Реализовать dependency для получения текущего пользователя в backend/src/api/dependencies.py
+- [x] T032 [US3] Реализовать роуты /auth/* в backend/src/api/routes/auth.py
+- [x] T033 [US3] Реализовать роуты /users/me в backend/src/api/routes/users.py
+- [x] T034 [US3] Подключить роуты auth и users к main.py
 
 **Checkpoint**: Аутентификация работает независимо, можно тестировать регистрацию/вход/токены
 

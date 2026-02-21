@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from src.api.routes import auth, users
 from src.core.config import get_settings
 from src.core.database import close_db, init_db
 from src.core.logging import setup_logging
@@ -28,9 +31,9 @@ app = FastAPI(
     title="AI Dungeon Master API",
     description="Backend API for AI-powered D&D 5e game master",
     version="0.1.0",
-    docs_url="/docs" if settings.app_debug else None,
-    redoc_url="/redoc" if settings.app_debug else None,
-    openapi_url="/openapi.json" if settings.app_debug else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     lifespan=lifespan,
 )
 
@@ -41,6 +44,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

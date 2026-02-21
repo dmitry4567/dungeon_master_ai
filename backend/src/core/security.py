@@ -1,4 +1,6 @@
-from datetime import UTC, datetime, timedelta
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from argon2 import PasswordHasher
@@ -45,15 +47,15 @@ def create_access_token(
     """Create JWT access token."""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(
+        expire = datetime.now(timezone.utc) + timedelta(
             minutes=settings.jwt_access_token_expire_minutes
         )
 
     to_encode.update({
         "exp": expire,
-        "iat": datetime.now(UTC),
+        "iat": datetime.now(timezone.utc),
         "type": "access",
     })
 
@@ -71,15 +73,15 @@ def create_refresh_token(
     """Create JWT refresh token."""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(
+        expire = datetime.now(timezone.utc) + timedelta(
             days=settings.jwt_refresh_token_expire_days
         )
 
     to_encode.update({
         "exp": expire,
-        "iat": datetime.now(UTC),
+        "iat": datetime.now(timezone.utc),
         "type": "refresh",
     })
 
@@ -123,16 +125,16 @@ class TokenPayload:
         self.token_type: str = payload.get("type", "")
 
         if "exp" in payload:
-            self.exp = datetime.fromtimestamp(payload["exp"], tz=UTC)
+            self.exp = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
         if "iat" in payload:
-            self.iat = datetime.fromtimestamp(payload["iat"], tz=UTC)
+            self.iat = datetime.fromtimestamp(payload["iat"], tz=timezone.utc)
 
     @property
     def is_expired(self) -> bool:
         """Check if token is expired."""
         if self.exp is None:
             return True
-        return datetime.now(UTC) > self.exp
+        return datetime.now(timezone.utc) > self.exp
 
     @classmethod
     def from_token(cls, token: str) -> "TokenPayload | None":

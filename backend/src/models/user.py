@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Index, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -45,13 +47,13 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
     __table_args__ = (
