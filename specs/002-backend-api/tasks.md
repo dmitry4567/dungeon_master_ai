@@ -7,6 +7,8 @@
 
 **Organization**: Задачи сгруппированы по пользовательским историям для независимой реализации и тестирования
 
+**Note**: Порядок фаз отличается от приоритетов в spec.md — истории переупорядочены по техническим зависимостям (Auth блокирует всё, поэтому идёт первой, несмотря на приоритет P3).
+
 ## Формат: `[ID] [P?] [Story] Description`
 
 - **[P]**: Можно выполнять параллельно (разные файлы, нет зависимостей)
@@ -63,7 +65,7 @@
 
 ### Тесты для User Story 3
 
-- [ ] T021 [P] [US3] Контрактный тест POST /auth/register в backend/tests/contract/test_auth_contract.py
+- [ ] T021 [P] [US3] Контрактные тесты POST /auth/register (успех, 409 duplicate email, 400 validation) в backend/tests/contract/test_auth_contract.py
 - [ ] T022 [P] [US3] Контрактный тест POST /auth/login в backend/tests/contract/test_auth_contract.py
 - [ ] T023 [P] [US3] Контрактный тест POST /auth/refresh в backend/tests/contract/test_auth_contract.py
 - [ ] T024 [P] [US3] Контрактный тест POST /auth/apple в backend/tests/contract/test_auth_contract.py
@@ -187,6 +189,7 @@
 - [ ] T075 [P] [US1] Создать Pydantic-схемы WebSocket-сообщений в backend/src/schemas/websocket.py
 - [ ] T076 [US1] Расширить AI-сервис: конструирование промптов мастера с контекстом в backend/src/services/ai_service.py
 - [ ] T077 [US1] Реализовать кэширование промптов для оптимизации затрат в backend/src/services/ai_service.py
+- [ ] T077a [US1] Реализовать трекинг токенов и стоимости AI-вызовов (логирование input/output tokens) в backend/src/services/ai_service.py
 - [ ] T078 [US1] Реализовать парсер запросов бросков кубиков из ответов AI в backend/src/services/dice_parser.py
 - [ ] T079 [US1] Реализовать StateExtractor (извлечение изменений состояния через Haiku) в backend/src/services/state_extractor.py
 - [ ] T080 [US1] Реализовать SessionService (управление сессией, сообщения) в backend/src/services/session_service.py
@@ -224,6 +227,7 @@
 
 **Purpose**: Улучшения, затрагивающие несколько историй
 
+- [ ] T089a [P] Создать Pydantic-схему ModerationEvent для логирования в backend/src/schemas/moderation.py
 - [ ] T090 [P] Реализовать фильтры модерации контента в backend/src/services/moderation_service.py
 - [ ] T091 [P] Добавить метрики latency и error rate в backend/src/api/middleware.py
 - [ ] T092 [P] Реализовать обработку граничных случаев: недоступность AI-провайдера (503 + retry-after)
@@ -232,6 +236,8 @@
 - [ ] T095 Создать Dockerfile для production в backend/Dockerfile
 - [ ] T096 Запустить валидацию quickstart.md
 - [ ] T097 Финальный прогон всех тестов и проверка покрытия
+- [ ] T098 [P] Создать тест эндпоинта /metrics (Prometheus-формат) в backend/tests/contract/test_metrics_contract.py
+- [ ] T099 [P] Создать нагрузочный тест 100 одновременных WebSocket-соединений в backend/tests/load/test_websocket_load.py
 
 ---
 
@@ -308,15 +314,15 @@ Task: "Реализовать VoiceService в backend/src/services/voice_service
 
 | Метрика | Значение |
 |---------|----------|
-| **Всего задач** | 97 |
+| **Всего задач** | 101 |
 | **Setup** | 6 задач |
 | **Foundational** | 14 задач |
 | **US3 Auth** | 14 задач |
 | **US5 Characters** | 9 задач |
 | **US2 Scenarios** | 13 задач |
 | **US4 Rooms** | 10 задач |
-| **US1 Sessions** | 18 задач |
+| **US1 Sessions** | 19 задач (+T077a) |
 | **US6 Voice** | 5 задач |
-| **Polish** | 8 задач |
+| **Polish** | 11 задач (+T089a, T098, T099) |
 | **Параллельные возможности** | US5+US2+US6 после Auth |
 | **MVP scope** | Phases 1-7 (без US6) |

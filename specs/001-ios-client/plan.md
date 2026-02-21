@@ -76,6 +76,8 @@ ios/
 │   ├── main.dart
 │   ├── app.dart                      # MaterialApp с go_router
 │   ├── core/
+│   │   ├── config/
+│   │   │   └── app_config.dart       # Конфигурация приложения
 │   │   ├── di/                       # Настройка get_it + injectable
 │   │   │   ├── injection.dart
 │   │   │   └── injection.config.dart

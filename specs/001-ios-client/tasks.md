@@ -7,6 +7,8 @@
 
 **Organization**: Задачи сгруппированы по пользовательским историям для независимой реализации
 
+**Note**: Порядок фаз отличается от приоритетов в spec.md — истории переупорядочены по техническим зависимостям (Auth блокирует всё, поэтому идёт первой, несмотря на приоритет P5).
+
 ## Формат: `[ID] [P?] [Story] Description`
 
 - **[P]**: Можно выполнять параллельно (разные файлы, нет зависимостей)
@@ -45,6 +47,7 @@
 - [ ] T017 Реализовать secure storage для токенов в ios/lib/core/storage/secure_storage.dart
 - [ ] T018 Настроить Isar базу данных в ios/lib/core/storage/local_database.dart
 - [ ] T019 Настроить go_router в ios/lib/core/router/app_router.dart
+- [ ] T019a [P] Реализовать сохранение состояния навигации между перезапусками в ios/lib/core/router/app_router.dart
 - [ ] T020 [P] Создать константы маршрутов в ios/lib/core/router/routes.dart
 - [ ] T021 Создать точку входа приложения в ios/lib/main.dart
 - [ ] T022 Создать MaterialApp с роутером в ios/lib/app.dart
@@ -185,7 +188,7 @@
 - [ ] T091 [US4] Реализовать LobbyBloc в ios/lib/features/lobby/bloc/lobby_bloc.dart
 - [ ] T092 [US4] Создать LobbyPage (список комнат) в ios/lib/features/lobby/ui/lobby_page.dart
 - [ ] T093 [US4] Создать RoomCreatePage в ios/lib/features/lobby/ui/room_create_page.dart
-- [ ] T094 [US4] Создать WaitingRoomPage в ios/lib/features/lobby/ui/waiting_room_page.dart
+- [ ] T094 [US4] Создать WaitingRoomPage с countdown-анимацией (3-2-1) при старте в ios/lib/features/lobby/ui/waiting_room_page.dart
 - [ ] T095 [P] [US4] Создать виджет RoomCard в ios/lib/features/lobby/ui/widgets/room_card.dart
 - [ ] T096 [P] [US4] Создать виджет PlayerAvatar в ios/lib/features/lobby/ui/widgets/player_avatar.dart
 - [ ] T097 [P] [US4] Создать виджет JoinRequestDialog в ios/lib/features/lobby/ui/widgets/join_request_dialog.dart
@@ -274,6 +277,8 @@
 - [ ] T139 Создать интеграционный тест полного игрового флоу в ios/test/integration/game_flow_test.dart
 - [ ] T140 Запустить валидацию quickstart.md
 - [ ] T141 Финальный прогон всех тестов: flutter test
+- [ ] T142 [P] Профилирование производительности: проверить 60fps в DevTools, замерить холодный старт (<3с)
+- [ ] T143 [P] Проверить размер IPA/App Bundle (<100МБ): flutter build ipa --analyze-size
 
 ---
 
@@ -354,15 +359,15 @@ Task: "Создать ProfilePage"
 
 | Метрика | Значение |
 |---------|----------|
-| **Всего задач** | 141 |
+| **Всего задач** | 144 |
 | **Setup** | 7 задач |
-| **Foundational** | 21 задач |
+| **Foundational** | 22 задачи (+T019a) |
 | **US5 Auth** | 15 задач |
 | **US3 Characters** | 23 задачи |
 | **US2 Scenarios** | 18 задач |
 | **US4 Lobby** | 15 задач |
 | **US1 Sessions** | 22 задачи |
 | **US6 Profile** | 11 задач |
-| **Polish** | 9 задач |
+| **Polish** | 11 задач (+T142, T143) |
 | **Параллельные возможности** | US3+US2+US6 после Auth |
 | **MVP scope** | Phases 1-7 (без US6) |
