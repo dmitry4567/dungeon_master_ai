@@ -36,8 +36,8 @@ class AppConfig {
 
   /// Конфигурация для разработки
   static const development = AppConfig._(
-    apiBaseUrl: 'http://localhost:8000/v1',
-    wsBaseUrl: 'ws://localhost:8000/v1/ws',
+    apiBaseUrl: 'http://192.168.0.139:8000/api/v1',
+    wsBaseUrl: 'ws://192.168.0.139:8000/api/v1/ws',
     environment: Environment.development,
     enableCrashlytics: false,
     enableAnalytics: false,

@@ -26,8 +26,19 @@ class AuthResponse with _$AuthResponse {
     required User user,
   }) = _AuthResponse;
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) =>
-      _$AuthResponseFromJson(json);
+  /// Парсинг ответа от backend API
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    // Backend возвращает user_id, email, name как отдельные поля
+    final tokens = AuthTokens.fromJson(json['tokens'] as Map<String, dynamic>);
+    final user = User(
+      id: json['user_id'] as String,
+      email: json['email'] as String,
+      name: json['name'] as String,
+      avatarUrl: null,
+      createdAt: DateTime.now(),
+    );
+    return AuthResponse(tokens: tokens, user: user);
+  }
 }
 
 /// Запрос на вход по email

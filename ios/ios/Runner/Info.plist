@@ -49,5 +49,10 @@
 	<string>AI Dungeon Master needs microphone access for voice input during gameplay</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>AI Dungeon Master needs speech recognition to convert your voice to text</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
