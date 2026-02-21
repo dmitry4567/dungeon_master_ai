@@ -35,28 +35,28 @@
 
 **Purpose**: Инфраструктура, БЛОКИРУЮЩАЯ все пользовательские истории
 
-- [ ] T008 Реализовать конфигурацию приложения в ios/lib/core/config/app_config.dart
-- [ ] T009 [P] Настроить get_it + injectable DI в ios/lib/core/di/injection.dart
-- [ ] T010 [P] Создать базовую тему приложения в ios/lib/core/theme/app_theme.dart
-- [ ] T011 [P] Создать цветовую палитру (фэнтези-стиль) в ios/lib/core/theme/colors.dart
-- [ ] T012 [P] Создать типографику с Dynamic Type в ios/lib/core/theme/typography.dart
-- [ ] T013 Реализовать Dio API-клиент с интерсепторами в ios/lib/core/network/api_client.dart
-- [ ] T014 [P] Реализовать auth-интерсептор (JWT) в ios/lib/core/network/interceptors/auth_interceptor.dart
-- [ ] T015 [P] Реализовать error-интерсептор в ios/lib/core/network/interceptors/error_interceptor.dart
-- [ ] T016 Реализовать WebSocket-клиент в ios/lib/core/network/websocket_client.dart
-- [ ] T017 Реализовать secure storage для токенов в ios/lib/core/storage/secure_storage.dart
-- [ ] T018 Настроить Isar базу данных в ios/lib/core/storage/local_database.dart
-- [ ] T019 Настроить go_router в ios/lib/core/router/app_router.dart
-- [ ] T019a [P] Реализовать сохранение состояния навигации между перезапусками в ios/lib/core/router/app_router.dart
-- [ ] T020 [P] Создать константы маршрутов в ios/lib/core/router/routes.dart
-- [ ] T021 Создать точку входа приложения в ios/lib/main.dart
-- [ ] T022 Создать MaterialApp с роутером в ios/lib/app.dart
-- [ ] T023 [P] Создать общие виджеты: LoadingSkeleton в ios/lib/shared/widgets/loading_skeleton.dart
-- [ ] T024 [P] Создать общие виджеты: ErrorView в ios/lib/shared/widgets/error_view.dart
-- [ ] T025 [P] Создать общие виджеты: OfflineBanner в ios/lib/shared/widgets/offline_banner.dart
-- [ ] T026 [P] Создать общие виджеты: FantasyButton в ios/lib/shared/widgets/fantasy_button.dart
-- [ ] T027 Настроить Firebase (Crashlytics, Analytics) в ios/lib/core/firebase/firebase_service.dart
-- [ ] T028 Запустить build_runner для генерации кода: flutter pub run build_runner build
+- [x] T008 Реализовать конфигурацию приложения в ios/lib/core/config/app_config.dart
+- [x] T009 [P] Настроить get_it + injectable DI в ios/lib/core/di/injection.dart
+- [x] T010 [P] Создать базовую тему приложения в ios/lib/core/theme/app_theme.dart
+- [x] T011 [P] Создать цветовую палитру (фэнтези-стиль) в ios/lib/core/theme/colors.dart
+- [x] T012 [P] Создать типографику с Dynamic Type в ios/lib/core/theme/typography.dart
+- [x] T013 Реализовать Dio API-клиент с интерсепторами в ios/lib/core/network/api_client.dart
+- [x] T014 [P] Реализовать auth-интерсептор (JWT) в ios/lib/core/network/interceptors/auth_interceptor.dart
+- [x] T015 [P] Реализовать error-интерсептор в ios/lib/core/network/interceptors/error_interceptor.dart
+- [x] T016 Реализовать WebSocket-клиент в ios/lib/core/network/websocket_client.dart
+- [x] T017 Реализовать secure storage для токенов в ios/lib/core/storage/secure_storage.dart
+- [x] T018 Настроить SQLite базу данных в ios/lib/core/storage/local_database.dart
+- [x] T019 Настроить go_router в ios/lib/core/router/app_router.dart
+- [x] T019a [P] Реализовать сохранение состояния навигации между перезапусками в ios/lib/core/router/app_router.dart
+- [x] T020 [P] Создать константы маршрутов в ios/lib/core/router/routes.dart
+- [x] T021 Создать точку входа приложения в ios/lib/main.dart
+- [x] T022 Создать MaterialApp с роутером в ios/lib/app.dart
+- [x] T023 [P] Создать общие виджеты: LoadingSkeleton в ios/lib/shared/widgets/loading_skeleton.dart
+- [x] T024 [P] Создать общие виджеты: ErrorView в ios/lib/shared/widgets/error_view.dart
+- [x] T025 [P] Создать общие виджеты: OfflineBanner в ios/lib/shared/widgets/offline_banner.dart
+- [x] T026 [P] Создать общие виджеты: FantasyButton в ios/lib/shared/widgets/fantasy_button.dart
+- [x] T027 Настроить Firebase (Crashlytics, Analytics) в ios/lib/core/firebase/firebase_service.dart
+- [x] T028 Запустить build_runner для генерации кода: flutter pub run build_runner build
 
 **Checkpoint**: Инфраструктура готова — можно начинать истории
 
