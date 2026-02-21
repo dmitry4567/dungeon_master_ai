@@ -36,20 +36,20 @@
 
 **CRITICAL**: Никакая работа над историями не может начаться до завершения этой фазы
 
-- [ ] T007 Реализовать конфигурацию приложения в backend/src/core/config.py (Pydantic Settings)
-- [ ] T008 [P] Настроить подключение к базе данных SQLAlchemy в backend/src/core/database.py
-- [ ] T009 [P] Настроить Redis-клиент в backend/src/core/redis.py
-- [ ] T010 [P] Настроить S3/R2-клиент в backend/src/core/storage.py
-- [ ] T011 Создать миграционный фреймворк Alembic в backend/alembic/
-- [ ] T012 Реализовать утилиты безопасности (хэширование паролей Argon2id, JWT) в backend/src/core/security.py
-- [ ] T013 Создать базовую модель User в backend/src/models/user.py
-- [ ] T014 Создать начальную миграцию с таблицей users в backend/alembic/versions/001_initial.py
-- [ ] T015 Реализовать точку входа FastAPI в backend/src/api/main.py (без роутов)
-- [ ] T016 [P] Реализовать middleware: CORS, rate limiting в backend/src/api/middleware.py
-- [ ] T017 [P] Реализовать структурированное логирование JSON в backend/src/core/logging.py
-- [ ] T018 [P] Реализовать correlation ID middleware в backend/src/api/middleware.py
-- [ ] T019 Создать базовые Pydantic-схемы ошибок в backend/src/schemas/common.py
-- [ ] T020 Создать conftest.py с фикстурами pytest в backend/tests/conftest.py
+- [x] T007 Реализовать конфигурацию приложения в backend/src/core/config.py (Pydantic Settings)
+- [x] T008 [P] Настроить подключение к базе данных SQLAlchemy в backend/src/core/database.py
+- [x] T009 [P] Настроить Redis-клиент в backend/src/core/redis.py
+- [x] T010 [P] Настроить S3/R2-клиент в backend/src/core/storage.py
+- [x] T011 Создать миграционный фреймворк Alembic в backend/alembic/
+- [x] T012 Реализовать утилиты безопасности (хэширование паролей Argon2id, JWT) в backend/src/core/security.py
+- [x] T013 Создать базовую модель User в backend/src/models/user.py
+- [x] T014 Создать начальную миграцию с таблицей users в backend/alembic/versions/001_initial.py
+- [x] T015 Реализовать точку входа FastAPI в backend/src/api/main.py (без роутов)
+- [x] T016 [P] Реализовать middleware: CORS, rate limiting в backend/src/api/middleware.py
+- [x] T017 [P] Реализовать структурированное логирование JSON в backend/src/core/logging.py
+- [x] T018 [P] Реализовать correlation ID middleware в backend/src/api/middleware.py
+- [x] T019 Создать базовые Pydantic-схемы ошибок в backend/src/schemas/common.py
+- [x] T020 Создать conftest.py с фикстурами pytest в backend/tests/conftest.py
 
 **Checkpoint**: Инфраструктура готова — можно начинать реализацию пользовательских историй
 
