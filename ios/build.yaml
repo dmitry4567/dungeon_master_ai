@@ -1,0 +1,42 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          format: true
+          copy_with: true
+          equal: true
+          make_collector_public: false
+          when:
+            map: true
+            maybeMap: true
+            mapOrNull: true
+            maybeWhen: true
+            whenOrNull: true
+          union_key: runtimeType
+          union_value_case: snake
+
+      json_serializable:
+        options:
+          any_map: false
+          checked: true
+          create_factory: true
+          create_to_json: true
+          explicit_to_json: true
+          field_rename: snake
+          generic_argument_factories: false
+          ignore_unannotated: false
+          include_if_null: false
+
+      injectable_generator:injectable_builder:
+        options:
+          auto_register: false
+          generate_for:
+            include:
+              - lib/**
+
+      retrofit_generator:
+        options:
+          generate_for:
+            include:
+              - lib/features/**/data/*_api.dart
