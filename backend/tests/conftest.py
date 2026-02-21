@@ -13,6 +13,7 @@ from src.api.main import app
 from src.core.config import Settings, get_settings
 from src.core.database import Base, get_db
 from src.core.redis import get_redis
+from src.models.character import Character
 from src.models.user import User
 
 
@@ -178,3 +179,74 @@ def sample_scenario_data() -> dict[str, Any]:
         "description": "An abandoned dwarven mine where an ancient evil has awakened. "
         "The party must find an artifact and stop the undead."
     }
+
+
+@pytest_asyncio.fixture
+async def test_character(test_session: AsyncSession, test_user: User) -> Character:
+    """Create a test character for the test user."""
+    character = Character(
+        id=uuid.uuid4(),
+        user_id=test_user.id,
+        name="Thorin",
+        character_class="fighter",
+        race="dwarf",
+        level=1,
+        ability_scores={
+            "strength": 16,
+            "dexterity": 12,
+            "constitution": 15,
+            "intelligence": 10,
+            "wisdom": 13,
+            "charisma": 8,
+        },
+        backstory="A veteran warrior from the mountain halls.",
+    )
+    test_session.add(character)
+    await test_session.commit()
+    await test_session.refresh(character)
+    return character
+
+
+@pytest_asyncio.fixture
+async def other_user(test_session: AsyncSession) -> User:
+    """Create another test user."""
+    from src.core.security import hash_password
+
+    user = User(
+        id=uuid.uuid4(),
+        email="other@example.com",
+        password_hash=hash_password("otherpassword123"),
+        name="Other User",
+    )
+    test_session.add(user)
+    await test_session.commit()
+    await test_session.refresh(user)
+    return user
+
+
+@pytest_asyncio.fixture
+async def other_user_character(
+    test_session: AsyncSession, other_user: User
+) -> Character:
+    """Create a character belonging to another user."""
+    character = Character(
+        id=uuid.uuid4(),
+        user_id=other_user.id,
+        name="Legolas",
+        character_class="ranger",
+        race="elf",
+        level=5,
+        ability_scores={
+            "strength": 10,
+            "dexterity": 18,
+            "constitution": 12,
+            "intelligence": 14,
+            "wisdom": 16,
+            "charisma": 12,
+        },
+        backstory="An elven prince from the woodland realm.",
+    )
+    test_session.add(character)
+    await test_session.commit()
+    await test_session.refresh(character)
+    return character

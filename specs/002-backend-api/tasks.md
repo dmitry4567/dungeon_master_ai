@@ -95,18 +95,18 @@
 
 ### Тесты для User Story 5
 
-- [ ] T035 [P] [US5] Контрактный тест CRUD /characters в backend/tests/contract/test_characters_contract.py
-- [ ] T036 [P] [US5] Unit-тест валидации D&D 5e в backend/tests/unit/test_dnd_validation.py
+- [x] T035 [P] [US5] Контрактный тест CRUD /characters в backend/tests/contract/test_characters_contract.py
+- [x] T036 [P] [US5] Unit-тест валидации D&D 5e в backend/tests/unit/test_dnd_validation.py
 
 ### Реализация User Story 5
 
-- [ ] T037 [P] [US5] Создать модель Character в backend/src/models/character.py
-- [ ] T038 [US5] Добавить миграцию для таблицы characters в backend/alembic/versions/002_characters.py
-- [ ] T039 [P] [US5] Создать Pydantic-схемы персонажа в backend/src/schemas/character.py
-- [ ] T040 [US5] Реализовать валидатор D&D 5e (классы, расы, характеристики) в backend/src/services/dnd_validator.py
-- [ ] T041 [US5] Реализовать CharacterService в backend/src/services/character_service.py
-- [ ] T042 [US5] Реализовать роуты /characters/* в backend/src/api/routes/characters.py
-- [ ] T043 [US5] Подключить роуты characters к main.py
+- [x] T037 [P] [US5] Создать модель Character в backend/src/models/character.py
+- [x] T038 [US5] Добавить миграцию для таблицы characters в backend/alembic/versions/002_characters.py
+- [x] T039 [P] [US5] Создать Pydantic-схемы персонажа в backend/src/schemas/character.py
+- [x] T040 [US5] Реализовать валидатор D&D 5e (классы, расы, характеристики) в backend/src/services/dnd_validator.py
+- [x] T041 [US5] Реализовать CharacterService в backend/src/services/character_service.py
+- [x] T042 [US5] Реализовать роуты /characters/* в backend/src/api/routes/characters.py
+- [x] T043 [US5] Подключить роуты characters к main.py
 
 **Checkpoint**: CRUD персонажей работает с валидацией D&D 5e
 
