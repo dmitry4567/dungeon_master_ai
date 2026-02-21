@@ -1,0 +1,1208 @@
+openapi: 3.1.0
+info:
+  title: AI Dungeon Master API
+  version: 1.0.0
+  description: Backend API for AI-powered D&D 5e Dungeon Master
+servers:
+  - url: https://api.aidm.example.com/v1
+    description: Production
+  - url: http://localhost:8000/v1
+    description: Development
+
+tags:
+  - name: auth
+    description: Authentication and authorization
+  - name: users
+    description: User profile management
+  - name: characters
+    description: D&D character management
+  - name: scenarios
+    description: AI-generated scenario management
+  - name: rooms
+    description: Game room lobby management
+  - name: sessions
+    description: Active game session management
+
+paths:
+  # ============ AUTH ============
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register new user with email/password
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Email already exists
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Login with email/password
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+
+  /auth/apple:
+    post:
+      tags: [auth]
+      summary: Sign in with Apple
+      operationId: appleSignIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppleSignInRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid Apple token
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh access token
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid refresh token
+
+  # ============ USERS ============
+  /users/me:
+    get:
+      tags: [users]
+      summary: Get current user profile
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+    patch:
+      tags: [users]
+      summary: Update current user profile
+      operationId: updateCurrentUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # ============ CHARACTERS ============
+  /characters:
+    get:
+      tags: [characters]
+      summary: List user's characters
+      operationId: listCharacters
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of characters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Character'
+
+    post:
+      tags: [characters]
+      summary: Create new character
+      operationId: createCharacter
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCharacterRequest'
+      responses:
+        '201':
+          description: Character created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+        '400':
+          description: Validation error (D&D 5e rules violation)
+
+  /characters/{characterId}:
+    get:
+      tags: [characters]
+      summary: Get character by ID
+      operationId: getCharacter
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Character details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+        '404':
+          description: Character not found
+
+    patch:
+      tags: [characters]
+      summary: Update character
+      operationId: updateCharacter
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCharacterRequest'
+      responses:
+        '200':
+          description: Character updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Character'
+
+    delete:
+      tags: [characters]
+      summary: Delete character
+      operationId: deleteCharacter
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: characterId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Character deleted
+        '409':
+          description: Character is in active game
+
+  # ============ SCENARIOS ============
+  /scenarios:
+    get:
+      tags: [scenarios]
+      summary: List user's scenarios
+      operationId: listScenarios
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+      responses:
+        '200':
+          description: List of scenarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scenario'
+
+    post:
+      tags: [scenarios]
+      summary: Generate new scenario from description
+      operationId: createScenario
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScenarioRequest'
+      responses:
+        '201':
+          description: Scenario generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioWithVersion'
+        '422':
+          description: Content moderation failed
+
+  /scenarios/{scenarioId}:
+    get:
+      tags: [scenarios]
+      summary: Get scenario with current version
+      operationId: getScenario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Scenario details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioWithVersion'
+
+  /scenarios/{scenarioId}/refine:
+    post:
+      tags: [scenarios]
+      summary: Refine scenario with follow-up prompt
+      operationId: refineScenario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefineScenarioRequest'
+      responses:
+        '200':
+          description: Scenario refined, new version created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioWithVersion'
+
+  /scenarios/{scenarioId}/versions:
+    get:
+      tags: [scenarios]
+      summary: List scenario versions
+      operationId: listScenarioVersions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScenarioVersionSummary'
+
+  /scenarios/{scenarioId}/versions/{versionId}/restore:
+    post:
+      tags: [scenarios]
+      summary: Restore a previous version
+      operationId: restoreScenarioVersion
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Version restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScenarioWithVersion'
+
+  # ============ ROOMS ============
+  /rooms:
+    get:
+      tags: [rooms]
+      summary: List available rooms
+      operationId: listRooms
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [waiting, active]
+      responses:
+        '200':
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomSummary'
+
+    post:
+      tags: [rooms]
+      summary: Create new game room
+      operationId: createRoom
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+      responses:
+        '201':
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+
+  /rooms/{roomId}:
+    get:
+      tags: [rooms]
+      summary: Get room details
+      operationId: getRoom
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Room details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+
+  /rooms/{roomId}/join:
+    post:
+      tags: [rooms]
+      summary: Request to join room
+      operationId: joinRoom
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Join request sent
+        '409':
+          description: Room is full
+
+  /rooms/{roomId}/players/{playerId}/approve:
+    post:
+      tags: [rooms]
+      summary: Approve player join request (host only)
+      operationId: approvePlayer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Player approved
+        '403':
+          description: Not room host
+
+  /rooms/{roomId}/players/{playerId}/decline:
+    post:
+      tags: [rooms]
+      summary: Decline player join request (host only)
+      operationId: declinePlayer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Player declined
+
+  /rooms/{roomId}/ready:
+    post:
+      tags: [rooms]
+      summary: Toggle ready status
+      operationId: toggleReady
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadyRequest'
+      responses:
+        '200':
+          description: Ready status updated
+
+  /rooms/{roomId}/start:
+    post:
+      tags: [rooms]
+      summary: Start game (host only)
+      operationId: startGame
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Game started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameSession'
+        '400':
+          description: Not all players ready
+
+  # ============ SESSIONS ============
+  /sessions/{sessionId}:
+    get:
+      tags: [sessions]
+      summary: Get session details and history
+      operationId: getSession
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: since
+          in: query
+          description: Return messages since this message ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session with messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithMessages'
+
+  /sessions/{sessionId}/messages:
+    get:
+      tags: [sessions]
+      summary: Get session message history
+      operationId: getSessionMessages
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: before
+          in: query
+          description: Return messages before this ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionMessage'
+
+  /sessions/{sessionId}/dice:
+    post:
+      tags: [sessions]
+      summary: Submit dice roll result
+      operationId: submitDiceRoll
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiceRollRequest'
+      responses:
+        '200':
+          description: Dice roll recorded
+
+  # ============ WEBSOCKET ============
+  /ws/sessions/{sessionId}:
+    get:
+      tags: [sessions]
+      summary: WebSocket connection for real-time game session
+      operationId: sessionWebSocket
+      description: |
+        WebSocket endpoint for real-time game communication.
+
+        **Connection**: `wss://api.aidm.example.com/v1/ws/sessions/{sessionId}?token={jwt}`
+
+        **Client → Server Messages**:
+        - `{"type": "player_action", "content": "I search the room"}`
+        - `{"type": "dice_roll", "result": {"type": "d20", "base_roll": 15, "modifier": 3, "total": 18}}`
+
+        **Server → Client Messages**:
+        - `{"type": "dm_response", "content": "...", "dice_required": null}`
+        - `{"type": "dice_request", "dice": {"type": "d20", "modifier": 3, "dc": 14, "skill": "Perception"}}`
+        - `{"type": "state_update", "world_state": {...}}`
+        - `{"type": "player_joined", "player": {...}}`
+        - `{"type": "player_left", "player_id": "..."}`
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '101':
+          description: Switching Protocols (WebSocket upgrade)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # ============ AUTH SCHEMAS ============
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AppleSignInRequest:
+      type: object
+      required: [identity_token]
+      properties:
+        identity_token:
+          type: string
+        name:
+          type: string
+          description: Name from Apple (only on first sign in)
+
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          default: bearer
+        expires_in:
+          type: integer
+          description: Access token TTL in seconds
+        user:
+          $ref: '#/components/schemas/User'
+
+    # ============ USER SCHEMAS ============
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatar_url:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        avatar_url:
+          type: string
+          format: uri
+
+    # ============ CHARACTER SCHEMAS ============
+    AbilityScores:
+      type: object
+      required: [strength, dexterity, constitution, intelligence, wisdom, charisma]
+      properties:
+        strength:
+          type: integer
+          minimum: 1
+          maximum: 20
+        dexterity:
+          type: integer
+          minimum: 1
+          maximum: 20
+        constitution:
+          type: integer
+          minimum: 1
+          maximum: 20
+        intelligence:
+          type: integer
+          minimum: 1
+          maximum: 20
+        wisdom:
+          type: integer
+          minimum: 1
+          maximum: 20
+        charisma:
+          type: integer
+          minimum: 1
+          maximum: 20
+
+    Character:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        class:
+          type: string
+        race:
+          type: string
+        level:
+          type: integer
+        ability_scores:
+          $ref: '#/components/schemas/AbilityScores'
+        backstory:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    CreateCharacterRequest:
+      type: object
+      required: [name, class, race, ability_scores]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        class:
+          type: string
+          enum: [barbarian, bard, cleric, druid, fighter, monk, paladin, ranger, rogue, sorcerer, warlock, wizard]
+        race:
+          type: string
+          enum: [dragonborn, dwarf, elf, gnome, half-elf, halfling, half-orc, human, tiefling]
+        ability_scores:
+          $ref: '#/components/schemas/AbilityScores'
+        backstory:
+          type: string
+          maxLength: 5000
+
+    UpdateCharacterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        backstory:
+          type: string
+
+    # ============ SCENARIO SCHEMAS ============
+    Scenario:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        current_version_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    ScenarioContent:
+      type: object
+      properties:
+        tone:
+          type: string
+          enum: [dark_fantasy, heroic, horror, mystery]
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, hardcore]
+        players_min:
+          type: integer
+        players_max:
+          type: integer
+        world_lore:
+          type: string
+        acts:
+          type: array
+          items:
+            type: object
+        npcs:
+          type: array
+          items:
+            type: object
+        locations:
+          type: array
+          items:
+            type: object
+
+    ScenarioWithVersion:
+      allOf:
+        - $ref: '#/components/schemas/Scenario'
+        - type: object
+          properties:
+            current_version:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                version:
+                  type: integer
+                content:
+                  $ref: '#/components/schemas/ScenarioContent'
+                validation_errors:
+                  type: array
+                  items:
+                    type: string
+                created_at:
+                  type: string
+                  format: date-time
+
+    ScenarioVersionSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        user_prompt:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateScenarioRequest:
+      type: object
+      required: [description]
+      properties:
+        description:
+          type: string
+          minLength: 10
+          maxLength: 2000
+
+    RefineScenarioRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt:
+          type: string
+          minLength: 5
+          maxLength: 1000
+
+    # ============ ROOM SCHEMAS ============
+    RoomSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        scenario_title:
+          type: string
+        host_name:
+          type: string
+        player_count:
+          type: integer
+        max_players:
+          type: integer
+        status:
+          type: string
+          enum: [waiting, active]
+
+    RoomPlayer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        character:
+          $ref: '#/components/schemas/Character'
+        status:
+          type: string
+          enum: [pending, approved, ready, declined]
+        is_host:
+          type: boolean
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        scenario:
+          $ref: '#/components/schemas/Scenario'
+        status:
+          type: string
+          enum: [waiting, active, completed]
+        max_players:
+          type: integer
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoomPlayer'
+        created_at:
+          type: string
+          format: date-time
+
+    CreateRoomRequest:
+      type: object
+      required: [name, scenario_version_id]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 100
+        scenario_version_id:
+          type: string
+          format: uuid
+        max_players:
+          type: integer
+          minimum: 2
+          maximum: 5
+          default: 5
+
+    ReadyRequest:
+      type: object
+      required: [character_id, ready]
+      properties:
+        character_id:
+          type: string
+          format: uuid
+        ready:
+          type: boolean
+
+    # ============ SESSION SCHEMAS ============
+    WorldState:
+      type: object
+      properties:
+        current_act:
+          type: string
+        current_scene:
+          type: string
+        current_location:
+          type: string
+        completed_scenes:
+          type: array
+          items:
+            type: string
+        flags:
+          type: object
+          additionalProperties:
+            type: boolean
+        combat_active:
+          type: boolean
+
+    GameSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        room_id:
+          type: string
+          format: uuid
+        world_state:
+          $ref: '#/components/schemas/WorldState'
+        started_at:
+          type: string
+          format: date-time
+
+    DiceResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [d4, d6, d8, d10, d12, d20, d100]
+        base_roll:
+          type: integer
+        modifier:
+          type: integer
+        total:
+          type: integer
+        dc:
+          type: integer
+          nullable: true
+        skill:
+          type: string
+          nullable: true
+        success:
+          type: boolean
+          nullable: true
+
+    SessionMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        author_id:
+          type: string
+          format: uuid
+          nullable: true
+        author_name:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [player, dm, system]
+        content:
+          type: string
+        dice_result:
+          $ref: '#/components/schemas/DiceResult'
+        created_at:
+          type: string
+          format: date-time
+
+    SessionWithMessages:
+      allOf:
+        - $ref: '#/components/schemas/GameSession'
+        - type: object
+          properties:
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/SessionMessage'
+
+    DiceRollRequest:
+      type: object
+      required: [result]
+      properties:
+        result:
+          $ref: '#/components/schemas/DiceResult'
+
+    # ============ ERROR SCHEMAS ============
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        code:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
