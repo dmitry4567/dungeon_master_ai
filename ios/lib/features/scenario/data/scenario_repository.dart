@@ -79,6 +79,13 @@ class ScenarioRepository {
     return scenario;
   }
 
+  /// Publish a draft scenario
+  Future<Scenario> publishScenario(String scenarioId) async {
+    final scenario = await _api.publishScenario(scenarioId);
+    await _cacheScenario(scenario);
+    return scenario;
+  }
+
   // Cache helpers
   Future<void> _cacheScenario(Scenario scenario) async {
     final cached = _getAllCachedScenarios();

@@ -60,4 +60,10 @@ class ScenarioApi {
         await _dio.post('/scenarios/$id/versions/$versionId/restore');
     return Scenario.fromJson(response.data as Map<String, dynamic>);
   }
+
+  /// Publish a draft scenario
+  Future<Scenario> publishScenario(String id) async {
+    final response = await _dio.post('/scenarios/$id/publish');
+    return Scenario.fromJson(response.data as Map<String, dynamic>);
+  }
 }

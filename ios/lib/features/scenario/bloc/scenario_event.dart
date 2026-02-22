@@ -32,6 +32,10 @@ class ScenarioEvent with _$ScenarioEvent {
     required String versionId,
   }) = RestoreVersionEvent;
 
+  /// Publish a draft scenario
+  const factory ScenarioEvent.publishScenario({required String scenarioId}) =
+      PublishScenarioEvent;
+
   /// Clear error state
   const factory ScenarioEvent.clearError() = ClearErrorEvent;
 }

@@ -15,6 +15,7 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     on<RefineScenarioEvent>(_onRefineScenario);
     on<LoadVersionHistoryEvent>(_onLoadVersionHistory);
     on<RestoreVersionEvent>(_onRestoreVersion);
+    on<PublishScenarioEvent>(_onPublishScenario);
     on<ClearErrorEvent>(_onClearError);
   }
 
@@ -109,6 +110,21 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     } catch (e) {
       emit(ScenarioState.error(
         message: 'Failed to restore version: ${e.toString()}',
+      ));
+    }
+  }
+
+  Future<void> _onPublishScenario(
+    PublishScenarioEvent event,
+    Emitter<ScenarioState> emit,
+  ) async {
+    emit(const ScenarioState.loading());
+    try {
+      final scenario = await _repository.publishScenario(event.scenarioId);
+      emit(ScenarioState.scenarioDetail(scenario: scenario));
+    } catch (e) {
+      emit(ScenarioState.error(
+        message: 'Failed to publish scenario: ${e.toString()}',
       ));
     }
   }

@@ -176,24 +176,24 @@
 
 ### Тесты для User Story 4
 
-- [ ] T085 [P] [US4] Bloc-тест LobbyBloc в ios/test/bloc/lobby_bloc_test.dart
+- [x] T085 [P] [US4] Bloc-тест LobbyBloc в ios/test/bloc/lobby_bloc_test.dart
 
 ### Реализация User Story 4
 
-- [ ] T086 [P] [US4] Создать freezed-модели Room, RoomPlayer, RoomSummary в ios/lib/features/lobby/models/room.dart
-- [ ] T087 [US4] Создать Retrofit API для rooms в ios/lib/features/lobby/data/lobby_api.dart
-- [ ] T088 [US4] Реализовать LobbyRepository в ios/lib/features/lobby/data/lobby_repository.dart
-- [ ] T089 [US4] Создать LobbyEvent в ios/lib/features/lobby/bloc/lobby_event.dart
-- [ ] T090 [US4] Создать LobbyState в ios/lib/features/lobby/bloc/lobby_state.dart
-- [ ] T091 [US4] Реализовать LobbyBloc в ios/lib/features/lobby/bloc/lobby_bloc.dart
-- [ ] T092 [US4] Создать LobbyPage (список комнат) в ios/lib/features/lobby/ui/lobby_page.dart
-- [ ] T093 [US4] Создать RoomCreatePage в ios/lib/features/lobby/ui/room_create_page.dart
-- [ ] T094 [US4] Создать WaitingRoomPage с countdown-анимацией (3-2-1) при старте в ios/lib/features/lobby/ui/waiting_room_page.dart
-- [ ] T095 [P] [US4] Создать виджет RoomCard в ios/lib/features/lobby/ui/widgets/room_card.dart
-- [ ] T096 [P] [US4] Создать виджет PlayerAvatar в ios/lib/features/lobby/ui/widgets/player_avatar.dart
-- [ ] T097 [P] [US4] Создать виджет JoinRequestDialog в ios/lib/features/lobby/ui/widgets/join_request_dialog.dart
-- [ ] T098 [US4] Добавить маршруты lobby в app_router.dart
-- [ ] T099 [US4] Запустить build_runner для генерации lobby-моделей
+- [x] T086 [P] [US4] Создать freezed-модели Room, RoomPlayer, RoomSummary в ios/lib/features/lobby/models/room.dart
+- [x] T087 [US4] Создать Retrofit API для rooms в ios/lib/features/lobby/data/lobby_api.dart
+- [x] T088 [US4] Реализовать LobbyRepository в ios/lib/features/lobby/data/lobby_repository.dart
+- [x] T089 [US4] Создать LobbyEvent в ios/lib/features/lobby/bloc/lobby_event.dart
+- [x] T090 [US4] Создать LobbyState в ios/lib/features/lobby/bloc/lobby_state.dart
+- [x] T091 [US4] Реализовать LobbyBloc в ios/lib/features/lobby/bloc/lobby_bloc.dart
+- [x] T092 [US4] Создать LobbyPage (список комнат) в ios/lib/features/lobby/ui/lobby_page.dart
+- [x] T093 [US4] Создать RoomCreatePage в ios/lib/features/lobby/ui/room_create_page.dart
+- [x] T094 [US4] Создать WaitingRoomPage с countdown-анимацией (3-2-1) при старте в ios/lib/features/lobby/ui/waiting_room_page.dart
+- [x] T095 [P] [US4] Создать виджет RoomCard в ios/lib/features/lobby/ui/widgets/room_card.dart
+- [x] T096 [P] [US4] Создать виджет PlayerAvatar в ios/lib/features/lobby/ui/widgets/player_avatar.dart
+- [x] T097 [P] [US4] Создать виджет JoinRequestDialog в ios/lib/features/lobby/ui/widgets/join_request_dialog.dart
+- [x] T098 [US4] Добавить маршруты lobby в app_router.dart
+- [x] T099 [US4] Запустить build_runner для генерации lobby-моделей
 
 **Checkpoint**: Лобби работает, можно создавать/присоединяться к комнатам
 

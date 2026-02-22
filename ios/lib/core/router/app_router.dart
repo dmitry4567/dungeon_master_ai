@@ -11,6 +11,11 @@ import '../../features/character/bloc/character_event.dart';
 import '../../features/character/ui/character_create_page.dart';
 import '../../features/character/ui/character_detail_page.dart';
 import '../../features/character/ui/character_list_page.dart';
+import '../../features/lobby/bloc/lobby_bloc.dart';
+import '../../features/lobby/bloc/lobby_event.dart';
+import '../../features/lobby/ui/lobby_page.dart';
+import '../../features/lobby/ui/room_create_page.dart';
+import '../../features/lobby/ui/waiting_room_page.dart';
 import '../../features/scenario/bloc/scenario_bloc.dart';
 import '../../features/scenario/bloc/scenario_event.dart';
 import '../../features/scenario/ui/scenario_builder_page.dart';
@@ -58,20 +63,33 @@ class AppRouter {
           GoRoute(
             path: Routes.lobby,
             name: 'lobby',
-            builder: (context, state) => const _PlaceholderPage(title: 'Lobby'),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<LobbyBloc>()
+                ..add(const LobbyEvent.loadRooms()),
+              child: const LobbyPage(),
+            ),
             routes: [
               GoRoute(
                 path: 'create',
                 name: 'roomCreate',
-                builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Create Room'),
+                builder: (context, state) => MultiBlocProvider(
+                  providers: [
+                    BlocProvider(create: (_) => getIt<LobbyBloc>()),
+                    BlocProvider(create: (_) => getIt<ScenarioBloc>()),
+                  ],
+                  child: const RoomCreatePage(),
+                ),
               ),
               GoRoute(
                 path: 'room/:roomId',
                 name: 'waitingRoom',
                 builder: (context, state) {
                   final roomId = state.pathParameters['roomId']!;
-                  return _PlaceholderPage(title: 'Room $roomId');
+                  return BlocProvider(
+                    create: (_) => getIt<LobbyBloc>()
+                      ..add(LobbyEvent.loadRoom(roomId: roomId)),
+                    child: WaitingRoomPage(roomId: roomId),
+                  );
                 },
               ),
             ],

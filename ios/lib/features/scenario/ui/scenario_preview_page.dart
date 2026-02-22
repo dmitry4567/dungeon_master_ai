@@ -56,9 +56,33 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
     context.push('/scenarios/${widget.scenarioId}/refine');
   }
 
+  void _publishScenario() {
+    context.read<ScenarioBloc>().add(
+          ScenarioEvent.publishScenario(scenarioId: widget.scenarioId),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BlocListener<ScenarioBloc, ScenarioState>(
+      listener: (context, state) {
+        if (state is ScenarioDetail && state.scenario.status == 'published') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Сценарий опубликован'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (state is ScenarioError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Превью сценария'),
         actions: [
@@ -66,8 +90,20 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
             builder: (context, state) {
               if (state is! ScenarioDetail) return const SizedBox.shrink();
 
+              final isDraft = state.scenario.status == 'draft';
               return PopupMenuButton(
                 itemBuilder: (context) => [
+                  if (isDraft)
+                    const PopupMenuItem(
+                      value: 'publish',
+                      child: Row(
+                        children: [
+                          Icon(Icons.publish),
+                          SizedBox(width: 8),
+                          Text('Опубликовать'),
+                        ],
+                      ),
+                    ),
                   const PopupMenuItem(
                     value: 'refine',
                     child: Row(
@@ -90,7 +126,9 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
                   ),
                 ],
                 onSelected: (value) {
-                  if (value == 'refine') {
+                  if (value == 'publish') {
+                    _publishScenario();
+                  } else if (value == 'refine') {
                     _refineScenario();
                   } else if (value == 'history') {
                     _showVersionHistory(state.scenario);
@@ -227,6 +265,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
             ),
           );
         },
+      ),
       ),
     );
   }
