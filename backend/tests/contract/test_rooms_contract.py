@@ -24,7 +24,7 @@ async def test_scenario_version(
         id=uuid.uuid4(),
         creator_id=test_user.id,
         title="Test Adventure",
-        status=ScenarioStatus.DRAFT,
+        status=ScenarioStatus.PUBLISHED,
     )
     test_session.add(scenario)
     await test_session.flush()

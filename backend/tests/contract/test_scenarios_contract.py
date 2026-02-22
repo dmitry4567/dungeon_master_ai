@@ -293,3 +293,24 @@ class TestRestoreScenarioVersion:
             f"/api/v1/scenarios/{scenario_id}/versions/{version_id}/restore"
         )
         assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestPublishScenario:
+    """Tests for POST /scenarios/{scenarioId}/publish endpoint."""
+
+    async def test_publish_scenario_not_found(
+        self, client: AsyncClient, auth_headers: dict[str, str]
+    ) -> None:
+        """Test publishing non-existent scenario returns 404."""
+        scenario_id = str(uuid.uuid4())
+        response = await client.post(
+            f"/api/v1/scenarios/{scenario_id}/publish", headers=auth_headers
+        )
+        assert response.status_code == 404
+
+    async def test_publish_scenario_unauthorized(self, client: AsyncClient) -> None:
+        """Test publishing scenario without auth returns 401."""
+        scenario_id = str(uuid.uuid4())
+        response = await client.post(f"/api/v1/scenarios/{scenario_id}/publish")
+        assert response.status_code == 401

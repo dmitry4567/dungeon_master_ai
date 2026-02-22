@@ -3,13 +3,13 @@ import logging
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.models.character import Character
 from src.models.room import Room, RoomPlayer, RoomPlayerStatus, RoomStatus
-from src.models.scenario import ScenarioVersion
+from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
 
 logger = logging.getLogger(__name__)
 
@@ -41,13 +41,20 @@ class LobbyService:
         Raises:
             ValueError: If scenario version not found
         """
-        # Verify scenario version exists
+        # Verify scenario version exists and scenario is published
         result = await self.db.execute(
             select(ScenarioVersion).where(ScenarioVersion.id == scenario_version_id)
         )
         version = result.scalar_one_or_none()
         if not version:
             raise ValueError("Scenario version not found")
+
+        scenario_result = await self.db.execute(
+            select(Scenario).where(Scenario.id == version.scenario_id)
+        )
+        scenario = scenario_result.scalar_one_or_none()
+        if not scenario or scenario.status != ScenarioStatus.PUBLISHED:
+            raise ValueError("Scenario must be published before creating a room")
 
         room = Room(
             id=uuid.uuid4(),

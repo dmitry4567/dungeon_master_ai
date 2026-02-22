@@ -300,6 +300,40 @@ class ScenarioService:
 
         return scenario
 
+    async def publish_scenario(
+        self, scenario_id: uuid.UUID, user_id: uuid.UUID
+    ) -> Scenario:
+        """Publish a draft scenario (draft → published).
+
+        Raises:
+            ValueError: If not found, not authorized, or not in draft status
+        """
+        result = await self.db.execute(
+            select(Scenario)
+            .where(Scenario.id == scenario_id)
+            .options(selectinload(Scenario.current_version))
+        )
+        scenario = result.scalar_one_or_none()
+
+        if not scenario:
+            raise ValueError("Scenario not found")
+        if scenario.creator_id != user_id:
+            raise ValueError("Not authorized to modify this scenario")
+        if scenario.status != ScenarioStatus.DRAFT:
+            raise ValueError("Only draft scenarios can be published")
+        if not scenario.current_version_id:
+            raise ValueError("Scenario has no version to publish")
+
+        scenario.status = ScenarioStatus.PUBLISHED
+        await self.db.commit()
+        await self.db.refresh(scenario, ["current_version"])
+
+        logger.info(
+            f"Published scenario {scenario.id}",
+            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+        )
+        return scenario
+
     def _validate_scenario_content(self, content: dict[str, Any]) -> list[str] | None:
         """
         Validate scenario content structure and logic.

@@ -239,3 +239,51 @@ async def restore_scenario_version(
         )
 
     return ScenarioWithVersionResponse.model_validate(scenario)
+
+
+@router.post("/{scenario_id}/publish", response_model=ScenarioWithVersionResponse)
+async def publish_scenario(
+    scenario_id: UUID,
+    current_user: CurrentUser,
+    db: DbSession,
+) -> ScenarioWithVersionResponse:
+    """Publish a draft scenario, making it available for room creation."""
+    service = ScenarioService(db)
+
+    try:
+        scenario = await service.publish_scenario(scenario_id, current_user.id)
+    except ValueError as e:
+        error_msg = str(e).lower()
+        if "not found" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": "not_found",
+                    "message": "Scenario not found",
+                },
+            )
+        elif "not authorized" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": "forbidden",
+                    "message": "Not authorized to publish this scenario",
+                },
+            )
+        elif "only draft" in error_msg:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "error": "invalid_status",
+                    "message": "Only draft scenarios can be published",
+                },
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "bad_request",
+                "message": str(e),
+            },
+        )
+
+    return ScenarioWithVersionResponse.model_validate(scenario)
