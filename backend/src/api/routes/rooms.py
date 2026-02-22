@@ -41,8 +41,8 @@ def _build_room_response(room) -> RoomResponse:
         # Build a minimal scenario response from the version's parent
         scenario_data = ScenarioResponse(
             id=room.scenario_version.scenario_id,
-            title=room.scenario_version.content.get("title", "Untitled")
-            if isinstance(room.scenario_version.content, dict)
+            title=room.scenario_version.scenario.title
+            if room.scenario_version.scenario
             else "Untitled",
             status="published",
             current_version_id=room.scenario_version.id,
@@ -67,8 +67,8 @@ def _build_room_summary(room) -> RoomSummaryResponse:
         if (p.status.value if hasattr(p.status, "value") else p.status) != "declined"
     ]
     scenario_title = "Unknown"
-    if room.scenario_version and isinstance(room.scenario_version.content, dict):
-        scenario_title = room.scenario_version.content.get("title", "Untitled")
+    if room.scenario_version and room.scenario_version.scenario:
+        scenario_title = room.scenario_version.scenario.title
 
     return RoomSummaryResponse(
         id=room.id,

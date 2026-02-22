@@ -1,6 +1,7 @@
 """AI service for OpenRouter API integration."""
 import json
 import logging
+import re
 from typing import Any
 
 import httpx
@@ -8,6 +9,17 @@ import httpx
 from src.core.config import get_settings
 
 logger = logging.getLogger(__name__)
+
+
+def _extract_json(text: str) -> str:
+    """Extract JSON from text, handling markdown code blocks."""
+    # Try to extract from markdown code block
+    pattern = r"```(?:json)?\s*([\s\S]*?)```"
+    match = re.search(pattern, text)
+    if match:
+        return match.group(1).strip()
+    # Return as-is if no code block found
+    return text.strip()
 
 
 class AIServiceOpenRouter:
@@ -19,7 +31,7 @@ class AIServiceOpenRouter:
         self.api_key = settings.OPENROUTER_API_KEY
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
         self.model = "openrouter/free"
-        self.max_tokens = 4096
+        self.max_tokens = 8192
 
     async def _call_model(self, system_prompt: str, user_prompt: str) -> dict:
         """Internal helper to call OpenRouter."""
@@ -38,12 +50,18 @@ class AIServiceOpenRouter:
             "temperature": 0.7,
         }
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(self.base_url, headers=headers, json=payload)
-            print(response.status_code)
-            print(response.text)
             response.raise_for_status()
-            return response.json()
+            result = response.json()
+
+            # Check if response was truncated
+            finish_reason = result.get("choices", [{}])[0].get("finish_reason")
+            if finish_reason == "length":
+                logger.warning("AI response was truncated due to max_tokens limit")
+                raise ValueError("AI response was truncated. Try a simpler prompt.")
+
+            return result
 
     async def generate_scenario(
         self, user_description: str
@@ -54,6 +72,8 @@ class AIServiceOpenRouter:
 
         system_prompt = """You are an expert D&D 5e Dungeon Master and scenario designer.
 Generate a detailed, structured scenario based on the user's description.
+
+IMPORTANT: Generate all text content (title, descriptions, dialogue, etc.) in the SAME LANGUAGE as the user's input prompt.
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -110,7 +130,8 @@ Ensure valid JSON only.
             result = await self._call_model(system_prompt, user_prompt)
 
             response_text = result["choices"][0]["message"]["content"]
-            response_data = json.loads(response_text)
+            json_text = _extract_json(response_text)
+            response_data = json.loads(json_text)
 
             title = response_data.get("title", "Untitled Scenario")
             content = response_data.get("content", {})
@@ -145,6 +166,8 @@ Ensure valid JSON only.
         system_prompt = """You are an expert D&D 5e Dungeon Master and scenario designer.
 Refine the existing scenario based on user feedback while maintaining the same JSON structure.
 
+IMPORTANT: Generate all text content in the SAME LANGUAGE as the user's refinement prompt.
+
 Return ONLY a valid JSON object:
 {
   "title": "Updated Title",
@@ -167,7 +190,8 @@ Generate the updated scenario."""
             result = await self._call_model(system_prompt, user_prompt)
 
             response_text = result["choices"][0]["message"]["content"]
-            response_data = json.loads(response_text)
+            json_text = _extract_json(response_text)
+            response_data = json.loads(json_text)
 
             title = response_data.get("title", current_title)
             content = response_data.get("content", current_content)

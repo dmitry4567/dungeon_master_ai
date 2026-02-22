@@ -93,7 +93,7 @@ class LobbyService:
         query = select(Room).options(
             selectinload(Room.players).selectinload(RoomPlayer.user),
             selectinload(Room.host),
-            selectinload(Room.scenario_version),
+            selectinload(Room.scenario_version).selectinload(ScenarioVersion.scenario),
         )
 
         if status:
@@ -388,7 +388,7 @@ class LobbyService:
                 selectinload(Room.players).selectinload(RoomPlayer.user),
                 selectinload(Room.players).selectinload(RoomPlayer.character),
                 selectinload(Room.host),
-                selectinload(Room.scenario_version),
+                selectinload(Room.scenario_version).selectinload(ScenarioVersion.scenario),
             )
         )
         return result.scalar_one_or_none()
