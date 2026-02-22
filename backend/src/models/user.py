@@ -12,6 +12,7 @@ from src.core.database import Base
 
 if TYPE_CHECKING:
     from src.models.character import Character
+    from src.models.scenario import Scenario
 
 
 class User(Base):
@@ -63,6 +64,10 @@ class User(Base):
     # Relationships
     characters: Mapped[list["Character"]] = relationship(
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    scenarios: Mapped[list["Scenario"]] = relationship(
+        back_populates="creator",
         cascade="all, delete-orphan",
     )
 

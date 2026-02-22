@@ -33,7 +33,10 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
     # Anthropic AI
-    anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
+    # ANTHROPIC_API_KEY: str = Field(default="", alias="ANTHROPIC_API_KEY")
+    
+    # OpenRouter
+    OPENROUTER_API_KEY: str = "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"
 
     # JWT Authentication
     jwt_secret_key: str = Field(default="change-me-in-production", alias="JWT_SECRET_KEY")

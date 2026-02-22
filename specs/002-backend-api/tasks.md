@@ -120,22 +120,22 @@
 
 ### Тесты для User Story 2
 
-- [ ] T044 [P] [US2] Контрактный тест POST /scenarios в backend/tests/contract/test_scenarios_contract.py
-- [ ] T045 [P] [US2] Контрактный тест POST /scenarios/{id}/refine в backend/tests/contract/test_scenarios_contract.py
-- [ ] T046 [P] [US2] Интеграционный тест генерации сценария в backend/tests/integration/test_scenario_generation.py
+- [x] T044 [P] [US2] Контрактный тест POST /scenarios в backend/tests/contract/test_scenarios_contract.py
+- [x] T045 [P] [US2] Контрактный тест POST /scenarios/{id}/refine в backend/tests/contract/test_scenarios_contract.py
+- [x] T046 [P] [US2] Интеграционный тест генерации сценария в backend/tests/integration/test_scenario_generation.py
 
 ### Реализация User Story 2
 
-- [ ] T047 [P] [US2] Создать модель Scenario в backend/src/models/scenario.py
-- [ ] T048 [P] [US2] Создать модель ScenarioVersion в backend/src/models/scenario.py
-- [ ] T049 [US2] Добавить миграцию для таблиц scenarios, scenario_versions в backend/alembic/versions/003_scenarios.py
-- [ ] T050 [P] [US2] Создать Pydantic-схемы сценария в backend/src/schemas/scenario.py
-- [ ] T051 [US2] Реализовать базовый AI-сервис (обёртка над Anthropic SDK) в backend/src/services/ai_service.py
-- [ ] T052 [US2] Реализовать генерацию сценария через Claude в backend/src/services/scenario_service.py
-- [ ] T053 [US2] Реализовать валидацию логики сценария (достижимость актов, ссылки на NPC) в backend/src/services/scenario_service.py
-- [ ] T054 [US2] Реализовать версионирование и восстановление в backend/src/services/scenario_service.py
-- [ ] T055 [US2] Реализовать роуты /scenarios/* в backend/src/api/routes/scenarios.py
-- [ ] T056 [US2] Подключить роуты scenarios к main.py
+- [x] T047 [P] [US2] Создать модель Scenario в backend/src/models/scenario.py
+- [x] T048 [P] [US2] Создать модель ScenarioVersion в backend/src/models/scenario.py
+- [x] T049 [US2] Добавить миграцию для таблиц scenarios, scenario_versions в backend/alembic/versions/003_scenarios.py
+- [x] T050 [P] [US2] Создать Pydantic-схемы сценария в backend/src/schemas/scenario.py
+- [x] T051 [US2] Реализовать базовый AI-сервис (обёртка над Anthropic SDK) в backend/src/services/ai_service.py
+- [x] T052 [US2] Реализовать генерацию сценария через Claude в backend/src/services/scenario_service.py
+- [x] T053 [US2] Реализовать валидацию логики сценария (достижимость актов, ссылки на NPC) в backend/src/services/scenario_service.py
+- [x] T054 [US2] Реализовать версионирование и восстановление в backend/src/services/scenario_service.py
+- [x] T055 [US2] Реализовать роуты /scenarios/* в backend/src/api/routes/scenarios.py
+- [x] T056 [US2] Подключить роуты scenarios к main.py
 
 **Checkpoint**: Генерация и управление сценариями работает независимо
 
