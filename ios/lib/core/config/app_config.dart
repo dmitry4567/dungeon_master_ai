@@ -63,17 +63,18 @@ class AppConfig {
 
   /// Текущая конфигурация приложения
   static AppConfig get current {
-    if (kReleaseMode) {
-      return production;
-    }
+    return development;
+    // if (kReleaseMode) {
+    //   return production;
+    // }
 
-    const envName = String.fromEnvironment('ENV', defaultValue: 'development');
+    // const envName = String.fromEnvironment('ENV', defaultValue: 'development');
 
-    return switch (envName) {
-      'production' => production,
-      'staging' => staging,
-      _ => development,
-    };
+    // return switch (envName) {
+    //   'production' => production,
+    //   'staging' => staging,
+    //   _ => development,
+    // };
   }
 }
 

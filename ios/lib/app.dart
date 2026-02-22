@@ -14,11 +14,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     final appRouter = getIt<AppRouter>();
 
-    return MultiBlocProvider(
-      providers: [
-        // Здесь можно добавить глобальные BlocProvider, если нужно
-      ],
-      child: MaterialApp.router(
+    return  MaterialApp.router(
         title: 'AI Dungeon Master',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
@@ -33,7 +29,7 @@ class App extends StatelessWidget {
             child: child ?? const SizedBox.shrink(),
           ),
         ),
-      ),
+      
     );
   }
 }

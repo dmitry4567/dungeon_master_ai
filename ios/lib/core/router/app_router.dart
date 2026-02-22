@@ -1,3 +1,4 @@
+import 'package:ai_dungeon_master/features/auth/bloc/auth_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,11 @@ import 'package:injectable/injectable.dart';
 
 import '../../features/auth/bloc/auth_bloc.dart';
 import '../../features/auth/ui/login_page.dart';
+import '../../features/character/bloc/character_bloc.dart';
+import '../../features/character/bloc/character_event.dart';
+import '../../features/character/ui/character_create_page.dart';
+import '../../features/character/ui/character_detail_page.dart';
+import '../../features/character/ui/character_list_page.dart';
 import '../di/injection.dart';
 import '../storage/secure_storage.dart';
 import 'routes.dart';
@@ -94,21 +100,30 @@ class AppRouter {
           GoRoute(
             path: Routes.characters,
             name: 'characters',
-            builder: (context, state) =>
-                const _PlaceholderPage(title: 'Characters'),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<CharacterBloc>()
+                ..add(const CharacterEvent.loadCharacters()),
+              child: const CharacterListPage(),
+            ),
             routes: [
               GoRoute(
                 path: 'create',
                 name: 'characterCreate',
-                builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Create Character'),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => getIt<CharacterBloc>()
+                    ..add(const CharacterEvent.startCreation()),
+                  child: const CharacterCreatePage(),
+                ),
               ),
               GoRoute(
                 path: ':characterId',
                 name: 'characterDetail',
                 builder: (context, state) {
                   final characterId = state.pathParameters['characterId']!;
-                  return _PlaceholderPage(title: 'Character $characterId');
+                  return BlocProvider(
+                    create: (_) => getIt<CharacterBloc>(),
+                    child: CharacterDetailPage(characterId: characterId),
+                  );
                 },
               ),
             ],
@@ -241,9 +256,14 @@ class _PlaceholderPage extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(title)),
         body: Center(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.headlineMedium,
+          child: GestureDetector(
+            onTap: () {
+              getIt<AuthBloc>().add(const AuthEvent.logout());
+            },
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
           ),
         ),
       );

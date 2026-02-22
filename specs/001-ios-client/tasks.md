@@ -103,32 +103,32 @@
 
 ### Тесты для User Story 3
 
-- [ ] T044 [P] [US3] Unit-тест валидации характеристик в ios/test/unit/character/ability_scores_test.dart
-- [ ] T045 [P] [US3] Bloc-тест CharacterBloc в ios/test/bloc/character_bloc_test.dart
-- [ ] T046 [P] [US3] Widget-тест CharacterCard в ios/test/widget/character_card_test.dart
+- [x] T044 [P] [US3] Unit-тест валидации характеристик в ios/test/unit/character/ability_scores_test.dart
+- [x] T045 [P] [US3] Bloc-тест CharacterBloc в ios/test/bloc/character_bloc_test.dart
+- [x] T046 [P] [US3] Widget-тест CharacterCard в ios/test/widget/character_card_test.dart
 
 ### Реализация User Story 3
 
-- [ ] T047 [P] [US3] Создать freezed-модель AbilityScores с расчётом модификаторов в ios/lib/features/character/models/ability_scores.dart
-- [ ] T048 [P] [US3] Создать freezed-модель Character в ios/lib/features/character/models/character.dart
-- [ ] T049 [P] [US3] Создать freezed-модели DndClass, DndRace в ios/lib/features/character/models/dnd_data.dart
-- [ ] T050 [P] [US3] Создать статические данные классов/рас D&D 5e в ios/lib/features/character/data/dnd_reference_data.dart
-- [ ] T051 [US3] Создать Retrofit API для characters в ios/lib/features/character/data/character_api.dart
-- [ ] T052 [US3] Реализовать CharacterRepository в ios/lib/features/character/data/character_repository.dart
-- [ ] T053 [US3] Создать Isar-модель CachedCharacter в ios/lib/features/character/data/cached_character.dart
-- [ ] T054 [US3] Реализовать CharacterValidator в ios/lib/features/character/data/character_validator.dart
-- [ ] T055 [US3] Создать CharacterEvent в ios/lib/features/character/bloc/character_event.dart
-- [ ] T056 [US3] Создать CharacterState в ios/lib/features/character/bloc/character_state.dart
-- [ ] T057 [US3] Реализовать CharacterBloc в ios/lib/features/character/bloc/character_bloc.dart
-- [ ] T058 [US3] Создать CharacterListPage в ios/lib/features/character/ui/character_list_page.dart
-- [ ] T059 [US3] Создать CharacterCreatePage (мастер) в ios/lib/features/character/ui/character_create_page.dart
-- [ ] T060 [US3] Создать CharacterDetailPage в ios/lib/features/character/ui/character_detail_page.dart
-- [ ] T061 [P] [US3] Создать виджет ClassSelector в ios/lib/features/character/ui/widgets/class_selector.dart
-- [ ] T062 [P] [US3] Создать виджет RaceSelector в ios/lib/features/character/ui/widgets/race_selector.dart
-- [ ] T063 [P] [US3] Создать виджет AbilityScoresEditor в ios/lib/features/character/ui/widgets/ability_scores_editor.dart
-- [ ] T064 [P] [US3] Создать виджет CharacterCard в ios/lib/features/character/ui/widgets/character_card.dart
-- [ ] T065 [US3] Добавить маршруты character в app_router.dart
-- [ ] T066 [US3] Запустить build_runner для генерации character-моделей
+- [x] T047 [P] [US3] Создать freezed-модель AbilityScores с расчётом модификаторов в ios/lib/features/character/models/ability_scores.dart
+- [x] T048 [P] [US3] Создать freezed-модель Character в ios/lib/features/character/models/character.dart
+- [x] T049 [P] [US3] Создать freezed-модели DndClass, DndRace в ios/lib/features/character/models/dnd_data.dart
+- [x] T050 [P] [US3] Создать статические данные классов/рас D&D 5e в ios/lib/features/character/data/dnd_reference_data.dart
+- [x] T051 [US3] Создать Retrofit API для characters в ios/lib/features/character/data/character_api.dart
+- [x] T052 [US3] Реализовать CharacterRepository в ios/lib/features/character/data/character_repository.dart
+- [x] T053 [US3] Создать Isar-модель CachedCharacter в ios/lib/features/character/data/cached_character.dart
+- [x] T054 [US3] Реализовать CharacterValidator в ios/lib/features/character/data/character_validator.dart
+- [x] T055 [US3] Создать CharacterEvent в ios/lib/features/character/bloc/character_event.dart
+- [x] T056 [US3] Создать CharacterState в ios/lib/features/character/bloc/character_state.dart
+- [x] T057 [US3] Реализовать CharacterBloc в ios/lib/features/character/bloc/character_bloc.dart
+- [x] T058 [US3] Создать CharacterListPage в ios/lib/features/character/ui/character_list_page.dart
+- [x] T059 [US3] Создать CharacterCreatePage (мастер) в ios/lib/features/character/ui/character_create_page.dart
+- [x] T060 [US3] Создать CharacterDetailPage в ios/lib/features/character/ui/character_detail_page.dart
+- [x] T061 [P] [US3] Создать виджет ClassSelector в ios/lib/features/character/ui/widgets/class_selector.dart
+- [x] T062 [P] [US3] Создать виджет RaceSelector в ios/lib/features/character/ui/widgets/race_selector.dart
+- [x] T063 [P] [US3] Создать виджет AbilityScoresEditor в ios/lib/features/character/ui/widgets/ability_scores_editor.dart
+- [x] T064 [P] [US3] Создать виджет CharacterCard в ios/lib/features/character/ui/widgets/character_card.dart
+- [x] T065 [US3] Добавить маршруты character в app_router.dart
+- [x] T066 [US3] Запустить build_runner для генерации character-моделей
 
 **Checkpoint**: Создание персонажей работает с валидацией D&D 5e
 
