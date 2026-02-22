@@ -22,13 +22,27 @@ router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 def _build_room_response(room) -> RoomResponse:
     """Build a RoomResponse from a Room model with loaded relationships."""
+    from src.schemas.character import AbilityScores, CharacterResponse
+
     players = []
     for p in room.players:
+        character_data = None
+        if p.character:
+            character_data = CharacterResponse(
+                id=p.character.id,
+                name=p.character.name,
+                character_class=p.character.character_class,
+                race=p.character.race,
+                level=p.character.level,
+                ability_scores=AbilityScores(**p.character.ability_scores),
+                backstory=p.character.backstory,
+                created_at=p.character.created_at,
+            )
         player_resp = RoomPlayerResponse(
             id=p.id,
             user_id=p.user_id,
             name=p.user.name if p.user else "Unknown",
-            character=None,
+            character=character_data,
             status=p.status.value if hasattr(p.status, "value") else p.status,
             is_host=p.is_host,
         )

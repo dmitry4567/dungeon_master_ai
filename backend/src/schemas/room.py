@@ -21,7 +21,7 @@ class CreateRoomRequest(BaseModel):
 class ReadyRequest(BaseModel):
     """Schema for toggling ready status."""
 
-    character_id: UUID = Field(..., description="Character to use in this game")
+    character_id: UUID | None = Field(None, description="Character to use (required when ready=True)")
     ready: bool = Field(..., description="Ready status")
 
 

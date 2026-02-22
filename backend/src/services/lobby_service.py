@@ -252,7 +252,7 @@ class LobbyService:
         self,
         room_id: uuid.UUID,
         user_id: uuid.UUID,
-        character_id: uuid.UUID,
+        character_id: uuid.UUID | None,
         ready: bool,
     ) -> RoomPlayer:
         """Toggle player ready status.
@@ -287,6 +287,8 @@ class LobbyService:
             raise ValueError("Must be approved to toggle ready status")
 
         if ready:
+            if not character_id:
+                raise ValueError("Character is required to set ready status")
             # Verify character exists and belongs to user
             char_result = await self.db.execute(
                 select(Character).where(
