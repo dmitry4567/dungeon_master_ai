@@ -142,27 +142,27 @@
 
 ### Тесты для User Story 2
 
-- [ ] T067 [P] [US2] Bloc-тест ScenarioBloc в ios/test/bloc/scenario_bloc_test.dart
+- [x] T067 [P] [US2] Bloc-тест ScenarioBloc в ios/test/bloc/scenario_bloc_test.dart
 
 ### Реализация User Story 2
 
-- [ ] T068 [P] [US2] Создать freezed-модели Act, Scene, Npc, Location в ios/lib/features/scenario/models/scenario_content.dart
-- [ ] T069 [P] [US2] Создать freezed-модели Scenario, ScenarioVersion в ios/lib/features/scenario/models/scenario.dart
-- [ ] T070 [US2] Создать Retrofit API для scenarios в ios/lib/features/scenario/data/scenario_api.dart
-- [ ] T071 [US2] Реализовать ScenarioRepository в ios/lib/features/scenario/data/scenario_repository.dart
-- [ ] T072 [US2] Создать Isar-модель CachedScenario в ios/lib/features/scenario/data/cached_scenario.dart
-- [ ] T073 [US2] Создать ScenarioEvent в ios/lib/features/scenario/bloc/scenario_event.dart
-- [ ] T074 [US2] Создать ScenarioState в ios/lib/features/scenario/bloc/scenario_state.dart
-- [ ] T075 [US2] Реализовать ScenarioBloc в ios/lib/features/scenario/bloc/scenario_bloc.dart
-- [ ] T076 [US2] Создать ScenarioListPage в ios/lib/features/scenario/ui/scenario_list_page.dart
-- [ ] T077 [US2] Создать ScenarioBuilderPage (ввод описания) в ios/lib/features/scenario/ui/scenario_builder_page.dart
-- [ ] T078 [US2] Создать ScenarioPreviewPage (разворачиваемые секции) в ios/lib/features/scenario/ui/scenario_preview_page.dart
-- [ ] T079 [P] [US2] Создать виджет ScenarioCard в ios/lib/features/scenario/ui/widgets/scenario_card.dart
-- [ ] T080 [P] [US2] Создать виджет ActExpansionTile в ios/lib/features/scenario/ui/widgets/act_expansion_tile.dart
-- [ ] T081 [P] [US2] Создать виджет NpcCard в ios/lib/features/scenario/ui/widgets/npc_card.dart
-- [ ] T082 [P] [US2] Создать виджет VersionHistorySheet в ios/lib/features/scenario/ui/widgets/version_history_sheet.dart
-- [ ] T083 [US2] Добавить маршруты scenario в app_router.dart
-- [ ] T084 [US2] Запустить build_runner для генерации scenario-моделей
+- [x] T068 [P] [US2] Создать freezed-модели Act, Scene, Npc, Location в ios/lib/features/scenario/models/scenario_content.dart
+- [x] T069 [P] [US2] Создать freezed-модели Scenario, ScenarioVersion в ios/lib/features/scenario/models/scenario.dart
+- [x] T070 [US2] Создать Retrofit API для scenarios в ios/lib/features/scenario/data/scenario_api.dart
+- [x] T071 [US2] Реализовать ScenarioRepository в ios/lib/features/scenario/data/scenario_repository.dart
+- [x] T072 [US2] Создать Isar-модель CachedScenario в ios/lib/features/scenario/data/cached_scenario.dart
+- [x] T073 [US2] Создать ScenarioEvent в ios/lib/features/scenario/bloc/scenario_event.dart
+- [x] T074 [US2] Создать ScenarioState в ios/lib/features/scenario/bloc/scenario_state.dart
+- [x] T075 [US2] Реализовать ScenarioBloc в ios/lib/features/scenario/bloc/scenario_bloc.dart
+- [x] T076 [US2] Создать ScenarioListPage в ios/lib/features/scenario/ui/scenario_list_page.dart
+- [x] T077 [US2] Создать ScenarioBuilderPage (ввод описания) в ios/lib/features/scenario/ui/scenario_builder_page.dart
+- [x] T078 [US2] Создать ScenarioPreviewPage (разворачиваемые секции) в ios/lib/features/scenario/ui/scenario_preview_page.dart
+- [x] T079 [P] [US2] Создать виджет ScenarioCard в ios/lib/features/scenario/ui/widgets/scenario_card.dart
+- [x] T080 [P] [US2] Создать виджет ActExpansionTile в ios/lib/features/scenario/ui/widgets/act_expansion_tile.dart
+- [x] T081 [P] [US2] Создать виджет NpcCard в ios/lib/features/scenario/ui/widgets/npc_card.dart
+- [x] T082 [P] [US2] Создать виджет VersionHistorySheet в ios/lib/features/scenario/ui/widgets/version_history_sheet.dart
+- [x] T083 [US2] Добавить маршруты scenario в app_router.dart
+- [x] T084 [US2] Запустить build_runner для генерации scenario-моделей
 
 **Checkpoint**: Генерация и управление сценариями работает
 

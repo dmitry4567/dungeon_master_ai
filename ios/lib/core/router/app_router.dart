@@ -11,6 +11,11 @@ import '../../features/character/bloc/character_event.dart';
 import '../../features/character/ui/character_create_page.dart';
 import '../../features/character/ui/character_detail_page.dart';
 import '../../features/character/ui/character_list_page.dart';
+import '../../features/scenario/bloc/scenario_bloc.dart';
+import '../../features/scenario/bloc/scenario_event.dart';
+import '../../features/scenario/ui/scenario_builder_page.dart';
+import '../../features/scenario/ui/scenario_list_page.dart';
+import '../../features/scenario/ui/scenario_preview_page.dart';
 import '../di/injection.dart';
 import '../storage/secure_storage.dart';
 import 'routes.dart';
@@ -76,22 +81,44 @@ class AppRouter {
           GoRoute(
             path: Routes.scenarios,
             name: 'scenarios',
-            builder: (context, state) =>
-                const _PlaceholderPage(title: 'Scenarios'),
+            builder: (context, state) => BlocProvider(
+              create: (_) => getIt<ScenarioBloc>()
+                ..add(const ScenarioEvent.loadScenarios()),
+              child: const ScenarioListPage(),
+            ),
             routes: [
               GoRoute(
                 path: 'builder',
                 name: 'scenarioBuilder',
-                builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Scenario Builder'),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => getIt<ScenarioBloc>(),
+                  child: const ScenarioBuilderPage(),
+                ),
               ),
               GoRoute(
                 path: ':scenarioId',
                 name: 'scenarioPreview',
                 builder: (context, state) {
                   final scenarioId = state.pathParameters['scenarioId']!;
-                  return _PlaceholderPage(title: 'Scenario $scenarioId');
+                  return BlocProvider(
+                    create: (_) => getIt<ScenarioBloc>()
+                      ..add(ScenarioEvent.loadScenario(id: scenarioId)),
+                    child: ScenarioPreviewPage(scenarioId: scenarioId),
+                  );
                 },
+                routes: [
+                  GoRoute(
+                    path: 'refine',
+                    name: 'scenarioRefine',
+                    builder: (context, state) {
+                      final scenarioId = state.pathParameters['scenarioId']!;
+                      return BlocProvider(
+                        create: (_) => getIt<ScenarioBloc>(),
+                        child: ScenarioBuilderPage(scenarioId: scenarioId),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
