@@ -1,4 +1,5 @@
 import asyncio
+import os
 import uuid
 from collections.abc import AsyncGenerator, Generator
 from typing import Any
@@ -7,14 +8,24 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from src.api.main import app
 from src.core.config import Settings, get_settings
-from src.core.database import Base, get_db
+from src.core.database import Base
 from src.core.redis import get_redis
 from src.models.character import Character
 from src.models.user import User
+
+# Import all models to ensure they're registered with Base.metadata
+from src.models import scenario  # noqa: F401
+
+
+# Test database URL - uses same PostgreSQL but different database
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://aidm:aidm@localhost:5432/aidm_test"
+)
 
 
 @pytest.fixture(scope="session")
@@ -25,11 +36,33 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop.close()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_database():
+    """Setup test database schema once per session."""
+    import asyncio
+
+    async def setup():
+        engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+        async with engine.begin() as conn:
+            # Drop existing tables
+            await conn.execute(text("DROP TABLE IF EXISTS scenario_versions CASCADE"))
+            await conn.execute(text("DROP TABLE IF EXISTS scenarios CASCADE"))
+            await conn.execute(text("DROP TABLE IF EXISTS characters CASCADE"))
+            await conn.execute(text("DROP TABLE IF EXISTS users CASCADE"))
+            await conn.execute(text("DROP TYPE IF EXISTS scenario_status CASCADE"))
+            # Create all tables
+            await conn.run_sync(Base.metadata.create_all)
+        await engine.dispose()
+
+    asyncio.get_event_loop().run_until_complete(setup())
+    yield
+
+
 @pytest.fixture
 def test_settings() -> Settings:
     """Override settings for testing."""
     return Settings(
-        database_url="sqlite+aiosqlite:///:memory:",
+        database_url=TEST_DATABASE_URL,
         redis_url="redis://localhost:6379/1",
         jwt_secret_key="test-secret-key-for-testing-only",
         app_debug=True,
@@ -38,17 +71,22 @@ def test_settings() -> Settings:
 
 
 @pytest_asyncio.fixture
-async def test_engine(test_settings: Settings):
+async def test_engine(test_settings: Settings, setup_test_database):
     """Create test database engine."""
     engine = create_async_engine(
         test_settings.database_url,
         echo=False,
     )
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+
     yield engine
+
+    # Clean up data after each test
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.execute(text("DELETE FROM scenario_versions"))
+        await conn.execute(text("DELETE FROM scenarios"))
+        await conn.execute(text("DELETE FROM characters"))
+        await conn.execute(text("DELETE FROM users"))
+
     await engine.dispose()
 
 
@@ -60,6 +98,20 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         class_=AsyncSession,
         expire_on_commit=False,
     )
+
+    async with async_session_maker() as session:
+        yield session
+
+
+@pytest_asyncio.fixture
+async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Create database session for integration tests."""
+    async_session_maker = async_sessionmaker(
+        test_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
     async with async_session_maker() as session:
         yield session
 
@@ -82,6 +134,9 @@ async def client(
     test_settings: Settings,
 ) -> AsyncGenerator[AsyncClient, None]:
     """Create test HTTP client."""
+    # Import app here to avoid early engine creation
+    from src.api.main import app
+    from src.core.database import get_db
 
     async def override_get_db():
         yield test_session
@@ -110,7 +165,7 @@ async def test_user(test_session: AsyncSession) -> User:
 
     user = User(
         id=uuid.uuid4(),
-        email="test@example.com",
+        email=f"test-{uuid.uuid4()}@example.com",  # Unique email per test
         password_hash=hash_password("testpassword123"),
         name="Test User",
     )
@@ -214,7 +269,7 @@ async def other_user(test_session: AsyncSession) -> User:
 
     user = User(
         id=uuid.uuid4(),
-        email="other@example.com",
+        email=f"other-{uuid.uuid4()}@example.com",  # Unique email
         password_hash=hash_password("otherpassword123"),
         name="Other User",
     )

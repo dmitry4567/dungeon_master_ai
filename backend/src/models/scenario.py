@@ -53,7 +53,12 @@ class Scenario(Base):
     )
     current_version_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("scenario_versions.id", ondelete="SET NULL"),
+        ForeignKey(
+            "scenario_versions.id",
+            ondelete="SET NULL",
+            use_alter=True,
+            name="fk_scenarios_current_version_id",
+        ),
         nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(
