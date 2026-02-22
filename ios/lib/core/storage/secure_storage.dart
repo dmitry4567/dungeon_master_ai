@@ -1,10 +1,15 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Безопасное хранилище для токенов и чувствительных данных
 @lazySingleton
 class SecureStorage {
-  SecureStorage() : _storage = const FlutterSecureStorage(
+  SecureStorage(this._prefs)
+      : _storage = const FlutterSecureStorage(
           aOptions: AndroidOptions(encryptedSharedPreferences: true),
           iOptions: IOSOptions(
             accessibility: KeychainAccessibility.first_unlock_this_device,
@@ -12,6 +17,10 @@ class SecureStorage {
         );
 
   final FlutterSecureStorage _storage;
+  final SharedPreferences _prefs;
+
+  // На macOS в debug режиме используем SharedPreferences
+  bool get _useFallback => Platform.isMacOS && kDebugMode;
 
   // Ключи
   static const _accessTokenKey = 'access_token';
@@ -19,22 +28,22 @@ class SecureStorage {
   static const _userIdKey = 'user_id';
 
   // Access Token
-  Future<String?> getAccessToken() => _storage.read(key: _accessTokenKey);
+  Future<String?> getAccessToken() => _read(_accessTokenKey);
 
   Future<void> setAccessToken(String token) =>
-      _storage.write(key: _accessTokenKey, value: token);
+      _write(_accessTokenKey, token);
 
   // Refresh Token
-  Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
+  Future<String?> getRefreshToken() => _read(_refreshTokenKey);
 
   Future<void> setRefreshToken(String token) =>
-      _storage.write(key: _refreshTokenKey, value: token);
+      _write(_refreshTokenKey, token);
 
   // User ID
-  Future<String?> getUserId() => _storage.read(key: _userIdKey);
+  Future<String?> getUserId() => _read(_userIdKey);
 
   Future<void> setUserId(String userId) =>
-      _storage.write(key: _userIdKey, value: userId);
+      _write(_userIdKey, userId);
 
   /// Сохранить токены
   Future<void> saveTokens({
@@ -56,11 +65,43 @@ class SecureStorage {
   /// Очистить токены (logout)
   Future<void> clearTokens() async {
     await Future.wait([
-      _storage.delete(key: _accessTokenKey),
-      _storage.delete(key: _refreshTokenKey),
+      _delete(_accessTokenKey),
+      _delete(_refreshTokenKey),
     ]);
   }
 
   /// Полная очистка хранилища
-  Future<void> clearAll() => _storage.deleteAll();
+  Future<void> clearAll() async {
+    if (_useFallback) {
+      await _prefs.remove(_accessTokenKey);
+      await _prefs.remove(_refreshTokenKey);
+      await _prefs.remove(_userIdKey);
+    } else {
+      await _storage.deleteAll();
+    }
+  }
+
+  // Private helpers
+  Future<String?> _read(String key) async {
+    if (_useFallback) {
+      return _prefs.getString(key);
+    }
+    return _storage.read(key: key);
+  }
+
+  Future<void> _write(String key, String value) async {
+    if (_useFallback) {
+      await _prefs.setString(key, value);
+    } else {
+      await _storage.write(key: key, value: value);
+    }
+  }
+
+  Future<void> _delete(String key) async {
+    if (_useFallback) {
+      await _prefs.remove(key);
+    } else {
+      await _storage.delete(key: key);
+    }
+  }
 }

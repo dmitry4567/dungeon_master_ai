@@ -33,17 +33,17 @@ Future<void> main() async {
       await configureDependencies();
 
       // Initialize Firebase
-      final firebaseService = getIt<FirebaseService>();
-      await firebaseService.init();
+      // final firebaseService = getIt<FirebaseService>();
+      // await firebaseService.init();
 
       // Initialize local database
       final localDatabase = getIt<LocalDatabase>();
       await localDatabase.init();
 
       // Log app start
-      if (AppConfig.current.enableAnalytics) {
-        await firebaseService.logEvent(name: 'app_start');
-      }
+      // if (AppConfig.current.enableAnalytics) {
+      //   await firebaseService.logEvent(name: 'app_start');
+      // }
 
       runApp(const App());
     },
