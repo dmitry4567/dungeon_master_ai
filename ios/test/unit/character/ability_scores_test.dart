@@ -44,7 +44,6 @@ void main() {
           strength: 16,
           dexterity: 14,
           constitution: 12,
-          intelligence: 10,
           wisdom: 8,
           charisma: 6,
         );
@@ -85,7 +84,6 @@ void main() {
           dexterity: 14,
           constitution: 13,
           intelligence: 12,
-          wisdom: 10,
           charisma: 8,
         );
 
@@ -105,7 +103,6 @@ void main() {
           dexterity: 14,
           constitution: 13,
           intelligence: 12,
-          wisdom: 10,
           charisma: 8,
         );
 
@@ -120,7 +117,6 @@ void main() {
           dexterity: 14,
           constitution: 13,
           intelligence: 12,
-          wisdom: 10,
           charisma: 8,
         );
 
@@ -135,7 +131,7 @@ void main() {
 
     group('withAbility', () {
       test('creates copy with modified ability', () {
-        const original = AbilityScores(strength: 10);
+        const original = AbilityScores();
         final modified = original.withAbility('strength', 18);
 
         expect(original.strength, equals(10));
@@ -157,7 +153,6 @@ void main() {
           dexterity: 14,
           constitution: 13,
           intelligence: 12,
-          wisdom: 10,
           charisma: 8,
         );
 

@@ -1,12 +1,11 @@
-import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
 import 'package:ai_dungeon_master/features/auth/bloc/auth_bloc.dart';
 import 'package:ai_dungeon_master/features/auth/bloc/auth_event.dart';
 import 'package:ai_dungeon_master/features/auth/bloc/auth_state.dart';
 import 'package:ai_dungeon_master/features/auth/data/auth_repository.dart';
 import 'package:ai_dungeon_master/features/auth/models/user.dart';
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -93,7 +92,7 @@ void main() {
         act: (bloc) => bloc.add(const AuthEvent.loginWithEmail(
           email: 'test@example.com',
           password: 'password123',
-        )),
+        ),),
         expect: () => [
           const AuthState.loading(),
           AuthState.authenticated(testUser),
@@ -114,7 +113,7 @@ void main() {
         act: (bloc) => bloc.add(const AuthEvent.loginWithEmail(
           email: 'test@example.com',
           password: 'wrong',
-        )),
+        ),),
         expect: () => [
           const AuthState.loading(),
           isA<AuthError>(),
@@ -139,7 +138,7 @@ void main() {
           email: 'test@example.com',
           password: 'password123',
           name: 'Test User',
-        )),
+        ),),
         expect: () => [
           const AuthState.loading(),
           AuthState.authenticated(testUser),

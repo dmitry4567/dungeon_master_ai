@@ -119,9 +119,7 @@ class CharacterValidator {
   }
 
   /// Проверить, валиден ли запрос на создание
-  bool isValid(CreateCharacterRequest request) {
-    return validate(request).isEmpty;
-  }
+  bool isValid(CreateCharacterRequest request) => validate(request).isEmpty;
 }
 
 /// Результат валидации с типом ошибки

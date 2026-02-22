@@ -17,8 +17,7 @@ class CharacterListPage extends StatelessWidget {
   const CharacterListPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Персонажи'),
         actions: [
@@ -55,8 +54,7 @@ class CharacterListPage extends StatelessWidget {
             );
           }
         },
-        builder: (context, state) {
-          return switch (state) {
+        builder: (context, state) => switch (state) {
             CharacterLoading() => const _LoadingView(),
             CharacterLoaded(:final characters) => characters.isEmpty
                 ? const _EmptyView()
@@ -70,8 +68,7 @@ class CharacterListPage extends StatelessWidget {
                 },
               ),
             _ => const _LoadingView(),
-          };
-        },
+          },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
@@ -89,15 +86,13 @@ class CharacterListPage extends StatelessWidget {
         foregroundColor: AppColors.onPrimary,
       ),
     );
-  }
 }
 
 class _LoadingView extends StatelessWidget {
   const _LoadingView();
 
   @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
+  Widget build(BuildContext context) => ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: 3,
       itemBuilder: (context, index) => const Padding(
@@ -108,15 +103,13 @@ class _LoadingView extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 class _EmptyView extends StatelessWidget {
   const _EmptyView();
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
+  Widget build(BuildContext context) => Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -154,7 +147,6 @@ class _EmptyView extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 class _CharacterListView extends StatelessWidget {
@@ -163,8 +155,7 @@ class _CharacterListView extends StatelessWidget {
   final List<Character> characters;
 
   @override
-  Widget build(BuildContext context) {
-    return RefreshIndicator(
+  Widget build(BuildContext context) => RefreshIndicator(
       onRefresh: () async {
         context.read<CharacterBloc>().add(
               const CharacterEvent.loadCharacters(forceRefresh: true),
@@ -194,7 +185,6 @@ class _CharacterListView extends StatelessWidget {
         },
       ),
     );
-  }
 
   void _showCharacterOptions(BuildContext context, Character character) {
     showModalBottomSheet(

@@ -7,9 +7,7 @@ import '../../core/theme/typography.dart';
 /// Кнопка в фэнтези-стиле
 class FantasyButton extends StatefulWidget {
   const FantasyButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
+    required this.label, required this.onPressed, super.key,
     this.icon,
     this.variant = FantasyButtonVariant.primary,
     this.size = FantasyButtonSize.medium,
@@ -59,7 +57,7 @@ class _FantasyButtonState extends State<FantasyButton>
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+    _scaleAnimation = Tween<double>(begin: 1, end: 0.95).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
   }
@@ -185,7 +183,7 @@ class _FantasyButtonState extends State<FantasyButton>
 
   _ButtonColors _getColors() {
     if (!_isEnabled) {
-      return _ButtonColors(
+      return const _ButtonColors(
         background: AppColors.surfaceVariant,
         foreground: AppColors.outline,
         border: AppColors.outline,
@@ -206,13 +204,13 @@ class _FantasyButtonState extends State<FantasyButton>
           border: AppColors.secondaryLight,
           shadow: AppColors.secondary.withValues(alpha: 0.4),
         ),
-      FantasyButtonVariant.outline => _ButtonColors(
+      FantasyButtonVariant.outline => const _ButtonColors(
           background: Colors.transparent,
           foreground: AppColors.primary,
           border: AppColors.primary,
           shadow: Colors.transparent,
         ),
-      FantasyButtonVariant.ghost => _ButtonColors(
+      FantasyButtonVariant.ghost => const _ButtonColors(
           background: Colors.transparent,
           foreground: AppColors.primary,
           border: Colors.transparent,

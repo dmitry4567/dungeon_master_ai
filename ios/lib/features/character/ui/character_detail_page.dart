@@ -18,8 +18,7 @@ import '../models/dnd_data.dart';
 /// Страница деталей персонажа
 class CharacterDetailPage extends StatefulWidget {
   const CharacterDetailPage({
-    super.key,
-    required this.characterId,
+    required this.characterId, super.key,
   });
 
   final String characterId;
@@ -39,8 +38,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<CharacterBloc, CharacterState>(
+  Widget build(BuildContext context) => BlocConsumer<CharacterBloc, CharacterState>(
       listener: (context, state) {
         if (state is CharacterDeleted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -59,8 +57,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage> {
           );
         }
       },
-      builder: (context, state) {
-        return switch (state) {
+      builder: (context, state) => switch (state) {
           CharacterLoading() => const _LoadingView(),
           CharacterDetail(:final character) =>
             _CharacterDetailView(character: character),
@@ -76,18 +73,15 @@ class _CharacterDetailPageState extends State<CharacterDetailPage> {
               ),
             ),
           _ => const _LoadingView(),
-        };
-      },
+        },
     );
-  }
 }
 
 class _LoadingView extends StatelessWidget {
   const _LoadingView();
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Персонаж')),
       body: const SingleChildScrollView(
         padding: EdgeInsets.all(16),
@@ -103,7 +97,6 @@ class _LoadingView extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 class _CharacterDetailView extends StatelessWidget {
@@ -229,8 +222,7 @@ class _HeaderCard extends StatelessWidget {
   final dynamic dndRace;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -306,7 +298,6 @@ class _HeaderCard extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _StatBadge extends StatelessWidget {
@@ -321,8 +312,7 @@ class _StatBadge extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: AppColors.secondary),
@@ -342,7 +332,6 @@ class _StatBadge extends StatelessWidget {
         ),
       ],
     );
-  }
 }
 
 class _AbilityScoresCard extends StatelessWidget {
@@ -351,8 +340,7 @@ class _AbilityScoresCard extends StatelessWidget {
   final AbilityScores abilityScores;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -430,7 +418,6 @@ class _AbilityScoresCard extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _AbilityScoreItem extends StatelessWidget {
@@ -452,8 +439,7 @@ class _AbilityScoreItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
+  Widget build(BuildContext context) => Semantics(
       label: '$fullName: $value, модификатор $_modifierText',
       child: Column(
         children: [
@@ -502,7 +488,6 @@ class _AbilityScoreItem extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _BackstoryCard extends StatelessWidget {
@@ -511,8 +496,7 @@ class _BackstoryCard extends StatelessWidget {
   final String backstory;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -546,7 +530,6 @@ class _BackstoryCard extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _InfoCard extends StatelessWidget {
@@ -559,8 +542,7 @@ class _InfoCard extends StatelessWidget {
   final DndClass? dndClass;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -596,11 +578,8 @@ class _InfoCard extends StatelessWidget {
         ],
       ),
     );
-  }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}.${date.month.toString().padLeft(2, '0')}.${date.year}';
-  }
+  String _formatDate(DateTime date) => '${date.day}.${date.month.toString().padLeft(2, '0')}.${date.year}';
 }
 
 class _InfoRow extends StatelessWidget {
@@ -615,8 +594,7 @@ class _InfoRow extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
+  Widget build(BuildContext context) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
@@ -639,5 +617,4 @@ class _InfoRow extends StatelessWidget {
         ],
       ),
     );
-  }
 }

@@ -15,20 +15,17 @@ void main() {
       strength: 16,
       dexterity: 14,
       constitution: 14,
-      intelligence: 10,
-      wisdom: 10,
       charisma: 8,
     ),
     backstory: 'A brave warrior',
-    createdAt: DateTime(2024, 1, 1),
+    createdAt: DateTime(2024),
   );
 
   Widget buildTestWidget({
     required Character character,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
-  }) {
-    return MaterialApp(
+  }) => MaterialApp(
       theme: ThemeData.dark(),
       home: Scaffold(
         body: CharacterCard(
@@ -38,7 +35,6 @@ void main() {
         ),
       ),
     );
-  }
 
   group('CharacterCard', () {
     testWidgets('displays character name', (tester) async {
@@ -72,7 +68,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(
         character: testCharacter,
         onTap: () => tapped = true,
-      ));
+      ),);
 
       await tester.tap(find.byType(CharacterCard));
       await tester.pump();
@@ -85,7 +81,7 @@ void main() {
       await tester.pumpWidget(buildTestWidget(
         character: testCharacter,
         onLongPress: () => longPressed = true,
-      ));
+      ),);
 
       await tester.longPress(find.byType(CharacterCard));
       await tester.pump();
@@ -113,9 +109,8 @@ void main() {
         name: 'Unknown',
         characterClass: 'unknown_class',
         race: 'unknown_race',
-        level: 1,
         abilityScores: const AbilityScores(),
-        createdAt: DateTime(2024, 1, 1),
+        createdAt: DateTime(2024),
       );
 
       await tester.pumpWidget(buildTestWidget(character: unknownClassCharacter));
@@ -131,9 +126,8 @@ void main() {
         name: 'A Very Long Character Name That Should Be Truncated',
         characterClass: 'fighter',
         race: 'human',
-        level: 1,
         abilityScores: const AbilityScores(),
-        createdAt: DateTime(2024, 1, 1),
+        createdAt: DateTime(2024),
       );
 
       await tester.pumpWidget(buildTestWidget(character: longNameCharacter));

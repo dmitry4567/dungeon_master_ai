@@ -1,7 +1,33 @@
-import 'package:flutter/foundation.dart';
 
 /// Конфигурация приложения, загружаемая из переменных окружения
-class AppConfig {
+enum AppConfig {
+  /// Конфигурация для разработки
+  development._(
+    apiBaseUrl: 'http://192.168.0.139:8000/api/v1',
+    wsBaseUrl: 'ws://192.168.0.139:8000/api/v1/ws',
+    environment: Environment.development,
+    enableCrashlytics: false,
+    enableAnalytics: false,
+  ),
+
+  /// Конфигурация для стейджинга
+  staging._(
+    apiBaseUrl: 'https://staging-api.aidungeonmaster.com/v1',
+    wsBaseUrl: 'wss://staging-api.aidungeonmaster.com/v1/ws',
+    environment: Environment.staging,
+    enableCrashlytics: true,
+    enableAnalytics: true,
+  ),
+
+  /// Конфигурация для продакшена
+  production._(
+    apiBaseUrl: 'https://api.aidungeonmaster.com/v1',
+    wsBaseUrl: 'wss://api.aidungeonmaster.com/v1/ws',
+    environment: Environment.production,
+    enableCrashlytics: true,
+    enableAnalytics: true,
+  );
+
   const AppConfig._({
     required this.apiBaseUrl,
     required this.wsBaseUrl,
@@ -33,33 +59,6 @@ class AppConfig {
 
   /// Режим стейджинга
   bool get isStaging => environment == Environment.staging;
-
-  /// Конфигурация для разработки
-  static const development = AppConfig._(
-    apiBaseUrl: 'http://192.168.0.139:8000/api/v1',
-    wsBaseUrl: 'ws://192.168.0.139:8000/api/v1/ws',
-    environment: Environment.development,
-    enableCrashlytics: false,
-    enableAnalytics: false,
-  );
-
-  /// Конфигурация для стейджинга
-  static const staging = AppConfig._(
-    apiBaseUrl: 'https://staging-api.aidungeonmaster.com/v1',
-    wsBaseUrl: 'wss://staging-api.aidungeonmaster.com/v1/ws',
-    environment: Environment.staging,
-    enableCrashlytics: true,
-    enableAnalytics: true,
-  );
-
-  /// Конфигурация для продакшена
-  static const production = AppConfig._(
-    apiBaseUrl: 'https://api.aidungeonmaster.com/v1',
-    wsBaseUrl: 'wss://api.aidungeonmaster.com/v1/ws',
-    environment: Environment.production,
-    enableCrashlytics: true,
-    enableAnalytics: true,
-  );
 
   /// Текущая конфигурация приложения
   static AppConfig get current {

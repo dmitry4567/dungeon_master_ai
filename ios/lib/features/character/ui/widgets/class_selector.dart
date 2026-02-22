@@ -8,8 +8,7 @@ import '../../models/dnd_data.dart';
 /// Виджет выбора класса персонажа
 class ClassSelector extends StatelessWidget {
   const ClassSelector({
-    super.key,
-    required this.onSelect,
+    required this.onSelect, super.key,
     this.selectedClass,
   });
 
@@ -17,8 +16,7 @@ class ClassSelector extends StatelessWidget {
   final DndClass? selectedClass;
 
   @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
+  Widget build(BuildContext context) => ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: DndReferenceData.classes.length,
       itemBuilder: (context, index) {
@@ -38,7 +36,6 @@ class ClassSelector extends StatelessWidget {
         );
       },
     );
-  }
 }
 
 class _ClassCard extends StatelessWidget {
@@ -53,8 +50,7 @@ class _ClassCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
+  Widget build(BuildContext context) => Semantics(
       button: true,
       selected: isSelected,
       label: '${dndClass.nameRu}, ${dndClass.descriptionRu}',
@@ -173,7 +169,6 @@ class _ClassCard extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 class _AbilityChip extends StatelessWidget {
@@ -181,8 +176,7 @@ class _AbilityChip extends StatelessWidget {
 
   final String ability;
 
-  String get _displayName {
-    return switch (ability) {
+  String get _displayName => switch (ability) {
       'strength' => 'СИЛ',
       'dexterity' => 'ЛОВ',
       'constitution' => 'ТЕЛ',
@@ -191,11 +185,9 @@ class _AbilityChip extends StatelessWidget {
       'charisma' => 'ХАР',
       _ => ability.toUpperCase(),
     };
-  }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.secondary.withValues(alpha: 0.2),
@@ -209,5 +201,4 @@ class _AbilityChip extends StatelessWidget {
             ),
       ),
     );
-  }
 }

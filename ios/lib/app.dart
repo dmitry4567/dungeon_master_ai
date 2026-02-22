@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
@@ -22,7 +21,7 @@ class App extends StatelessWidget {
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.linear(
-              MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.4),
+              MediaQuery.of(context).textScaler.scale(1).clamp(0.8, 1.4),
             ),
           ),
           child: OfflineBanner(

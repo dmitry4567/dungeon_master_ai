@@ -8,8 +8,6 @@ final getIt = GetIt.instance;
 
 /// Инициализация dependency injection
 @InjectableInit(
-  initializerName: 'init',
   preferRelativeImports: true,
-  asExtension: true,
 )
 Future<void> configureDependencies() async => getIt.init();

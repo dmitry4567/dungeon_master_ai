@@ -8,8 +8,7 @@ import '../../core/theme/colors.dart';
 /// Баннер оффлайн-режима
 class OfflineBanner extends StatefulWidget {
   const OfflineBanner({
-    super.key,
-    required this.child,
+    required this.child, super.key,
   });
 
   final Widget child;

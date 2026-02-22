@@ -34,7 +34,6 @@ class AuthResponse with _$AuthResponse {
       id: json['user_id'] as String,
       email: json['email'] as String,
       name: json['name'] as String,
-      avatarUrl: null,
       createdAt: DateTime.now(),
     );
     return AuthResponse(tokens: tokens, user: user);

@@ -6,8 +6,7 @@ import '../../core/theme/colors.dart';
 /// Виджет отображения ошибки
 class ErrorView extends StatelessWidget {
   const ErrorView({
-    super.key,
-    required this.message,
+    required this.message, super.key,
     this.icon,
     this.onRetry,
     this.retryLabel = 'Повторить',
@@ -80,8 +79,7 @@ class ErrorView extends StatelessWidget {
 /// Компактная версия для inline-отображения
 class ErrorBanner extends StatelessWidget {
   const ErrorBanner({
-    super.key,
-    required this.message,
+    required this.message, super.key,
     this.onRetry,
     this.onDismiss,
   });

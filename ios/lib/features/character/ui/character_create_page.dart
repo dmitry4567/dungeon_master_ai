@@ -16,8 +16,7 @@ class CharacterCreatePage extends StatelessWidget {
   const CharacterCreatePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<CharacterBloc, CharacterState>(
+  Widget build(BuildContext context) => BlocConsumer<CharacterBloc, CharacterState>(
       listener: (context, state) {
         if (state is CharacterCreated) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +163,6 @@ class CharacterCreatePage extends StatelessWidget {
         );
       },
     );
-  }
 }
 
 class _ProgressIndicator extends StatelessWidget {
@@ -177,14 +175,12 @@ class _ProgressIndicator extends StatelessWidget {
   final int totalSteps;
 
   @override
-  Widget build(BuildContext context) {
-    return LinearProgressIndicator(
+  Widget build(BuildContext context) => LinearProgressIndicator(
       value: (currentStep + 1) / totalSteps,
       backgroundColor: AppColors.surfaceVariant,
       valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
       minHeight: 4,
     );
-  }
 }
 
 class _StepContent extends StatelessWidget {
@@ -193,8 +189,7 @@ class _StepContent extends StatelessWidget {
   final CharacterCreationForm form;
 
   @override
-  Widget build(BuildContext context) {
-    return switch (form.currentStep) {
+  Widget build(BuildContext context) => switch (form.currentStep) {
       CharacterCreationForm.classStep => ClassSelector(
           selectedClass: form.selectedClass,
           onSelect: (dndClass) {
@@ -224,7 +219,6 @@ class _StepContent extends StatelessWidget {
       CharacterCreationForm.backstoryStep => _BackstoryStep(form: form),
       _ => const SizedBox.shrink(),
     };
-  }
 }
 
 class _BackstoryStep extends StatefulWidget {
@@ -255,8 +249,7 @@ class _BackstoryStepState extends State<_BackstoryStep> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
+  Widget build(BuildContext context) => SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,7 +339,6 @@ class _BackstoryStepState extends State<_BackstoryStep> {
         ],
       ),
     );
-  }
 }
 
 class _SelectionSummary extends StatelessWidget {
@@ -355,8 +347,7 @@ class _SelectionSummary extends StatelessWidget {
   final CharacterCreationForm form;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -405,7 +396,6 @@ class _SelectionSummary extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _SummaryItem extends StatelessWidget {
@@ -420,8 +410,7 @@ class _SummaryItem extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       children: [
         Text(icon, style: const TextStyle(fontSize: 24)),
         const SizedBox(width: 8),
@@ -445,7 +434,6 @@ class _SummaryItem extends StatelessWidget {
         ),
       ],
     );
-  }
 }
 
 class _NavigationButtons extends StatelessWidget {
@@ -458,8 +446,7 @@ class _NavigationButtons extends StatelessWidget {
   final bool isSubmitting;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -513,5 +500,4 @@ class _NavigationButtons extends StatelessWidget {
         ),
       ),
     );
-  }
 }

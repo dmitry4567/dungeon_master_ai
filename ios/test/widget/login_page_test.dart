@@ -1,13 +1,12 @@
+import 'package:ai_dungeon_master/features/auth/bloc/auth_bloc.dart';
+import 'package:ai_dungeon_master/features/auth/bloc/auth_event.dart';
+import 'package:ai_dungeon_master/features/auth/bloc/auth_state.dart';
+import 'package:ai_dungeon_master/features/auth/ui/login_page.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-
-import 'package:ai_dungeon_master/features/auth/bloc/auth_bloc.dart';
-import 'package:ai_dungeon_master/features/auth/bloc/auth_event.dart';
-import 'package:ai_dungeon_master/features/auth/bloc/auth_state.dart';
-import 'package:ai_dungeon_master/features/auth/ui/login_page.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 

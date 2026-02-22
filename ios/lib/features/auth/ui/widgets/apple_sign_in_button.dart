@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 /// Кнопка Sign in with Apple
 class AppleSignInButton extends StatelessWidget {
   const AppleSignInButton({
-    super.key,
-    required this.onPressed,
+    required this.onPressed, super.key,
     this.isLoading = false,
   });
 

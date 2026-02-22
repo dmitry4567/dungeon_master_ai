@@ -93,15 +93,13 @@ class CharacterRepository {
   }
 
   /// Валидировать запрос на создание
-  List<String> validateCharacter(CreateCharacterRequest request) {
-    return _validator.validate(request);
-  }
+  List<String> validateCharacter(CreateCharacterRequest request) => _validator.validate(request);
 
   // === Приватные методы для кэширования ===
 
   Future<List<Character>> _getCachedCharacters() async {
     try {
-      final db = await _database.database;
+      final db = _database.database;
       final rows = await db.query('characters');
       return rows.map((row) => CachedCharacter.fromMap(row).toCharacter()).toList();
     } catch (_) {
@@ -111,7 +109,7 @@ class CharacterRepository {
 
   Future<Character?> _getCachedCharacter(String id) async {
     try {
-      final db = await _database.database;
+      final db = _database.database;
       final rows = await db.query(
         'characters',
         where: 'id = ?',
@@ -126,7 +124,7 @@ class CharacterRepository {
 
   Future<void> _cacheCharacters(List<Character> characters) async {
     try {
-      final db = await _database.database;
+      final db = _database.database;
       await db.transaction((txn) async {
         await txn.delete('characters');
         for (final character in characters) {
@@ -143,7 +141,7 @@ class CharacterRepository {
 
   Future<void> _cacheCharacter(Character character) async {
     try {
-      final db = await _database.database;
+      final db = _database.database;
       await db.insert(
         'characters',
         CachedCharacter.fromCharacter(character).toMap(),
@@ -156,7 +154,7 @@ class CharacterRepository {
 
   Future<void> _deleteCachedCharacter(String id) async {
     try {
-      final db = await _database.database;
+      final db = _database.database;
       await db.delete('characters', where: 'id = ?', whereArgs: [id]);
     } catch (_) {
       // Игнорируем ошибки кэширования

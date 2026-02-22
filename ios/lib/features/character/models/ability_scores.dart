@@ -6,7 +6,6 @@ part 'ability_scores.g.dart';
 /// Характеристики персонажа D&D 5e
 @freezed
 class AbilityScores with _$AbilityScores {
-  const AbilityScores._();
 
   const factory AbilityScores({
     @Default(10) int strength,
@@ -16,6 +15,7 @@ class AbilityScores with _$AbilityScores {
     @Default(10) int wisdom,
     @Default(10) int charisma,
   }) = _AbilityScores;
+  const AbilityScores._();
 
   factory AbilityScores.fromJson(Map<String, dynamic> json) =>
       _$AbilityScoresFromJson(json);
@@ -50,8 +50,7 @@ class AbilityScores with _$AbilityScores {
   int get charismaModifier => calculateModifier(charisma);
 
   /// Получить модификатор по названию характеристики
-  int getModifier(String ability) {
-    return switch (ability.toLowerCase()) {
+  int getModifier(String ability) => switch (ability.toLowerCase()) {
       'strength' || 'str' || 'сила' => strengthModifier,
       'dexterity' || 'dex' || 'ловкость' => dexterityModifier,
       'constitution' || 'con' || 'телосложение' => constitutionModifier,
@@ -60,11 +59,9 @@ class AbilityScores with _$AbilityScores {
       'charisma' || 'cha' || 'харизма' => charismaModifier,
       _ => 0,
     };
-  }
 
   /// Получить значение характеристики по названию
-  int getValue(String ability) {
-    return switch (ability.toLowerCase()) {
+  int getValue(String ability) => switch (ability.toLowerCase()) {
       'strength' || 'str' || 'сила' => strength,
       'dexterity' || 'dex' || 'ловкость' => dexterity,
       'constitution' || 'con' || 'телосложение' => constitution,
@@ -73,7 +70,6 @@ class AbilityScores with _$AbilityScores {
       'charisma' || 'cha' || 'харизма' => charisma,
       _ => 0,
     };
-  }
 
   /// Сумма всех характеристик
   int get total =>
@@ -84,8 +80,7 @@ class AbilityScores with _$AbilityScores {
       [strength, dexterity, constitution, intelligence, wisdom, charisma];
 
   /// Создать копию с изменённой характеристикой
-  AbilityScores withAbility(String ability, int value) {
-    return switch (ability.toLowerCase()) {
+  AbilityScores withAbility(String ability, int value) => switch (ability.toLowerCase()) {
       'strength' || 'str' || 'сила' => copyWith(strength: value),
       'dexterity' || 'dex' || 'ловкость' => copyWith(dexterity: value),
       'constitution' || 'con' || 'телосложение' => copyWith(constitution: value),
@@ -94,7 +89,6 @@ class AbilityScores with _$AbilityScores {
       'charisma' || 'cha' || 'харизма' => copyWith(charisma: value),
       _ => this,
     };
-  }
 }
 
 /// Названия характеристик для UI

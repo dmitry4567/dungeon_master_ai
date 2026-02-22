@@ -31,23 +31,20 @@ void main() {
       name: 'Test Hero',
       characterClass: 'fighter',
       race: 'human',
-      level: 1,
       abilityScores: const AbilityScores(
         strength: 16,
         dexterity: 14,
         constitution: 14,
-        intelligence: 10,
-        wisdom: 10,
         charisma: 8,
       ),
-      createdAt: DateTime(2024, 1, 1),
+      createdAt: DateTime(2024),
     );
 
     group('LoadCharacters', () {
       blocTest<CharacterBloc, CharacterState>(
         'emits [loading, loaded] when loading characters succeeds',
         build: () {
-          when(() => mockRepository.getCharacters(forceRefresh: false))
+          when(() => mockRepository.getCharacters())
               .thenAnswer((_) async => [testCharacter]);
           return CharacterBloc(mockRepository);
         },
@@ -61,7 +58,7 @@ void main() {
       blocTest<CharacterBloc, CharacterState>(
         'emits [loading, error] when loading characters fails',
         build: () {
-          when(() => mockRepository.getCharacters(forceRefresh: false))
+          when(() => mockRepository.getCharacters())
               .thenThrow(Exception('Network error'));
           return CharacterBloc(mockRepository);
         },
@@ -210,7 +207,7 @@ void main() {
         'does not decrement step when on first step',
         build: () => CharacterBloc(mockRepository),
         seed: () => const CharacterState.creating(
-          form: CharacterCreationForm(currentStep: 0),
+          form: CharacterCreationForm(),
         ),
         act: (bloc) => bloc.add(const CharacterEvent.previousStep()),
         expect: () => [], // No state change
@@ -236,7 +233,6 @@ void main() {
               dexterity: 14,
               constitution: 13,
               intelligence: 12,
-              wisdom: 10,
               charisma: 8,
             ),
           ),
@@ -285,7 +281,6 @@ void main() {
   group('CharacterCreationForm', () {
     test('canProceed returns true when class is selected on step 0', () {
       final form = CharacterCreationForm(
-        currentStep: 0,
         selectedClass: DndReferenceData.classes.first,
       );
 
@@ -293,7 +288,7 @@ void main() {
     });
 
     test('canProceed returns false when no class selected on step 0', () {
-      const form = CharacterCreationForm(currentStep: 0);
+      const form = CharacterCreationForm();
 
       expect(form.canProceed, isFalse);
     });
@@ -315,7 +310,6 @@ void main() {
           dexterity: 14,
           constitution: 13,
           intelligence: 12,
-          wisdom: 10,
           charisma: 8,
         ),
       );
@@ -333,7 +327,7 @@ void main() {
     });
 
     test('progress returns correct value', () {
-      expect(const CharacterCreationForm(currentStep: 0).progress, equals(0.25));
+      expect(const CharacterCreationForm().progress, equals(0.25));
       expect(const CharacterCreationForm(currentStep: 1).progress, equals(0.5));
       expect(const CharacterCreationForm(currentStep: 2).progress, equals(0.75));
       expect(const CharacterCreationForm(currentStep: 3).progress, equals(1.0));

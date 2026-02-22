@@ -6,9 +6,7 @@ import '../../../../shared/widgets/fantasy_button.dart';
 /// Форма входа по email
 class EmailLoginForm extends StatefulWidget {
   const EmailLoginForm({
-    super.key,
-    required this.onLogin,
-    required this.onRegister,
+    required this.onLogin, required this.onRegister, super.key,
     this.isLoading = false,
   });
 
@@ -171,7 +169,7 @@ class _EmailLoginFormState extends State<EmailLoginForm> {
                 _isRegisterMode
                     ? 'Уже есть аккаунт? Войти'
                     : 'Нет аккаунта? Зарегистрироваться',
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.primary,
                 ),
               ),

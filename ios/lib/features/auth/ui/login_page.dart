@@ -58,13 +58,13 @@ class LoginPage extends StatelessWidget {
                           .add(AuthEvent.loginWithEmail(
                             email: email,
                             password: password,
-                          )),
+                          ),),
                       onRegister: (email, password, name) =>
                           context.read<AuthBloc>().add(AuthEvent.register(
                                 email: email,
                                 password: password,
                                 name: name,
-                              )),
+                              ),),
                     ),
                   ],
                 ),

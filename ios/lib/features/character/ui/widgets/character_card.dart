@@ -9,9 +9,7 @@ import '../../models/character.dart';
 /// Карточка персонажа для отображения в списке
 class CharacterCard extends StatelessWidget {
   const CharacterCard({
-    super.key,
-    required this.character,
-    required this.onTap,
+    required this.character, required this.onTap, super.key,
     this.onLongPress,
   });
 
@@ -116,8 +114,7 @@ class _CharacterAvatar extends StatelessWidget {
   final int level;
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
+  Widget build(BuildContext context) => Stack(
       children: [
         Container(
           width: 56,
@@ -165,7 +162,6 @@ class _CharacterAvatar extends StatelessWidget {
         ),
       ],
     );
-  }
 }
 
 class _AbilityScoresPreview extends StatelessWidget {
@@ -204,8 +200,7 @@ class _MiniAbilityChip extends StatelessWidget {
   final int value;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
@@ -219,5 +214,4 @@ class _MiniAbilityChip extends StatelessWidget {
             ),
       ),
     );
-  }
 }

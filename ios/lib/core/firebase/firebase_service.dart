@@ -40,7 +40,7 @@ class FirebaseService {
           errorAndStacktrace.last as StackTrace?,
           fatal: true,
         );
-      },).sendPort);
+      },).sendPort,);
 
       // Ловим ошибки платформы
       PlatformDispatcher.instance.onError = (error, stack) {
@@ -82,7 +82,7 @@ class FirebaseService {
   /// Очистить идентификатор пользователя (logout)
   Future<void> clearUserId() async {
     await _crashlytics?.setUserIdentifier('');
-    await _analytics?.setUserId(id: null);
+    await _analytics?.setUserId();
   }
 
   /// Залогировать событие в Analytics

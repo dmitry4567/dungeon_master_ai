@@ -9,8 +9,7 @@ import '../../models/dnd_data.dart';
 /// Виджет выбора расы персонажа
 class RaceSelector extends StatelessWidget {
   const RaceSelector({
-    super.key,
-    required this.onSelect,
+    required this.onSelect, super.key,
     this.selectedRace,
   });
 
@@ -18,8 +17,7 @@ class RaceSelector extends StatelessWidget {
   final DndRace? selectedRace;
 
   @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
+  Widget build(BuildContext context) => ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: DndReferenceData.races.length,
       itemBuilder: (context, index) {
@@ -39,7 +37,6 @@ class RaceSelector extends StatelessWidget {
         );
       },
     );
-  }
 }
 
 class _RaceCard extends StatelessWidget {
@@ -54,8 +51,7 @@ class _RaceCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
+  Widget build(BuildContext context) => Semantics(
       button: true,
       selected: isSelected,
       label: '${race.nameRu}, ${race.descriptionRu}',
@@ -187,7 +183,6 @@ class _RaceCard extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 class _BonusChip extends StatelessWidget {
@@ -202,8 +197,7 @@ class _BonusChip extends StatelessWidget {
   String get _displayName => AbilityNames.shortNames[ability] ?? ability.toUpperCase();
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.tertiary.withValues(alpha: 0.2),
@@ -217,5 +211,4 @@ class _BonusChip extends StatelessWidget {
             ),
       ),
     );
-  }
 }

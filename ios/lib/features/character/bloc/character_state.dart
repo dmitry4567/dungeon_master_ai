@@ -55,7 +55,6 @@ sealed class CharacterState with _$CharacterState {
 /// Форма создания персонажа
 @freezed
 class CharacterCreationForm with _$CharacterCreationForm {
-  const CharacterCreationForm._();
 
   const factory CharacterCreationForm({
     @Default(0) int currentStep,
@@ -66,6 +65,7 @@ class CharacterCreationForm with _$CharacterCreationForm {
     @Default('') String backstory,
     @Default([]) List<String> validationErrors,
   }) = _CharacterCreationForm;
+  const CharacterCreationForm._();
 
   /// Шаги мастера
   static const int totalSteps = 4;
@@ -75,15 +75,13 @@ class CharacterCreationForm with _$CharacterCreationForm {
   static const int backstoryStep = 3;
 
   /// Можно ли перейти к следующему шагу
-  bool get canProceed {
-    return switch (currentStep) {
+  bool get canProceed => switch (currentStep) {
       classStep => selectedClass != null,
       raceStep => selectedRace != null,
       abilitiesStep => _isAbilityScoresValid,
       backstoryStep => name.isNotEmpty,
       _ => false,
     };
-  }
 
   bool get _isAbilityScoresValid {
     final total = abilityScores.total;
@@ -100,15 +98,13 @@ class CharacterCreationForm with _$CharacterCreationForm {
   double get progress => (currentStep + 1) / totalSteps;
 
   /// Название текущего шага
-  String get currentStepTitle {
-    return switch (currentStep) {
+  String get currentStepTitle => switch (currentStep) {
       classStep => 'Выберите класс',
       raceStep => 'Выберите расу',
       abilitiesStep => 'Распределите характеристики',
       backstoryStep => 'Имя и предыстория',
       _ => '',
     };
-  }
 
   /// Характеристики с бонусами расы
   AbilityScores get abilityScoresWithRacialBonus {
@@ -123,13 +119,11 @@ class CharacterCreationForm with _$CharacterCreationForm {
   }
 
   /// Конвертировать в запрос на создание
-  CreateCharacterRequest toRequest() {
-    return CreateCharacterRequest(
+  CreateCharacterRequest toRequest() => CreateCharacterRequest(
       name: name.trim(),
       characterClass: selectedClass!.id,
       race: selectedRace!.id,
       abilityScores: abilityScoresWithRacialBonus,
       backstory: backstory.trim().isEmpty ? null : backstory.trim(),
     );
-  }
 }

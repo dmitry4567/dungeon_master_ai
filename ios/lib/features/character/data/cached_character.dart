@@ -12,15 +12,12 @@ class CachedCharacter {
     required this.race,
     required this.level,
     required this.abilityScoresJson,
-    this.backstory,
-    required this.createdAt,
+    required this.createdAt, required this.cachedAt, this.backstory,
     this.updatedAt,
-    required this.cachedAt,
   });
 
   /// Создать из Character
-  factory CachedCharacter.fromCharacter(Character character) {
-    return CachedCharacter(
+  factory CachedCharacter.fromCharacter(Character character) => CachedCharacter(
       id: character.id,
       name: character.name,
       characterClass: character.characterClass,
@@ -32,11 +29,9 @@ class CachedCharacter {
       updatedAt: character.updatedAt,
       cachedAt: DateTime.now(),
     );
-  }
 
   /// Создать из Map (SQLite row)
-  factory CachedCharacter.fromMap(Map<String, dynamic> map) {
-    return CachedCharacter(
+  factory CachedCharacter.fromMap(Map<String, dynamic> map) => CachedCharacter(
       id: map['id'] as String,
       name: map['name'] as String,
       characterClass: map['character_class'] as String,
@@ -50,7 +45,6 @@ class CachedCharacter {
           : null,
       cachedAt: DateTime.parse(map['cached_at'] as String),
     );
-  }
 
   final String id;
   final String name;
@@ -64,8 +58,7 @@ class CachedCharacter {
   final DateTime cachedAt;
 
   /// Конвертировать в Character
-  Character toCharacter() {
-    return Character(
+  Character toCharacter() => Character(
       id: id,
       name: name,
       characterClass: characterClass,
@@ -78,11 +71,9 @@ class CachedCharacter {
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
-  }
 
   /// Конвертировать в Map для SQLite
-  Map<String, dynamic> toMap() {
-    return {
+  Map<String, dynamic> toMap() => {
       'id': id,
       'name': name,
       'character_class': characterClass,
@@ -94,12 +85,9 @@ class CachedCharacter {
       'updated_at': updatedAt?.toIso8601String(),
       'cached_at': cachedAt.toIso8601String(),
     };
-  }
 
   /// Проверить, не устарел ли кэш (по умолчанию 1 час)
-  bool isStale({Duration maxAge = const Duration(hours: 1)}) {
-    return DateTime.now().difference(cachedAt) > maxAge;
-  }
+  bool isStale({Duration maxAge = const Duration(hours: 1)}) => DateTime.now().difference(cachedAt) > maxAge;
 }
 
 /// SQL для создания таблицы персонажей

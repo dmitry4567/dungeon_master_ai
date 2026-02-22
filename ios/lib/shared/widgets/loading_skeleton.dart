@@ -94,7 +94,6 @@ class ListSkeleton extends StatelessWidget {
                   children: [
                     LoadingSkeleton(
                       width: MediaQuery.of(context).size.width * 0.5,
-                      height: 16,
                     ),
                     const SizedBox(height: 8),
                     const LoadingSkeleton(
@@ -134,7 +133,6 @@ class DetailSkeleton extends StatelessWidget {
             // Subtitle
             const LoadingSkeleton(
               width: 150,
-              height: 16,
             ),
             const SizedBox(height: 24),
             // Content lines

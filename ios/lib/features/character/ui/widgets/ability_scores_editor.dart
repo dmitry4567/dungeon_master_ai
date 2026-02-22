@@ -9,9 +9,7 @@ import '../../models/dnd_data.dart';
 /// Виджет редактирования характеристик персонажа
 class AbilityScoresEditor extends StatelessWidget {
   const AbilityScoresEditor({
-    super.key,
-    required this.abilityScores,
-    required this.onChanged,
+    required this.abilityScores, required this.onChanged, super.key,
     this.selectedRace,
     this.highlightedAbilities = const [],
   });
@@ -109,7 +107,7 @@ class _TotalIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color indicatorColor = isValid ? AppColors.success : AppColors.error;
+    final indicatorColor = isValid ? AppColors.success : AppColors.error;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -336,8 +334,7 @@ class _AdjustButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
-    return Material(
+  Widget build(BuildContext context) => Material(
       color: onPressed != null ? AppColors.surfaceVariant : Colors.transparent,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
@@ -361,5 +358,4 @@ class _AdjustButton extends StatelessWidget {
         ),
       ),
     );
-  }
 }

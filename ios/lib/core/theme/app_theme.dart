@@ -25,7 +25,6 @@ abstract final class AppTheme {
           onTertiary: AppColors.onTertiary,
           tertiaryContainer: AppColors.tertiaryDark,
           onTertiaryContainer: AppColors.onTertiary,
-          error: AppColors.error,
           onError: AppColors.onError,
           errorContainer: AppColors.errorContainer,
           onErrorContainer: AppColors.onErrorContainer,

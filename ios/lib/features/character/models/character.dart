@@ -8,7 +8,6 @@ part 'character.g.dart';
 /// Модель персонажа D&D 5e
 @freezed
 class Character with _$Character {
-  const Character._();
 
   const factory Character({
     required String id,
@@ -16,12 +15,11 @@ class Character with _$Character {
     @JsonKey(name: 'class')
     required String characterClass,
     required String race,
-    @Default(1) int level,
-    required AbilityScores abilityScores,
+    required AbilityScores abilityScores, required DateTime createdAt, @Default(1) int level,
     String? backstory,
-    required DateTime createdAt,
     DateTime? updatedAt,
   }) = _Character;
+  const Character._();
 
   factory Character.fromJson(Map<String, dynamic> json) =>
       _$CharacterFromJson(json);
@@ -42,8 +40,7 @@ class Character with _$Character {
     return hitDie + conMod + (level - 1) * (averagePerLevel + conMod);
   }
 
-  int _getHitDie(String className) {
-    return switch (className.toLowerCase()) {
+  int _getHitDie(String className) => switch (className.toLowerCase()) {
       'barbarian' || 'варвар' => 12,
       'fighter' || 'воин' || 'paladin' || 'паладин' || 'ranger' || 'следопыт' =>
         10,
@@ -63,7 +60,6 @@ class Character with _$Character {
       'sorcerer' || 'чародей' || 'wizard' || 'волшебник' => 6,
       _ => 8,
     };
-  }
 }
 
 /// Запрос на создание персонажа

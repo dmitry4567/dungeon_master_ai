@@ -10,8 +10,7 @@ class User with _$User {
     required String id,
     required String email,
     required String name,
-    String? avatarUrl,
-    required DateTime createdAt,
+    required DateTime createdAt, String? avatarUrl,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

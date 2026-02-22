@@ -40,9 +40,9 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       emit(CharacterState.loaded(characters: characters));
     } catch (e) {
       emit(CharacterState.error(
-        message: 'Не удалось загрузить персонажей: ${e.toString()}',
+        message: 'Не удалось загрузить персонажей: $e',
         previousState: state,
-      ));
+      ),);
     }
   }
 
@@ -60,9 +60,9 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       emit(CharacterState.detail(character: character));
     } catch (e) {
       emit(CharacterState.error(
-        message: 'Не удалось загрузить персонажа: ${e.toString()}',
+        message: 'Не удалось загрузить персонажа: $e',
         previousState: state,
-      ));
+      ),);
     }
   }
 
@@ -72,7 +72,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   ) {
     emit(const CharacterState.creating(
       form: CharacterCreationForm(),
-    ));
+    ),);
   }
 
   void _onSelectClass(
@@ -85,7 +85,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         form: currentState.form.copyWith(
           selectedClass: event.selectedClass,
         ),
-      ));
+      ),);
     }
   }
 
@@ -99,7 +99,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         form: currentState.form.copyWith(
           selectedRace: event.selectedRace,
         ),
-      ));
+      ),);
     }
   }
 
@@ -113,7 +113,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         form: currentState.form.copyWith(
           abilityScores: event.abilityScores,
         ),
-      ));
+      ),);
     }
   }
 
@@ -127,7 +127,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         form: currentState.form.copyWith(
           name: event.name,
         ),
-      ));
+      ),);
     }
   }
 
@@ -141,7 +141,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         form: currentState.form.copyWith(
           backstory: event.backstory,
         ),
-      ));
+      ),);
     }
   }
 
@@ -162,7 +162,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
         form: form.copyWith(
           validationErrors: ['Заполните все обязательные поля'],
         ),
-      ));
+      ),);
       return;
     }
 
@@ -176,7 +176,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       if (validationErrors.isNotEmpty) {
         emit(CharacterState.creating(
           form: form.copyWith(validationErrors: validationErrors),
-        ));
+        ),);
         return;
       }
 
@@ -185,12 +185,12 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     } on CharacterValidationException catch (e) {
       emit(CharacterState.creating(
         form: form.copyWith(validationErrors: e.errors),
-      ));
+      ),);
     } catch (e) {
       emit(CharacterState.error(
-        message: 'Не удалось создать персонажа: ${e.toString()}',
+        message: 'Не удалось создать персонажа: $e',
         previousState: CharacterState.creating(form: form),
-      ));
+      ),);
     }
   }
 
@@ -206,9 +206,9 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       emit(CharacterState.deleted(characterId: event.id));
     } catch (e) {
       emit(CharacterState.error(
-        message: 'Не удалось удалить персонажа: ${e.toString()}',
+        message: 'Не удалось удалить персонажа: $e',
         previousState: previousState,
-      ));
+      ),);
     }
   }
 
@@ -227,9 +227,9 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       emit(CharacterState.detail(character: character));
     } catch (e) {
       emit(CharacterState.error(
-        message: 'Не удалось обновить персонажа: ${e.toString()}',
+        message: 'Не удалось обновить персонажа: $e',
         previousState: previousState,
-      ));
+      ),);
     }
   }
 
@@ -246,7 +246,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
             currentStep: form.currentStep + 1,
             validationErrors: [],
           ),
-        ));
+        ),);
       }
     }
   }
@@ -264,7 +264,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
             currentStep: form.currentStep - 1,
             validationErrors: [],
           ),
-        ));
+        ),);
       }
     }
   }
