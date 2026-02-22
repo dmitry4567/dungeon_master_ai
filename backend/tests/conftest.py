@@ -18,6 +18,7 @@ from src.models.character import Character
 from src.models.user import User
 
 # Import all models to ensure they're registered with Base.metadata
+from src.models import room  # noqa: F401
 from src.models import scenario  # noqa: F401
 
 
@@ -37,44 +38,45 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
+def setup_test_database(event_loop):
     """Setup test database schema once per session."""
-    import asyncio
 
     async def setup():
         engine = create_async_engine(TEST_DATABASE_URL, echo=False)
         async with engine.begin() as conn:
-            # Drop existing tables
-            await conn.execute(text("DROP TABLE IF EXISTS scenario_versions CASCADE"))
-            await conn.execute(text("DROP TABLE IF EXISTS scenarios CASCADE"))
-            await conn.execute(text("DROP TABLE IF EXISTS characters CASCADE"))
-            await conn.execute(text("DROP TABLE IF EXISTS users CASCADE"))
-            await conn.execute(text("DROP TYPE IF EXISTS scenario_status CASCADE"))
+            # Drop all existing tables and types
+            await conn.execute(text("DROP SCHEMA public CASCADE"))
+            await conn.execute(text("CREATE SCHEMA public"))
             # Create all tables
             await conn.run_sync(Base.metadata.create_all)
         await engine.dispose()
 
-    asyncio.get_event_loop().run_until_complete(setup())
+    event_loop.run_until_complete(setup())
     yield
 
 
 @pytest.fixture
 def test_settings() -> Settings:
-    """Override settings for testing."""
+    """Override settings for testing.
+
+    Note: With pydantic-settings aliases, we must use the alias name
+    or set env vars. Using env vars is safest.
+    """
     return Settings(
-        database_url=TEST_DATABASE_URL,
-        redis_url="redis://localhost:6379/1",
-        jwt_secret_key="test-secret-key-for-testing-only",
-        app_debug=True,
-        app_env="testing",
+        _env_file=None,
+        DATABASE_URL=TEST_DATABASE_URL,
+        REDIS_URL="redis://localhost:6379/1",
+        JWT_SECRET_KEY="test-secret-key-for-testing-only",
+        APP_DEBUG=True,
+        APP_ENV="testing",
     )
 
 
 @pytest_asyncio.fixture
-async def test_engine(test_settings: Settings, setup_test_database):
+async def test_engine(setup_test_database):
     """Create test database engine."""
     engine = create_async_engine(
-        test_settings.database_url,
+        TEST_DATABASE_URL,
         echo=False,
     )
 
@@ -82,6 +84,8 @@ async def test_engine(test_settings: Settings, setup_test_database):
 
     # Clean up data after each test
     async with engine.begin() as conn:
+        await conn.execute(text("DELETE FROM room_players"))
+        await conn.execute(text("DELETE FROM rooms"))
         await conn.execute(text("DELETE FROM scenario_versions"))
         await conn.execute(text("DELETE FROM scenarios"))
         await conn.execute(text("DELETE FROM characters"))

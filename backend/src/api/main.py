@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.routes import auth, characters, scenarios, users
+from src.api.routes import auth, characters, rooms, scenarios, users
 from src.core.config import get_settings
 from src.core.database import close_db, init_db
 from src.core.logging import setup_logging
@@ -50,6 +50,7 @@ app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(characters.router, prefix="/api/v1")
 app.include_router(scenarios.router, prefix="/api/v1")
+app.include_router(rooms.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

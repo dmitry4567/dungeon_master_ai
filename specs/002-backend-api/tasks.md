@@ -149,19 +149,19 @@
 
 ### Тесты для User Story 4
 
-- [ ] T057 [P] [US4] Контрактный тест CRUD /rooms в backend/tests/contract/test_rooms_contract.py
-- [ ] T058 [P] [US4] Контрактный тест /rooms/{id}/join, /ready, /start в backend/tests/contract/test_rooms_contract.py
+- [x] T057 [P] [US4] Контрактный тест CRUD /rooms в backend/tests/contract/test_rooms_contract.py
+- [x] T058 [P] [US4] Контрактный тест /rooms/{id}/join, /ready, /start в backend/tests/contract/test_rooms_contract.py
 
 ### Реализация User Story 4
 
-- [ ] T059 [P] [US4] Создать модель Room в backend/src/models/room.py
-- [ ] T060 [P] [US4] Создать модель RoomPlayer в backend/src/models/room.py
-- [ ] T061 [US4] Добавить миграцию для таблиц rooms, room_players в backend/alembic/versions/004_rooms.py
-- [ ] T062 [P] [US4] Создать Pydantic-схемы комнаты в backend/src/schemas/room.py
-- [ ] T063 [US4] Реализовать LobbyService (создание, присоединение, готовность) в backend/src/services/lobby_service.py
-- [ ] T064 [US4] Реализовать логику старта игры (создание GameSession) в backend/src/services/lobby_service.py
-- [ ] T065 [US4] Реализовать роуты /rooms/* в backend/src/api/routes/rooms.py
-- [ ] T066 [US4] Подключить роуты rooms к main.py
+- [x] T059 [P] [US4] Создать модель Room в backend/src/models/room.py
+- [x] T060 [P] [US4] Создать модель RoomPlayer в backend/src/models/room.py
+- [x] T061 [US4] Добавить миграцию для таблиц rooms, room_players в backend/alembic/versions/004_rooms.py
+- [x] T062 [P] [US4] Создать Pydantic-схемы комнаты в backend/src/schemas/room.py
+- [x] T063 [US4] Реализовать LobbyService (создание, присоединение, готовность) в backend/src/services/lobby_service.py
+- [x] T064 [US4] Реализовать логику старта игры (создание GameSession) в backend/src/services/lobby_service.py
+- [x] T065 [US4] Реализовать роуты /rooms/* в backend/src/api/routes/rooms.py
+- [x] T066 [US4] Подключить роуты rooms к main.py
 
 **Checkpoint**: Лобби и управление комнатами работает, можно запускать игру
 
