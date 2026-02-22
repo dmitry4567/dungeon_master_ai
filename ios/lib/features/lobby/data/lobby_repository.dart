@@ -76,7 +76,7 @@ class LobbyRepository {
   /// Переключить готовность
   Future<void> toggleReady({
     required String roomId,
-    required String characterId,
+    String? characterId,
     required bool ready,
   }) async {
     final request = ReadyRequest(

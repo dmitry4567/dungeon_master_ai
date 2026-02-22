@@ -91,7 +91,7 @@ class CreateRoomRequest with _$CreateRoomRequest {
 @freezed
 class ReadyRequest with _$ReadyRequest {
   const factory ReadyRequest({
-    required String characterId,
+    String? characterId,
     required bool ready,
   }) = _ReadyRequest;
 

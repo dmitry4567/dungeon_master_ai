@@ -232,17 +232,54 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (isHost) ...[
-              // Host: start game button
+            if (isHost && currentPlayer?.status != 'ready') ...[
+              // Host needs to select character first
               ElevatedButton.icon(
-                onPressed: room.allPlayersReady &&
-                        room.activePlayerCount >= 2
+                onPressed: () => _showCharacterSelector(context),
+                icon: const Icon(Icons.person_add),
+                label: const Text('Выбрать персонажа'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text(
+                  'Выберите персонажа перед началом игры',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              ),
+            ] else if (isHost && currentPlayer?.status == 'ready') ...[
+              // Host is ready: show start game button
+              ElevatedButton.icon(
+                onPressed: room.allPlayersReady && room.activePlayerCount >= 2
                     ? _startGame
                     : null,
                 icon: const Icon(Icons.play_arrow),
                 label: const Text('Начать игру'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Change character button for host
+              OutlinedButton.icon(
+                onPressed: () {
+                  // First unready, then show selector
+                  context.read<LobbyBloc>().add(
+                        LobbyEvent.toggleReady(
+                          roomId: widget.roomId,
+                          ready: false,
+                        ),
+                      );
+                },
+                icon: const Icon(Icons.swap_horiz),
+                label: const Text('Сменить персонажа'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(12),
                 ),
               ),
               if (!room.allPlayersReady)
@@ -282,7 +319,6 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                   context.read<LobbyBloc>().add(
                         LobbyEvent.toggleReady(
                           roomId: widget.roomId,
-                          characterId: currentPlayer.character?.id ?? '',
                           ready: false,
                         ),
                       );
