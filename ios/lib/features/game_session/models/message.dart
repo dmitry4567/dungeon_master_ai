@@ -20,12 +20,9 @@ enum MessageRole {
 class Message with _$Message {
   const factory Message({
     required String id,
-    @JsonKey(name: 'author_id') String? authorId,
+    required MessageRole role, required String content, @JsonKey(name: 'created_at') required DateTime createdAt, @JsonKey(name: 'author_id') String? authorId,
     @JsonKey(name: 'author_name') String? authorName,
-    required MessageRole role,
-    required String content,
     @JsonKey(name: 'dice_result') DiceResult? diceResult,
-    @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'state_delta') Map<String, dynamic>? stateDelta,
   }) = _Message;
 

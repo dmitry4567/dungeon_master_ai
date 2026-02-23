@@ -17,7 +17,7 @@ void main() {
   late SecureStorage secureStorage;
   late LobbyBloc lobbyBloc;
 
-  final testRoomSummary = RoomSummary(
+  const testRoomSummary = RoomSummary(
     id: 'room-1',
     name: 'Test Room',
     scenarioTitle: 'Dragon Quest',
@@ -27,7 +27,7 @@ void main() {
     status: 'waiting',
   );
 
-  final testRoomPlayer = RoomPlayer(
+  const testRoomPlayer = RoomPlayer(
     id: 'player-1',
     userId: 'user-1',
     name: 'Host User',
@@ -78,7 +78,7 @@ void main() {
         act: (bloc) => bloc.add(const LobbyEvent.loadRooms()),
         expect: () => [
           const LobbyState.loading(),
-          LobbyState.loaded(rooms: [testRoomSummary]),
+          const LobbyState.loaded(rooms: [testRoomSummary]),
         ],
       );
 
@@ -119,14 +119,14 @@ void main() {
                 name: any(named: 'name'),
                 scenarioVersionId: any(named: 'scenarioVersionId'),
                 maxPlayers: any(named: 'maxPlayers'),
-              )).thenAnswer((_) async => testRoom);
+              ),).thenAnswer((_) async => testRoom);
           return lobbyBloc;
         },
         act: (bloc) => bloc.add(const LobbyEvent.createRoom(
           name: 'New Room',
           scenarioVersionId: 'version-1',
           maxPlayers: 4,
-        )),
+        ),),
         expect: () => [
           const LobbyState.creating(),
           isA<LobbyRoomDetail>(),
@@ -140,13 +140,13 @@ void main() {
                 name: any(named: 'name'),
                 scenarioVersionId: any(named: 'scenarioVersionId'),
                 maxPlayers: any(named: 'maxPlayers'),
-              )).thenThrow(Exception('Failed'));
+              ),).thenThrow(Exception('Failed'));
           return lobbyBloc;
         },
         act: (bloc) => bloc.add(const LobbyEvent.createRoom(
           name: 'New Room',
           scenarioVersionId: 'version-1',
-        )),
+        ),),
         expect: () => [
           const LobbyState.creating(),
           isA<LobbyError>(),
@@ -215,7 +215,7 @@ void main() {
         act: (bloc) => bloc.add(const LobbyEvent.approvePlayer(
           roomId: 'room-1',
           playerId: 'player-2',
-        )),
+        ),),
         expect: () => [isA<LobbyRoomDetail>()],
       );
     });
@@ -233,7 +233,7 @@ void main() {
         act: (bloc) => bloc.add(const LobbyEvent.declinePlayer(
           roomId: 'room-1',
           playerId: 'player-2',
-        )),
+        ),),
         expect: () => [isA<LobbyRoomDetail>()],
       );
     });
@@ -246,7 +246,7 @@ void main() {
                 roomId: any(named: 'roomId'),
                 characterId: any(named: 'characterId'),
                 ready: any(named: 'ready'),
-              )).thenAnswer((_) async {});
+              ),).thenAnswer((_) async {});
           when(() => lobbyRepository.getRoom(any()))
               .thenAnswer((_) async => testRoom);
           return lobbyBloc;
@@ -255,7 +255,7 @@ void main() {
           roomId: 'room-1',
           characterId: 'char-1',
           ready: true,
-        )),
+        ),),
         expect: () => [isA<LobbyRoomDetail>()],
       );
     });

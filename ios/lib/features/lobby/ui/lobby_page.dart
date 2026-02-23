@@ -29,14 +29,12 @@ class _LobbyPageState extends State<LobbyPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Игровое лобби'),
       ),
       body: BlocBuilder<LobbyBloc, LobbyState>(
-        builder: (context, state) {
-          return state.when(
+        builder: (context, state) => state.when(
             initial: () => const Center(
               child: Text('Создайте или присоединитесь к комнате'),
             ),
@@ -55,12 +53,12 @@ class _LobbyPageState extends State<LobbyPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.meeting_room_outlined,
-                          size: 64, color: Colors.grey),
+                          size: 64, color: Colors.grey,),
                       SizedBox(height: 16),
                       Text(
                         'Нет активных комнат',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
+                            fontSize: 18, fontWeight: FontWeight.w500,),
                       ),
                       SizedBox(height: 8),
                       Text(
@@ -97,8 +95,7 @@ class _LobbyPageState extends State<LobbyPage> {
               message: message,
               onRetry: _loadRooms,
             ),
-          );
-        },
+          ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(Routes.roomCreate),
@@ -106,5 +103,4 @@ class _LobbyPageState extends State<LobbyPage> {
         label: const Text('Создать'),
       ),
     );
-  }
 }

@@ -1,5 +1,3 @@
-import 'package:ai_dungeon_master/features/auth/bloc/auth_bloc.dart';
-import 'package:ai_dungeon_master/features/auth/bloc/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,14 +6,14 @@ import '../../../core/theme/colors.dart';
 import '../bloc/game_session_bloc.dart';
 import '../bloc/game_session_event.dart';
 import '../bloc/game_session_state.dart';
-import '../models/message.dart';
+import 'widgets/dice_roll_request_widget.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/message_input.dart';
 import 'widgets/world_state_bar.dart';
 
 /// Основная страница игровой сессии
 class GameSessionPage extends StatefulWidget {
-  const GameSessionPage({super.key, required this.roomId});
+  const GameSessionPage({required this.roomId, super.key});
 
   final String roomId;
 
@@ -33,22 +31,15 @@ class _GameSessionPageState extends State<GameSessionPage> {
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<GameSessionBloc, GameSessionState>(
+  Widget build(BuildContext context) => BlocConsumer<GameSessionBloc, GameSessionState>(
       listener: (context, state) {
         if (state is GameSessionActive) {
           _scrollToBottom();
@@ -59,15 +50,12 @@ class _GameSessionPageState extends State<GameSessionPage> {
           );
         }
       },
-      builder: (context, state) {
-        return Scaffold(
+      builder: (context, state) => Scaffold(
           backgroundColor: AppColors.background,
           appBar: _buildAppBar(context, state),
           body: _buildBody(context, state),
-        );
-      },
+        ),
     );
-  }
 
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
@@ -132,56 +120,52 @@ class _GameSessionPageState extends State<GameSessionPage> {
     );
   }
 
-  Widget _buildBody(BuildContext context, GameSessionState state) {
-    return switch (state) {
-      GameSessionInitial() ||
-      GameSessionConnecting() =>
-      const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.secondary),
-            SizedBox(height: 16),
-            Text(
-              'Подключение к сессии...',
-              style: TextStyle(color: AppColors.onSurface),
-            ),
-          ],
+  Widget _buildBody(BuildContext context, GameSessionState state) => switch (state) {
+      GameSessionInitial() || GameSessionConnecting() => const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.secondary),
+              SizedBox(height: 16),
+              Text(
+                'Подключение к сессии...',
+                style: TextStyle(color: AppColors.onSurface),
+              ),
+            ],
+          ),
         ),
-      ),
       GameSessionActive() => _buildActiveSession(context, state),
       GameSessionEnded() => _buildEndedSession(context, state),
       GameSessionError() => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.error),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                state.message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.onSurface),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  state.message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.onSurface),
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.pop(),
-              child: const Text('Вернуться'),
-            ),
-          ],
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => context.pop(),
+                child: const Text('Вернуться'),
+              ),
+            ],
+          ),
         ),
-      ),
       _ => const Center(
-        child: CircularProgressIndicator(color: AppColors.secondary),
-      ),
+          child: CircularProgressIndicator(color: AppColors.secondary),
+        ),
     };
-  }
 
   Widget _buildActiveSession(BuildContext context, GameSessionActive state) {
     final isStreaming = state.streamingContent != null;
+    final hasPendingDiceRequest = state.pendingDiceRequest != null;
 
     return Column(
       children: [
@@ -189,28 +173,37 @@ class _GameSessionPageState extends State<GameSessionPage> {
         WorldStateBar(worldState: state.worldState),
         // Список сообщений
         Expanded(
-          child: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, authState) {
-              final currentUserId =
-              authState is AuthAuthenticated ? authState.user.id : null;
-              return _buildMessageList(state, currentUserId);
-            },
+          child: Stack(
+            children: [
+              _buildMessageList(state),
+              // Запрос на бросок кубика поверх чата
+              if (hasPendingDiceRequest)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: DiceRollRequestWidget(
+                    request: state.pendingDiceRequest!,
+                  ),
+                ),
+            ],
           ),
         ),
-        // Поле ввода
-        MessageInput(
-          onSend: (content) {
-            context
-                .read<GameSessionBloc>()
-                .add(GameSessionEvent.sendMessage(content: content));
-          },
-          isStreaming: isStreaming,
-        ),
+        // Поле ввода (скрыто, когда ждём бросок кубика)
+        if (!hasPendingDiceRequest)
+          MessageInput(
+            onSend: (content) {
+              context
+                  .read<GameSessionBloc>()
+                  .add(GameSessionEvent.sendMessage(content: content));
+            },
+            isStreaming: isStreaming,
+          ),
       ],
     );
   }
 
-  Widget _buildMessageList(GameSessionActive state, String? currentUserId) {
+  Widget _buildMessageList(GameSessionActive state) {
     final messages = state.messages;
     final itemCount =
         messages.length + (state.streamingContent != null ? 1 : 0);
@@ -220,8 +213,7 @@ class _GameSessionPageState extends State<GameSessionPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.chat_bubble_outline,
-                size: 48, color: AppColors.outline),
+            Icon(Icons.chat_bubble_outline, size: 48, color: AppColors.outline),
             SizedBox(height: 16),
             Text(
               'Начните приключение!\nОпишите действие вашего персонажа.',
@@ -247,18 +239,15 @@ class _GameSessionPageState extends State<GameSessionPage> {
         }
 
         final message = messages[index];
-        final isCurrentUser = message.authorId == currentUserId;
 
         return MessageBubble(
           message: message,
-          isCurrentUser: isCurrentUser,
         );
       },
     );
   }
 
-  Widget _buildEndedSession(BuildContext context, GameSessionEnded state) {
-    return Column(
+  Widget _buildEndedSession(BuildContext context, GameSessionEnded state) => Column(
       children: [
         // Баннер завершения
         Container(
@@ -282,21 +271,13 @@ class _GameSessionPageState extends State<GameSessionPage> {
         ),
         // История сообщений (только чтение)
         Expanded(
-          child: BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, authState) {
-              final currentUserId =
-              authState is AuthAuthenticated ? authState.user.id : null;
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: state.messages.length,
-                itemBuilder: (context, index) {
-                  final message = state.messages[index];
-                  final isCurrentUser = message.authorId == currentUserId;
-                  return MessageBubble(
-                    message: message,
-                    isCurrentUser: isCurrentUser,
-                  );
-                },
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: state.messages.length,
+            itemBuilder: (context, index) {
+              final message = state.messages[index];
+              return MessageBubble(
+                message: message,
               );
             },
           ),
@@ -324,7 +305,6 @@ class _GameSessionPageState extends State<GameSessionPage> {
         ),
       ],
     );
-  }
 
   void _showLeaveDialog(BuildContext context) {
     showDialog<bool>(
@@ -394,9 +374,7 @@ class _ConnectionIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon) = switch (state) {
       'connected' => (AppColors.success, Icons.wifi),
-      'connecting' ||
-      'reconnecting' =>
-      (AppColors.warning, Icons.wifi_find),
+      'connecting' || 'reconnecting' => (AppColors.warning, Icons.wifi_find),
       'error' => (AppColors.error, Icons.wifi_off),
       _ => (AppColors.outline, Icons.wifi_off),
     };

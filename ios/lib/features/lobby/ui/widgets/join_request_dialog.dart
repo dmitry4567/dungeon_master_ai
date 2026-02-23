@@ -3,16 +3,13 @@ import '../../models/room.dart';
 
 /// Диалог подтверждения запроса на вступление
 class JoinRequestDialog extends StatelessWidget {
+
+  const JoinRequestDialog({
+    required this.player, required this.onApprove, required this.onDecline, super.key,
+  });
   final RoomPlayer player;
   final VoidCallback onApprove;
   final VoidCallback onDecline;
-
-  const JoinRequestDialog({
-    super.key,
-    required this.player,
-    required this.onApprove,
-    required this.onDecline,
-  });
 
   /// Показать диалог
   static Future<bool?> show(
@@ -20,8 +17,7 @@ class JoinRequestDialog extends StatelessWidget {
     required RoomPlayer player,
     required VoidCallback onApprove,
     required VoidCallback onDecline,
-  }) {
-    return showDialog<bool>(
+  }) => showDialog<bool>(
       context: context,
       builder: (context) => JoinRequestDialog(
         player: player,
@@ -35,11 +31,9 @@ class JoinRequestDialog extends StatelessWidget {
         },
       ),
     );
-  }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
+  Widget build(BuildContext context) => AlertDialog(
       title: const Text('Запрос на вступление'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -85,5 +79,4 @@ class JoinRequestDialog extends StatelessWidget {
         ),
       ],
     );
-  }
 }

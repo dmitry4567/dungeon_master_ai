@@ -7,12 +7,12 @@ import 'scenario_api.dart';
 
 @singleton
 class ScenarioRepository {
+
+  ScenarioRepository(this._api, this._prefs);
   final ScenarioApi _api;
   final SharedPreferences _prefs;
 
   static const _cacheKey = 'cached_scenarios';
-
-  ScenarioRepository(this._api, this._prefs);
 
   /// List all scenarios with optional status filter
   Future<List<Scenario>> listScenarios({String? status}) async {
@@ -68,9 +68,7 @@ class ScenarioRepository {
   }
 
   /// List all versions of a scenario
-  Future<List<ScenarioVersionSummary>> listVersions(String scenarioId) async {
-    return _api.listVersions(scenarioId);
-  }
+  Future<List<ScenarioVersionSummary>> listVersions(String scenarioId) async => _api.listVersions(scenarioId);
 
   /// Restore a previous version of a scenario
   Future<Scenario> restoreVersion(String scenarioId, String versionId) async {
@@ -117,7 +115,7 @@ class ScenarioRepository {
 
     try {
       final jsonList = jsonDecode(jsonString) as List<dynamic>;
-      final Map<String, CachedScenario> result = {};
+      final result = <String, CachedScenario>{};
 
       for (final item in jsonList) {
         final cached = CachedScenario.fromJson(item as Map<String, dynamic>);
@@ -131,7 +129,7 @@ class ScenarioRepository {
   }
 
   Future<void> _saveCachedScenarios(
-      Map<String, CachedScenario> scenarios) async {
+      Map<String, CachedScenario> scenarios,) async {
     final jsonList =
         scenarios.values.map((scenario) => scenario.toJson()).toList();
     await _prefs.setString(_cacheKey, jsonEncode(jsonList));

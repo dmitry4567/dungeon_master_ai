@@ -30,4 +30,10 @@ class GameSessionEvent with _$GameSessionEvent {
 
   /// Игрок покидает сессию
   const factory GameSessionEvent.leaveSession() = LeaveSessionEvent;
+
+  /// Игрок бросает кубик в ответ на запрос
+  const factory GameSessionEvent.rollDice({
+    required String requestId,
+    required List<int> rolls,
+  }) = RollDiceEvent;
 }

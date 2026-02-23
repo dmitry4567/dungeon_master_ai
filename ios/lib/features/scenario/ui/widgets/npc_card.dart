@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import '../../models/scenario_content.dart';
 
 class NpcCard extends StatelessWidget {
-  final Npc npc;
 
   const NpcCard({
-    super.key,
-    required this.npc,
+    required this.npc, super.key,
   });
+  final Npc npc;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
+  Widget build(BuildContext context) => Card(
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         childrenPadding: const EdgeInsets.all(16),
@@ -91,12 +89,11 @@ class NpcCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                )),
+                ),),
           ],
         ],
       ),
     );
-  }
 
   Widget _getRoleIcon(String role) {
     IconData icon;
@@ -106,23 +103,18 @@ class NpcCard extends StatelessWidget {
       case 'ally':
         icon = Icons.favorite;
         color = Colors.green;
-        break;
       case 'enemy':
         icon = Icons.warning;
         color = Colors.red;
-        break;
       case 'neutral':
         icon = Icons.remove_circle_outline;
         color = Colors.grey;
-        break;
       case 'quest_giver':
         icon = Icons.emoji_events;
         color = Colors.amber;
-        break;
       case 'antagonist':
         icon = Icons.dangerous;
         color = Colors.deepOrange;
-        break;
       default:
         icon = Icons.person;
         color = Colors.grey;
@@ -167,19 +159,18 @@ class NpcCard extends StatelessWidget {
 }
 
 class _InfoSection extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String content;
 
   const _InfoSection({
     required this.icon,
     required this.title,
     required this.content,
   });
+  final IconData icon;
+  final String title;
+  final String content;
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+  Widget build(BuildContext context) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -206,5 +197,4 @@ class _InfoSection extends StatelessWidget {
         ),
       ],
     );
-  }
 }

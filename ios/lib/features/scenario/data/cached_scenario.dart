@@ -5,18 +5,12 @@ import '../models/scenario_content.dart';
 /// Simple in-memory cache for scenarios (for Phase 5 MVP)
 /// TODO: Replace with persistent cache (Isar or SQLite) in future phases
 class CachedScenario {
-  final String id;
-  final String title;
-  final String status;
-  final String? contentJson; // Serialized ScenarioContent (current version)
-  final DateTime cachedAt;
 
   CachedScenario({
     required this.id,
     required this.title,
     required this.status,
-    this.contentJson,
-    required this.cachedAt,
+    required this.cachedAt, this.contentJson,
   });
 
   /// Create CachedScenario from Scenario model
@@ -34,6 +28,20 @@ class CachedScenario {
       cachedAt: DateTime.now(),
     );
   }
+
+  /// Create from JSON (SharedPreferences)
+  factory CachedScenario.fromJson(Map<String, dynamic> json) => CachedScenario(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      status: json['status'] as String,
+      contentJson: json['contentJson'] as String?,
+      cachedAt: DateTime.parse(json['cachedAt'] as String),
+    );
+  final String id;
+  final String title;
+  final String status;
+  final String? contentJson; // Serialized ScenarioContent (current version)
+  final DateTime cachedAt;
 
   /// Convert CachedScenario to Scenario model
   Scenario toScenario() {
@@ -65,15 +73,4 @@ class CachedScenario {
         'contentJson': contentJson,
         'cachedAt': cachedAt.toIso8601String(),
       };
-
-  /// Create from JSON (SharedPreferences)
-  factory CachedScenario.fromJson(Map<String, dynamic> json) {
-    return CachedScenario(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      status: json['status'] as String,
-      contentJson: json['contentJson'] as String?,
-      cachedAt: DateTime.parse(json['cachedAt'] as String),
-    );
-  }
 }

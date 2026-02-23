@@ -3,18 +3,15 @@ import '../../models/room.dart';
 
 /// Карточка комнаты в списке лобби
 class RoomCard extends StatelessWidget {
+
+  const RoomCard({
+    required this.room, required this.onTap, super.key,
+  });
   final RoomSummary room;
   final VoidCallback onTap;
 
-  const RoomCard({
-    super.key,
-    required this.room,
-    required this.onTap,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Card(
+  Widget build(BuildContext context) => Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -102,7 +99,6 @@ class RoomCard extends StatelessWidget {
         ),
       ),
     );
-  }
 
   IconData _getStatusIcon(String status) => switch (status) {
         'waiting' => Icons.hourglass_empty,
@@ -127,14 +123,13 @@ class RoomCard extends StatelessWidget {
 }
 
 class _InfoChip extends StatelessWidget {
+
+  const _InfoChip({required this.icon, required this.label});
   final IconData icon;
   final String label;
 
-  const _InfoChip({required this.icon, required this.label});
-
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: Colors.grey),
@@ -145,5 +140,4 @@ class _InfoChip extends StatelessWidget {
         ),
       ],
     );
-  }
 }

@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../models/dice_result.dart';
 import '../models/message.dart';
 import '../models/world_state.dart';
 
@@ -23,6 +24,8 @@ class GameSessionState with _$GameSessionState {
     String? streamingContent,
     String? streamingMessageId,
     @Default('connected') String connectionState,
+    /// Ожидающий запрос на бросок кубика (для текущего игрока)
+    DiceRequest? pendingDiceRequest,
   }) = GameSessionActive;
 
   /// Сессия завершена

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../shared/widgets/error_view.dart';
+import '../../../shared/widgets/loading_skeleton.dart';
 import '../bloc/scenario_bloc.dart';
 import '../bloc/scenario_event.dart';
 import '../bloc/scenario_state.dart';
@@ -8,16 +11,13 @@ import '../models/scenario.dart';
 import 'widgets/act_expansion_tile.dart';
 import 'widgets/npc_card.dart';
 import 'widgets/version_history_sheet.dart';
-import '../../../shared/widgets/loading_skeleton.dart';
-import '../../../shared/widgets/error_view.dart';
 
 class ScenarioPreviewPage extends StatefulWidget {
-  final String scenarioId;
 
   const ScenarioPreviewPage({
-    super.key,
-    required this.scenarioId,
+    required this.scenarioId, super.key,
   });
+  final String scenarioId;
 
   @override
   State<ScenarioPreviewPage> createState() => _ScenarioPreviewPageState();
@@ -63,8 +63,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocListener<ScenarioBloc, ScenarioState>(
+  Widget build(BuildContext context) => BlocListener<ScenarioBloc, ScenarioState>(
       listener: (context, state) {
         if (state is ScenarioDetail && state.scenario.status == 'published') {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -200,7 +199,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
                     ),
                     Chip(
                       label: Text(
-                          '${content.playersMin}-${content.playersMax} игроков'),
+                          '${content.playersMin}-${content.playersMax} игроков',),
                       avatar: const Icon(Icons.people, size: 18),
                     ),
                   ],
@@ -208,7 +207,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
                 const SizedBox(height: 24),
 
                 // World Lore
-                _SectionHeader(
+                const _SectionHeader(
                   icon: Icons.public,
                   title: 'История мира',
                 ),
@@ -228,7 +227,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
                 ...content.acts.map((act) => Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: ActExpansionTile(act: act),
-                    )),
+                    ),),
                 const SizedBox(height: 24),
 
                 // NPCs
@@ -240,7 +239,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
                 ...content.npcs.map((npc) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: NpcCard(npc: npc),
-                    )),
+                    ),),
                 const SizedBox(height: 24),
 
                 // Locations
@@ -260,7 +259,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ),
-                    )),
+                    ),),
               ],
             ),
           );
@@ -268,21 +267,19 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage> {
       ),
       ),
     );
-  }
 }
 
 class _SectionHeader extends StatelessWidget {
-  final IconData icon;
-  final String title;
 
   const _SectionHeader({
     required this.icon,
     required this.title,
   });
+  final IconData icon;
+  final String title;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       children: [
         Icon(icon, color: Theme.of(context).primaryColor),
         const SizedBox(width: 8),
@@ -295,5 +292,4 @@ class _SectionHeader extends StatelessWidget {
         ),
       ],
     );
-  }
 }

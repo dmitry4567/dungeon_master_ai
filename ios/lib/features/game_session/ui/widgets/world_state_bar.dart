@@ -6,8 +6,7 @@ import '../../models/world_state.dart';
 /// Панель состояния мира
 class WorldStateBar extends StatefulWidget {
   const WorldStateBar({
-    super.key,
-    required this.worldState,
+    required this.worldState, super.key,
   });
 
   final WorldState worldState;
@@ -20,8 +19,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
   bool _expanded = false;
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
+  Widget build(BuildContext context) => GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -54,7 +52,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                       decoration: BoxDecoration(
                         color: AppColors.error.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppColors.error, width: 1),
+                        border: Border.all(color: AppColors.error),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -163,7 +161,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                         style: TextStyle(
                           color: AppColors.onSurface.withValues(alpha: 0.4),
                           fontSize: 12,
-                          fontStyle: FontStyle.italic,
+                          // fontStyle: FontStyle.italic,
                         ),
                       ),
                   ],
@@ -173,7 +171,6 @@ class _WorldStateBarState extends State<WorldStateBar> {
         ),
       ),
     );
-  }
 }
 
 class _InfoChip extends StatelessWidget {
@@ -183,8 +180,7 @@ class _InfoChip extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: AppColors.secondaryLight, size: 14),
@@ -201,7 +197,6 @@ class _InfoChip extends StatelessWidget {
         ),
       ],
     );
-  }
 }
 
 class _MiniChip extends StatelessWidget {
@@ -211,8 +206,7 @@ class _MiniChip extends StatelessWidget {
   final bool active;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: active
@@ -235,5 +229,4 @@ class _MiniChip extends StatelessWidget {
         ),
       ),
     );
-  }
 }

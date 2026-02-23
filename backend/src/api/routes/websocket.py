@@ -11,6 +11,7 @@ from src.core.database import get_db_context
 from src.core.redis import get_redis_service
 from src.core.security import verify_token_type
 from src.schemas.websocket import (
+    WSDiceRequest,
     WSDiceResult,
     WSDMResponseChunk,
     WSDMResponseEnd,
@@ -20,10 +21,9 @@ from src.schemas.websocket import (
     WSPlayerJoin,
     WSPlayerLeave,
     WSStateUpdate,
-    WSSystemMessage,
 )
 from src.services.ai_service import AIService
-from src.services.dice_parser import DiceParser
+from src.services.dice_parser import DiceParser, DiceRequest
 from src.services.session_service import SessionService
 from src.services.state_extractor import StateExtractor
 
@@ -39,6 +39,8 @@ class ConnectionManager:
         self.active_connections: dict[str, dict[str, WebSocket]] = {}  # room_id -> {user_id: ws}
         self.user_info: dict[str, dict[str, Any]] = {}  # user_id -> {name, character_name, etc}
         self._subscribe_tasks: dict[str, asyncio.Task] = {}
+        # Pending dice requests: request_id -> {request_data, player_id, room_id, ...}
+        self.pending_dice_requests: dict[str, dict[str, Any]] = {}
 
     async def connect(
         self,
@@ -159,6 +161,58 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
+
+
+async def _process_dm_response_completion(
+    manager: ConnectionManager,
+    state_extractor: StateExtractor,
+    room_id: str,
+    session_id: uuid.UUID,
+    full_response: str,
+    world_state: dict,
+    scenario_content: str,
+    dice_result_data: dict | None,
+) -> None:
+    """Process state extraction and save DM message after dice roll (or if no dice needed)."""
+    state_delta = None
+    try:
+        state_update = await state_extractor.extract_state_update(
+            full_response,
+            world_state,
+            scenario_content,
+        )
+
+        if state_update.has_changes():
+            async with get_db_context() as db:
+                session_service = SessionService(db)
+                # Apply state changes
+                new_world_state = state_extractor.apply_state_update(
+                    world_state, state_update
+                )
+                await session_service.update_world_state(
+                    session_id, new_world_state
+                )
+
+            # Broadcast state update
+            state_msg = WSStateUpdate(world_state=new_world_state)
+            await manager.broadcast_to_room(
+                room_id, state_msg.model_dump(mode="json")
+            )
+
+            state_delta = state_update.to_dict()
+
+    except Exception as e:
+        logger.error(f"State extraction error: {e}")
+
+    # Save DM message
+    async with get_db_context() as db:
+        session_service = SessionService(db)
+        await session_service.add_dm_message(
+            session_id,
+            full_response,
+            dice_result=dice_result_data,
+            state_delta=state_delta,
+        )
 
 
 async def get_user_from_token(token: str) -> dict | None:
@@ -319,67 +373,183 @@ async def websocket_session(
                     await manager.send_personal(user_id, error_msg.model_dump(mode="json"))
                     continue
 
-                # Parse dice requests from response
-                clean_response, dice_results = dice_parser.parse_and_roll(full_response)
+                # Parse dice requests from response (without rolling)
+                dice_requests = dice_parser.parse_dice_requests(full_response)
 
-                # If there were dice requests, broadcast results
-                for result in dice_results:
-                    dice_msg = WSDiceResult(
-                        player_id=uuid.UUID(user_id),
-                        player_name=user_name,
-                        dice_type=result.request.notation,
-                        base_roll=sum(result.rolls),
-                        modifier=result.request.modifier,
-                        total=result.total,
-                        dc=result.request.dc,
-                        skill=result.request.skill,
-                        success=result.success,
+                # If there are dice requests, send request to the player who performed the action
+                if dice_requests:
+                    # Take the first dice request (typically one per action)
+                    dice_req = dice_requests[0]
+                    request_id = uuid.uuid4()
+
+                    # Store pending request with all context needed for later processing
+                    manager.pending_dice_requests[str(request_id)] = {
+                        "request": dice_req,
+                        "player_id": user_id,
+                        "player_name": user_name,
+                        "room_id": room_id,
+                        "session_id": session_id,
+                        "dm_response": full_response,
+                        "world_state": world_state,
+                        "scenario_content": scenario_content,
+                        "conversation_history": conversation_history,
+                        "players": players,
+                        "player_message": content,
+                    }
+
+                    # Send dice request to the player
+                    dice_request_msg = WSDiceRequest(
+                        request_id=request_id,
+                        target_player_id=uuid.UUID(user_id),
+                        target_player_name=user_name,
+                        dice_type=dice_req.dice_type,
+                        num_dice=dice_req.num_dice,
+                        modifier=dice_req.modifier,
+                        dc=dice_req.dc,
+                        skill=dice_req.skill,
+                        reason=dice_req.reason,
                     )
-                    await manager.broadcast_to_room(room_id, dice_msg.model_dump(mode="json"))
+                    # Send to the specific player who needs to roll
+                    await manager.send_personal(user_id, dice_request_msg.model_dump(mode="json"))
 
-                # Extract state changes and save DM message (fresh DB session)
-                state_delta = None
+                    # Don't process state/save yet - wait for dice roll
+                    continue
+
+                # No dice requests - proceed with state extraction and save
+                await _process_dm_response_completion(
+                    manager=manager,
+                    state_extractor=state_extractor,
+                    room_id=room_id,
+                    session_id=session_id,
+                    full_response=full_response,
+                    world_state=world_state,
+                    scenario_content=scenario_content,
+                    dice_result_data=None,
+                )
+
+            elif msg_type == WSMessageType.DICE_ROLL:
+                # Player sent their dice roll
+                request_id = data.get("request_id")
+                rolls = data.get("rolls", [])
+
+                if not request_id or request_id not in manager.pending_dice_requests:
+                    error_msg = WSError(
+                        error="invalid_dice_roll",
+                        message="No pending dice request found",
+                    )
+                    await manager.send_personal(user_id, error_msg.model_dump(mode="json"))
+                    continue
+
+                # Get pending request
+                pending = manager.pending_dice_requests.pop(request_id)
+                dice_req: DiceRequest = pending["request"]
+
+                # Validate rolls
+                if len(rolls) != dice_req.num_dice:
+                    error_msg = WSError(
+                        error="invalid_dice_roll",
+                        message=f"Expected {dice_req.num_dice} dice, got {len(rolls)}",
+                    )
+                    await manager.send_personal(user_id, error_msg.model_dump(mode="json"))
+                    # Put request back
+                    manager.pending_dice_requests[request_id] = pending
+                    continue
+
+                # Calculate result
+                base_roll = sum(rolls)
+                total = base_roll + dice_req.modifier
+                success = None
+                if dice_req.dc is not None:
+                    success = total >= dice_req.dc
+
+                # Broadcast dice result to all players
+                dice_msg = WSDiceResult(
+                    player_id=uuid.UUID(pending["player_id"]),
+                    player_name=pending["player_name"],
+                    dice_type=dice_req.notation,
+                    base_roll=base_roll,
+                    modifier=dice_req.modifier,
+                    total=total,
+                    dc=dice_req.dc,
+                    skill=dice_req.skill,
+                    success=success,
+                )
+                await manager.broadcast_to_room(pending["room_id"], dice_msg.model_dump(mode="json"))
+
+                # Build dice result data for storage
+                dice_result_data = {
+                    "type": dice_req.notation,
+                    "dice_type": dice_req.dice_type,
+                    "num_dice": dice_req.num_dice,
+                    "die_size": dice_req.die_size,
+                    "rolls": rolls,
+                    "base_roll": base_roll,
+                    "modifier": dice_req.modifier,
+                    "total": total,
+                    "dc": dice_req.dc,
+                    "skill": dice_req.skill,
+                    "reason": dice_req.reason,
+                    "success": success,
+                }
+
+                # Format result message for AI continuation
+                success_text = "SUCCESS" if success else "FAILURE" if success is not None else ""
+                dice_result_text = (
+                    f"[DICE RESULT: {dice_req.notation} rolled {base_roll}"
+                    f"{'+' + str(dice_req.modifier) if dice_req.modifier > 0 else str(dice_req.modifier) if dice_req.modifier < 0 else ''}"
+                    f" = {total}"
+                    f"{' vs DC ' + str(dice_req.dc) if dice_req.dc else ''}"
+                    f"{' - ' + success_text if success_text else ''}]"
+                )
+
+                # Generate continuation from AI based on dice result
+                continuation_message_id = uuid.uuid4()
+                continuation_response = ""
+
                 try:
-                    state_update = await state_extractor.extract_state_update(
-                        full_response,
-                        world_state,
-                        scenario_content,
-                    )
-
-                    if state_update.has_changes():
-                        async with get_db_context() as db:
-                            session_service = SessionService(db)
-                            # Apply state changes
-                            new_world_state = state_extractor.apply_state_update(
-                                world_state, state_update
-                            )
-                            await session_service.update_world_state(
-                                session_id, new_world_state
-                            )
-
-                        # Broadcast state update
-                        state_msg = WSStateUpdate(world_state=new_world_state)
-                        await manager.broadcast_to_room(
-                            room_id, state_msg.model_dump(mode="json")
+                    async for chunk in ai_service.stream_dm_response(
+                        player_message=dice_result_text,
+                        scenario_content=pending["scenario_content"],
+                        world_state=pending["world_state"],
+                        players=pending["players"],
+                        conversation_history=pending["conversation_history"] + [
+                            {"role": "user", "content": pending["player_message"]},
+                            {"role": "assistant", "content": pending["dm_response"]},
+                        ],
+                    ):
+                        continuation_response += chunk
+                        chunk_msg = WSDMResponseChunk(
+                            chunk=chunk,
+                            message_id=continuation_message_id,
+                        )
+                        await manager.broadcast_to_room_direct(
+                            pending["room_id"], chunk_msg.model_dump(mode="json")
                         )
 
-                        state_delta = state_update.to_dict()
+                    # Send end marker
+                    end_msg = WSDMResponseEnd(
+                        message_id=continuation_message_id,
+                        full_content=continuation_response,
+                    )
+                    await manager.broadcast_to_room(pending["room_id"], end_msg.model_dump(mode="json"))
 
                 except Exception as e:
-                    logger.error(f"State extraction error: {e}")
+                    logger.error(f"AI continuation error: {e}")
+                    # Even if continuation fails, we still process the original response
 
-                # Save DM message
-                dice_result_data = (
-                    dice_results[0].to_dict() if dice_results else None
+                # Combine original response + continuation for storage
+                full_combined_response = pending["dm_response"] + "\n\n" + continuation_response
+
+                await _process_dm_response_completion(
+                    manager=manager,
+                    state_extractor=state_extractor,
+                    room_id=pending["room_id"],
+                    session_id=pending["session_id"],
+                    full_response=full_combined_response,
+                    world_state=pending["world_state"],
+                    scenario_content=pending["scenario_content"],
+                    dice_result_data=dice_result_data,
                 )
-                async with get_db_context() as db:
-                    session_service = SessionService(db)
-                    await session_service.add_dm_message(
-                        session_id,
-                        full_response,
-                        dice_result=dice_result_data,
-                        state_delta=state_delta,
-                    )
 
     except WebSocketDisconnect:
         logger.info(f"User {user_id} disconnected")

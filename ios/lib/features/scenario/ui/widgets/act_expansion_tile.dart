@@ -2,16 +2,14 @@ import 'package:flutter/material.dart';
 import '../../models/scenario_content.dart';
 
 class ActExpansionTile extends StatelessWidget {
-  final Act act;
 
   const ActExpansionTile({
-    super.key,
-    required this.act,
+    required this.act, super.key,
   });
+  final Act act;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
+  Widget build(BuildContext context) => Card(
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         childrenPadding: const EdgeInsets.all(16),
@@ -71,23 +69,21 @@ class ActExpansionTile extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
 
   const _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
   });
+  final IconData icon;
+  final String label;
+  final String value;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 18, color: Colors.grey),
@@ -114,21 +110,19 @@ class _InfoRow extends StatelessWidget {
         ),
       ],
     );
-  }
 }
 
 class _SceneCard extends StatelessWidget {
-  final Scene scene;
-  final int index;
 
   const _SceneCard({
     required this.scene,
     required this.index,
   });
+  final Scene scene;
+  final int index;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
+  Widget build(BuildContext context) => Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Theme.of(context).cardColor.withOpacity(0.5),
       child: Padding(
@@ -194,7 +188,7 @@ class _SceneCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )),
+                  ),),
             ],
             if (scene.possibleOutcomes.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -220,11 +214,10 @@ class _SceneCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )),
+                  ),),
             ],
           ],
         ),
       ),
     );
-  }
 }

@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import '../../models/scenario.dart';
 
 class ScenarioCard extends StatelessWidget {
-  final Scenario scenario;
-  final VoidCallback onTap;
 
   const ScenarioCard({
-    super.key,
-    required this.scenario,
-    required this.onTap,
+    required this.scenario, required this.onTap, super.key,
   });
+  final Scenario scenario;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -139,17 +137,16 @@ class ScenarioCard extends StatelessWidget {
 }
 
 class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
 
   const _InfoChip({
     required this.icon,
     required this.label,
   });
+  final IconData icon;
+  final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor.withOpacity(0.1),
@@ -170,23 +167,21 @@ class _InfoChip extends StatelessWidget {
         ],
       ),
     );
-  }
 }
 
 class _StatChip extends StatelessWidget {
-  final IconData icon;
-  final int count;
-  final String label;
 
   const _StatChip({
     required this.icon,
     required this.count,
     required this.label,
   });
+  final IconData icon;
+  final int count;
+  final String label;
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
+  Widget build(BuildContext context) => Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 16, color: Colors.grey),
@@ -208,5 +203,4 @@ class _StatChip extends StatelessWidget {
         ),
       ],
     );
-  }
 }

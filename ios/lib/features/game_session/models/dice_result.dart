@@ -26,20 +26,19 @@ class DiceResult with _$DiceResult {
       _$DiceResultFromJson(json);
 }
 
-/// Запрос на бросок кубиков
+/// Запрос на бросок кубиков от сервера
 @freezed
 class DiceRequest with _$DiceRequest {
   const factory DiceRequest({
-    required String type, // d20, 2d6, etc.
-    int? modifier,
+    @JsonKey(name: 'request_id') required String requestId,
+    @JsonKey(name: 'target_player_id') required String targetPlayerId,
+    @JsonKey(name: 'target_player_name') required String targetPlayerName,
+    @JsonKey(name: 'dice_type') required String diceType, // d20, d6, etc.
+    @JsonKey(name: 'num_dice') @Default(1) int numDice,
+    @Default(0) int modifier,
     int? dc,
     String? skill,
-    String? ability,
-    @JsonKey(name: 'damage_type') String? damageType,
-    @JsonKey(name: 'roll_type') String? rollType, // attack, save, check, damage
-    bool? advantage,
-    bool? disadvantage,
-    String? description,
+    String? reason,
   }) = _DiceRequest;
 
   factory DiceRequest.fromJson(Map<String, dynamic> json) =>

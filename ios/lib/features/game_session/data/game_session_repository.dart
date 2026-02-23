@@ -42,14 +42,10 @@ class GameSessionRepository {
   /// Подключиться к сессии
   Future<void> connectToSession(String roomId) async {
     // Слушаем WS-сообщения
-    _wsSubscription = _wsClient.messages.listen((message) {
-      _messagesController.add(message);
-    });
+    _wsSubscription = _wsClient.messages.listen(_messagesController.add);
 
     // Слушаем состояние соединения
-    _connectionSubscription = _wsClient.connectionState.listen((state) {
-      _connectionStateController.add(state);
-    });
+    _connectionSubscription = _wsClient.connectionState.listen(_connectionStateController.add);
 
     await _wsClient.connect(roomId);
   }
@@ -68,10 +64,16 @@ class GameSessionRepository {
     _wsClient.sendPlayerAction(content);
   }
 
-  /// Получить сессию по roomId через REST
-  Future<GameSession> getSessionByRoom(String roomId) async {
-    return _api.getSessionByRoom(roomId);
+  /// Отправить результат броска кубика
+  void sendDiceRoll({
+    required String requestId,
+    required List<int> rolls,
+  }) {
+    _wsClient.sendDiceRollResult(requestId: requestId, rolls: rolls);
   }
+
+  /// Получить сессию по roomId через REST
+  Future<GameSession> getSessionByRoom(String roomId) async => _api.getSessionByRoom(roomId);
 
   /// Получить сообщения через REST
   Future<List<Message>> getMessages(String sessionId) async {
@@ -129,7 +131,7 @@ class GameSessionRepository {
       );
       return results
           .map((row) =>
-              Message.fromJson(jsonDecode(row['data'] as String) as Map<String, dynamic>))
+              Message.fromJson(jsonDecode(row['data']! as String) as Map<String, dynamic>),)
           .toList();
     } catch (_) {
       return [];

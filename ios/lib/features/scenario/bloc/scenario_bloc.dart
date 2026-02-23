@@ -6,7 +6,6 @@ import 'scenario_state.dart';
 
 @injectable
 class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
-  final ScenarioRepository _repository;
 
   ScenarioBloc(this._repository) : super(const ScenarioState.initial()) {
     on<LoadScenariosEvent>(_onLoadScenarios);
@@ -18,6 +17,7 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     on<PublishScenarioEvent>(_onPublishScenario);
     on<ClearErrorEvent>(_onClearError);
   }
+  final ScenarioRepository _repository;
 
   Future<void> _onLoadScenarios(
     LoadScenariosEvent event,
@@ -42,8 +42,8 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
       emit(ScenarioState.scenarioDetail(scenario: scenario));
     } catch (e) {
       emit(ScenarioState.error(
-        message: 'Failed to create scenario: ${e.toString()}',
-      ));
+        message: 'Failed to create scenario: $e',
+      ),);
     }
   }
 
@@ -57,8 +57,8 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
       emit(ScenarioState.scenarioDetail(scenario: scenario));
     } catch (e) {
       emit(ScenarioState.error(
-        message: 'Failed to load scenario: ${e.toString()}',
-      ));
+        message: 'Failed to load scenario: $e',
+      ),);
     }
   }
 
@@ -72,8 +72,8 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
       emit(ScenarioState.scenarioDetail(scenario: scenario));
     } catch (e) {
       emit(ScenarioState.error(
-        message: 'Failed to refine scenario: ${e.toString()}',
-      ));
+        message: 'Failed to refine scenario: $e',
+      ),);
     }
   }
 
@@ -88,11 +88,11 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
       emit(ScenarioState.versionHistory(
         scenario: scenario,
         versions: versions,
-      ));
+      ),);
     } catch (e) {
       emit(ScenarioState.error(
-        message: 'Failed to load version history: ${e.toString()}',
-      ));
+        message: 'Failed to load version history: $e',
+      ),);
     }
   }
 
@@ -109,8 +109,8 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
       emit(ScenarioState.scenarioDetail(scenario: scenario));
     } catch (e) {
       emit(ScenarioState.error(
-        message: 'Failed to restore version: ${e.toString()}',
-      ));
+        message: 'Failed to restore version: $e',
+      ),);
     }
   }
 
@@ -124,8 +124,8 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
       emit(ScenarioState.scenarioDetail(scenario: scenario));
     } catch (e) {
       emit(ScenarioState.error(
-        message: 'Failed to publish scenario: ${e.toString()}',
-      ));
+        message: 'Failed to publish scenario: $e',
+      ),);
     }
   }
 

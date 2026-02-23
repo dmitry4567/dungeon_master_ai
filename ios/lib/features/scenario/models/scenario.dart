@@ -25,8 +25,7 @@ class ScenarioVersion with _$ScenarioVersion {
     required String id,
     required int version,
     required ScenarioContent content,
-    List<String>? validationErrors,
-    required DateTime createdAt,
+    required DateTime createdAt, List<String>? validationErrors,
   }) = _ScenarioVersion;
 
   factory ScenarioVersion.fromJson(Map<String, dynamic> json) =>
@@ -39,10 +38,9 @@ class Scenario with _$Scenario {
   const factory Scenario({
     required String id,
     required String title,
-    required String status, // draft, published, archived
+    required String status, required DateTime createdAt, // draft, published, archived
     String? currentVersionId,
     ScenarioVersion? currentVersion,
-    required DateTime createdAt,
   }) = _Scenario;
 
   factory Scenario.fromJson(Map<String, dynamic> json) =>

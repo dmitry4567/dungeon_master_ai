@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/di/injection.dart';
 import '../../../core/router/routes.dart';
 import '../../../core/storage/secure_storage.dart';
-import '../../../core/di/injection.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_skeleton.dart';
 import '../../character/bloc/character_bloc.dart';
@@ -20,9 +20,9 @@ import '../models/room.dart';
 import 'widgets/player_avatar.dart';
 
 class WaitingRoomPage extends StatefulWidget {
-  final String roomId;
 
-  const WaitingRoomPage({super.key, required this.roomId});
+  const WaitingRoomPage({required this.roomId, super.key});
+  final String roomId;
 
   @override
   State<WaitingRoomPage> createState() => _WaitingRoomPageState();
@@ -92,8 +92,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<LobbyBloc, LobbyState>(
+  Widget build(BuildContext context) => BlocConsumer<LobbyBloc, LobbyState>(
       listener: (context, state) {
         state.whenOrNull(
           roomDetail: (room, isHost) {
@@ -122,8 +121,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
           },
         );
       },
-      builder: (context, state) {
-        return state.when(
+      builder: (context, state) => state.when(
           initial: () => _buildScaffold(
             body: const Center(child: Text('Загрузка...')),
           ),
@@ -136,22 +134,18 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
           creating: () => _buildScaffold(
             body: const Center(child: CircularProgressIndicator()),
           ),
-          roomDetail: (room, isHost) => _buildRoomContent(room, isHost),
+          roomDetail: _buildRoomContent,
           gameStarting: (room, _) => _buildRoomContent(room, false),
           error: (message) => _buildScaffold(
             body: ErrorView(message: message, onRetry: _loadRoom),
           ),
-        );
-      },
+        ),
     );
-  }
 
-  Widget _buildScaffold({required Widget body}) {
-    return Scaffold(
+  Widget _buildScaffold({required Widget body}) => Scaffold(
       appBar: AppBar(title: const Text('Комната ожидания')),
       body: body,
     );
-  }
 
   Widget _buildRoomContent(Room room, bool isHost) {
     final nonDeclinedPlayers =
@@ -411,13 +405,12 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
 
 /// Character selector bottom sheet
 class _CharacterSelectorSheet extends StatelessWidget {
-  final void Function(Character) onSelected;
 
   const _CharacterSelectorSheet({required this.onSelected});
+  final void Function(Character) onSelected;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -430,8 +423,7 @@ class _CharacterSelectorSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Flexible(
             child: BlocBuilder<CharacterBloc, CharacterState>(
-              builder: (context, state) {
-                return state.when(
+              builder: (context, state) => state.when(
                   initial: () => const Center(child: Text('Загрузка...')),
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
@@ -466,21 +458,19 @@ class _CharacterSelectorSheet extends StatelessWidget {
                   detail: (_) => const SizedBox.shrink(),
                   error: (message, _) =>
                       Center(child: Text('Ошибка: $message')),
-                );
-              },
+                ),
             ),
           ),
         ],
       ),
     );
-  }
 }
 
 /// Countdown dialog (3-2-1-Поехали!)
 class _CountdownDialog extends StatefulWidget {
-  final VoidCallback onFinished;
 
   const _CountdownDialog({required this.onFinished});
+  final VoidCallback onFinished;
 
   @override
   State<_CountdownDialog> createState() => _CountdownDialogState();
@@ -523,8 +513,7 @@ class _CountdownDialogState extends State<_CountdownDialog>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Dialog(
+  Widget build(BuildContext context) => Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
       child: ScaleTransition(
@@ -550,18 +539,16 @@ class _CountdownDialogState extends State<_CountdownDialog>
         ),
       ),
     );
-  }
 }
 
 /// Status badge widget
 class _StatusBadge extends StatelessWidget {
-  final String status;
 
   const _StatusBadge({required this.status});
+  final String status;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: _getColor().withValues(alpha: 0.15),
@@ -576,7 +563,6 @@ class _StatusBadge extends StatelessWidget {
         ),
       ),
     );
-  }
 
   Color _getColor() => switch (status) {
         'waiting' => Colors.orange,

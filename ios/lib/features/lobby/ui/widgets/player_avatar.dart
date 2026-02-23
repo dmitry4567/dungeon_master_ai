@@ -3,22 +3,20 @@ import '../../models/room.dart';
 
 /// Аватар игрока в комнате ожидания
 class PlayerAvatar extends StatelessWidget {
+
+  const PlayerAvatar({
+    required this.player, super.key,
+    this.isCurrentUser = false,
+    this.onApprove,
+    this.onDecline,
+  });
   final RoomPlayer player;
   final bool isCurrentUser;
   final VoidCallback? onApprove;
   final VoidCallback? onDecline;
 
-  const PlayerAvatar({
-    super.key,
-    required this.player,
-    this.isCurrentUser = false,
-    this.onApprove,
-    this.onDecline,
-  });
-
   @override
-  Widget build(BuildContext context) {
-    return Card(
+  Widget build(BuildContext context) => Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -131,7 +129,6 @@ class PlayerAvatar extends StatelessWidget {
         ),
       ),
     );
-  }
 
   IconData _getStatusIcon(String status) => switch (status) {
         'pending' => Icons.hourglass_empty,

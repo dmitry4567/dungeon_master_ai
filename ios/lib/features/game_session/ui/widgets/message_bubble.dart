@@ -1,4 +1,7 @@
+import 'package:ai_dungeon_master/features/auth/bloc/auth_bloc.dart';
+import 'package:ai_dungeon_master/features/auth/bloc/auth_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../models/message.dart';
@@ -7,24 +10,23 @@ import 'dice_result_widget.dart';
 /// Пузырь сообщения в чате игровой сессии
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
-    super.key,
-    required this.message,
-    this.isCurrentUser = false,
+    required this.message, super.key,
   });
 
   final Message message;
-  final bool isCurrentUser;
 
   @override
-  Widget build(BuildContext context) {
-    return switch (message.role) {
+  Widget build(BuildContext context) => switch (message.role) {
       MessageRole.player => _buildPlayerBubble(context),
       MessageRole.dm => _buildDmBubble(context),
       MessageRole.system => _buildSystemBubble(context),
     };
-  }
 
   Widget _buildPlayerBubble(BuildContext context) {
+    final authState = context.watch<AuthBloc>().state;
+    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
+    final isCurrentUser = message.authorId == currentUserId;
+
     return Align(
       alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -70,8 +72,7 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildDmBubble(BuildContext context) {
-    return Container(
+  Widget _buildDmBubble(BuildContext context) => Container(
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.85,
       ),
@@ -89,22 +90,21 @@ class MessageBubble extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.secondary.withValues(alpha: 0.3),
-          width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Заголовок DM
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.auto_stories,
                 color: AppColors.secondary,
                 size: 16,
               ),
-              const SizedBox(width: 6),
-              const Text(
+              SizedBox(width: 6),
+              Text(
                 'Dungeon Master',
                 style: TextStyle(
                   color: AppColors.secondary,
@@ -132,7 +132,6 @@ class MessageBubble extends StatelessWidget {
         ],
       ),
     );
-  }
 
   Widget _buildSystemBubble(BuildContext context) => Center(
       child: Container(
@@ -159,13 +158,12 @@ class MessageBubble extends StatelessWidget {
 
 /// Пузырь для стриминга ответа DM
 class StreamingBubble extends StatelessWidget {
-  const StreamingBubble({super.key, required this.content});
+  const StreamingBubble({required this.content, super.key});
 
   final String content;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.85,
       ),
@@ -183,21 +181,20 @@ class StreamingBubble extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: AppColors.secondary.withValues(alpha: 0.3),
-          width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.auto_stories,
                 color: AppColors.secondary,
                 size: 16,
               ),
-              const SizedBox(width: 6),
-              const Text(
+              SizedBox(width: 6),
+              Text(
                 'Dungeon Master',
                 style: TextStyle(
                   color: AppColors.secondary,
@@ -205,7 +202,7 @@ class StreamingBubble extends StatelessWidget {
                   fontSize: 12,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               SizedBox(
                 width: 12,
                 height: 12,
@@ -228,5 +225,4 @@ class StreamingBubble extends StatelessWidget {
         ],
       ),
     );
-  }
 }

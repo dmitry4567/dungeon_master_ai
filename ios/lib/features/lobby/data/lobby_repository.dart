@@ -53,9 +53,7 @@ class LobbyRepository {
   }
 
   /// Получить детали комнаты
-  Future<Room> getRoom(String roomId) async {
-    return _api.getRoom(roomId);
-  }
+  Future<Room> getRoom(String roomId) async => _api.getRoom(roomId);
 
   /// Запрос на вступление в комнату
   Future<void> joinRoom(String roomId) async {
@@ -76,8 +74,7 @@ class LobbyRepository {
   /// Переключить готовность
   Future<void> toggleReady({
     required String roomId,
-    String? characterId,
-    required bool ready,
+    required bool ready, String? characterId,
   }) async {
     final request = ReadyRequest(
       characterId: characterId,

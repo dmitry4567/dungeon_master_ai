@@ -4,16 +4,16 @@ import '../models/scenario.dart';
 
 @singleton
 class ScenarioApi {
-  final Dio _dio;
 
   ScenarioApi(this._dio);
+  final Dio _dio;
 
   /// List all scenarios for the authenticated user
   Future<List<Scenario>> listScenarios({String? status}) async {
     final queryParams = status != null ? {'status': status} : null;
 
     final response = await _dio.get('/scenarios', queryParameters: queryParams);
-    final List<dynamic> data = response.data as List<dynamic>;
+    final data = response.data as List<dynamic>;
     return data
         .map((json) => Scenario.fromJson(json as Map<String, dynamic>))
         .toList();
@@ -36,7 +36,7 @@ class ScenarioApi {
 
   /// Refine an existing scenario
   Future<Scenario> refineScenario(
-      String id, RefineScenarioRequest request) async {
+      String id, RefineScenarioRequest request,) async {
     final response = await _dio.post(
       '/scenarios/$id/refine',
       data: request.toJson(),
@@ -47,10 +47,10 @@ class ScenarioApi {
   /// List all versions of a scenario
   Future<List<ScenarioVersionSummary>> listVersions(String id) async {
     final response = await _dio.get('/scenarios/$id/versions');
-    final List<dynamic> data = response.data as List<dynamic>;
+    final data = response.data as List<dynamic>;
     return data
         .map((json) =>
-            ScenarioVersionSummary.fromJson(json as Map<String, dynamic>))
+            ScenarioVersionSummary.fromJson(json as Map<String, dynamic>),)
         .toList();
   }
 

@@ -5,7 +5,7 @@ import '../../models/dice_result.dart';
 
 /// Виджет отображения результата броска кубиков
 class DiceResultWidget extends StatelessWidget {
-  const DiceResultWidget({super.key, required this.result});
+  const DiceResultWidget({required this.result, super.key});
 
   final DiceResult result;
 

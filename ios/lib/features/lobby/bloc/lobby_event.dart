@@ -39,8 +39,7 @@ class LobbyEvent with _$LobbyEvent {
   /// Переключить готовность
   const factory LobbyEvent.toggleReady({
     required String roomId,
-    String? characterId,
-    required bool ready,
+    required bool ready, String? characterId,
   }) = ToggleReadyEvent;
 
   /// Начать игру

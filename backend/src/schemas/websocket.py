@@ -15,6 +15,7 @@ class WSMessageType(StrEnum):
     PLAYER_MESSAGE = "player_message"
     PLAYER_JOIN = "player_join"
     PLAYER_LEAVE = "player_leave"
+    DICE_ROLL = "dice_roll"  # Player sends their dice roll result
 
     # Server -> Client
     DM_RESPONSE = "dm_response"
@@ -23,8 +24,8 @@ class WSMessageType(StrEnum):
     PLAYER_BROADCAST = "player_broadcast"
     SYSTEM_MESSAGE = "system_message"
     STATE_UPDATE = "state_update"
-    DICE_REQUEST = "dice_request"
-    DICE_RESULT = "dice_result"
+    DICE_REQUEST = "dice_request"  # Server asks player to roll
+    DICE_RESULT = "dice_result"  # Broadcast roll result to all
     ERROR = "error"
 
 
@@ -100,11 +101,23 @@ class WSDiceRequest(WSBaseMessage):
     """Request for dice roll from player."""
 
     type: WSMessageType = WSMessageType.DICE_REQUEST
+    request_id: UUID  # Unique ID to match request with response
+    target_player_id: UUID  # Player who should roll
+    target_player_name: str  # Player name for display
     dice_type: str  # e.g., "d20", "2d6"
+    num_dice: int = 1
     modifier: int = 0
     dc: int | None = None
     skill: str | None = None
     reason: str | None = None
+
+
+class WSDiceRoll(WSBaseMessage):
+    """Player's dice roll response."""
+
+    type: WSMessageType = WSMessageType.DICE_ROLL
+    request_id: UUID  # Matches the request
+    rolls: list[int]  # Individual die results from player
 
 
 class WSDiceResult(WSBaseMessage):

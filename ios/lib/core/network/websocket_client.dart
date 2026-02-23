@@ -97,19 +97,15 @@ class WebSocketClient {
     });
   }
 
-  /// Отправить бросок кубиков
-  void sendDiceRoll({
-    required String diceType,
-    required int count,
-    int modifier = 0,
+  /// Отправить результат броска кубиков в ответ на запрос
+  void sendDiceRollResult({
+    required String requestId,
+    required List<int> rolls,
   }) {
     send({
       'type': 'dice_roll',
-      'payload': {
-        'dice_type': diceType,
-        'count': count,
-        'modifier': modifier,
-      },
+      'request_id': requestId,
+      'rolls': rolls,
     });
   }
 

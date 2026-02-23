@@ -5,8 +5,7 @@ import '../../../../core/theme/colors.dart';
 /// Поле ввода действий игрока
 class MessageInput extends StatefulWidget {
   const MessageInput({
-    super.key,
-    required this.onSend,
+    required this.onSend, super.key,
     this.enabled = true,
     this.isStreaming = false,
   });
@@ -45,8 +44,7 @@ class _MessageInputState extends State<MessageInput> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: EdgeInsets.only(
         left: 12,
         right: 8,
@@ -132,5 +130,4 @@ class _MessageInputState extends State<MessageInput> {
         ],
       ),
     );
-  }
 }

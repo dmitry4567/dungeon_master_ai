@@ -9,8 +9,6 @@ import 'lobby_state.dart';
 
 @injectable
 class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
-  final LobbyRepository _repository;
-  final SecureStorage _secureStorage;
 
   LobbyBloc(this._repository, this._secureStorage)
       : super(const LobbyState.initial()) {
@@ -25,6 +23,8 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     on<StartGameEvent>(_onStartGame);
     on<ClearLobbyErrorEvent>(_onClearError);
   }
+  final LobbyRepository _repository;
+  final SecureStorage _secureStorage;
 
   Future<void> _onLoadRooms(
     LoadRoomsEvent event,
@@ -55,7 +55,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось создать комнату: $e',
-      ));
+      ),);
     }
   }
 
@@ -71,7 +71,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось загрузить комнату: $e',
-      ));
+      ),);
     }
   }
 
@@ -86,7 +86,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось обновить комнату: $e',
-      ));
+      ),);
     }
   }
 
@@ -103,7 +103,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось присоединиться: $e',
-      ));
+      ),);
     }
   }
 
@@ -119,7 +119,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось одобрить игрока: $e',
-      ));
+      ),);
     }
   }
 
@@ -135,7 +135,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось отклонить игрока: $e',
-      ));
+      ),);
     }
   }
 
@@ -155,7 +155,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось обновить готовность: $e',
-      ));
+      ),);
     }
   }
 
@@ -170,7 +170,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     } catch (e) {
       emit(LobbyState.error(
         message: 'Не удалось начать игру: $e',
-      ));
+      ),);
     }
   }
 

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../shared/widgets/error_view.dart';
+import '../../../shared/widgets/loading_skeleton.dart';
 import '../bloc/scenario_bloc.dart';
 import '../bloc/scenario_event.dart';
 import '../bloc/scenario_state.dart';
 import 'widgets/scenario_card.dart';
-import '../../../shared/widgets/loading_skeleton.dart';
-import '../../../shared/widgets/error_view.dart';
 
 class ScenarioListPage extends StatefulWidget {
   const ScenarioListPage({super.key});
@@ -31,8 +32,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Сценарии'),
         actions: [
@@ -66,8 +66,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
         ],
       ),
       body: BlocBuilder<ScenarioBloc, ScenarioState>(
-        builder: (context, state) {
-          return state.when(
+        builder: (context, state) => state.when(
             initial: () => const Center(
               child: Text('Создайте свой первый сценарий'),
             ),
@@ -131,8 +130,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
               message: message,
               onRetry: _loadScenarios,
             ),
-          );
-        },
+          ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/scenarios/builder'),
@@ -140,5 +138,4 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
         label: const Text('Создать'),
       ),
     );
-  }
 }

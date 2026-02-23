@@ -9,14 +9,13 @@ import '../../bloc/scenario_event.dart';
 import '../../bloc/scenario_state.dart';
 
 class VersionHistorySheet extends StatefulWidget {
-  final String scenarioId;
-  final VoidCallback? onVersionRestored;
 
   const VersionHistorySheet({
-    super.key,
-    required this.scenarioId,
+    required this.scenarioId, super.key,
     this.onVersionRestored,
   });
+  final String scenarioId;
+  final VoidCallback? onVersionRestored;
 
   @override
   State<VersionHistorySheet> createState() => _VersionHistorySheetState();
@@ -81,16 +80,14 @@ class _VersionHistorySheetState extends State<VersionHistorySheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider<ScenarioBloc>.value(
+  Widget build(BuildContext context) => BlocProvider<ScenarioBloc>.value(
       value: _bloc,
       child: DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.5,
       maxChildSize: 0.95,
       expand: false,
-      builder: (context, scrollController) {
-        return Container(
+      builder: (context, scrollController) => DecoratedBox(
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -233,9 +230,7 @@ class _VersionHistorySheetState extends State<VersionHistorySheet> {
               ),
             ],
           ),
-        );
-      },
+        ),
       ),
     );
-  }
 }

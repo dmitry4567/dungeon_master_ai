@@ -23,6 +23,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     on<ConnectionStateChangedEvent>(_onConnectionStateChanged);
     on<EndSessionEvent>(_onEndSession);
     on<LeaveSessionEvent>(_onLeaveSession);
+    on<RollDiceEvent>(_onRollDice);
   }
 
   final GameSessionRepository _repository;
@@ -69,11 +70,11 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         messages: messages,
         worldState: session.worldState,
         isHost: isHost,
-      ));
+      ),);
     } catch (e) {
       emit(GameSessionState.error(
         message: 'Не удалось подключиться к сессии: $e',
-      ));
+      ),);
     }
   }
 
@@ -90,7 +91,6 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     final playerMessage = Message(
       id: const Uuid().v4(),
       authorId: userId,
-      authorName: null,
       role: MessageRole.player,
       content: event.content,
       createdAt: DateTime.now(),
@@ -98,7 +98,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, playerMessage],
-    ));
+    ),);
 
     // Отправить через WS
     _repository.sendMessage(event.content);
@@ -130,6 +130,8 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         _handleError(currentState, event.data, emit);
       case 'system_message':
         _handleSystemMessage(currentState, event.data, emit);
+      case 'dice_request':
+        _handleDiceRequest(currentState, event.data, emit);
     }
   }
 
@@ -161,7 +163,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, message],
-    ));
+    ),);
   }
 
   void _handleDmResponseChunk(
@@ -176,7 +178,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     emit(currentState.copyWith(
       streamingContent: currentContent + chunk,
       streamingMessageId: messageId,
-    ));
+    ),);
   }
 
   void _handleDmResponseEnd(
@@ -200,7 +202,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
       messages: [...currentState.messages, dmMessage],
       streamingContent: null,
       streamingMessageId: null,
-    ));
+    ),);
   }
 
   void _handleDiceResult(
@@ -228,7 +230,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, diceMessage],
-    ));
+    ),);
   }
 
   void _handleStateUpdate(
@@ -259,7 +261,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, systemMessage],
-    ));
+    ),);
   }
 
   void _handlePlayerLeave(
@@ -278,7 +280,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, systemMessage],
-    ));
+    ),);
   }
 
   void _handleError(
@@ -297,7 +299,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, systemMessage],
-    ));
+    ),);
   }
 
   void _handleSystemMessage(
@@ -318,7 +320,55 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       messages: [...currentState.messages, systemMessage],
-    ));
+    ),);
+  }
+
+  void _handleDiceRequest(
+    GameSessionActive currentState,
+    Map<String, dynamic> data,
+    Emitter<GameSessionState> emit,
+  ) {
+    // Проверяем, что запрос адресован текущему игроку
+    final targetPlayerId = data['target_player_id'] as String?;
+    if (targetPlayerId == null || targetPlayerId != _currentUserId) {
+      return;
+    }
+
+    final diceRequest = DiceRequest(
+      requestId: data['request_id'] as String? ?? '',
+      targetPlayerId: targetPlayerId,
+      targetPlayerName: data['target_player_name'] as String? ?? '',
+      diceType: data['dice_type'] as String? ?? 'd20',
+      numDice: (data['num_dice'] as num?)?.toInt() ?? 1,
+      modifier: (data['modifier'] as num?)?.toInt() ?? 0,
+      dc: (data['dc'] as num?)?.toInt(),
+      skill: data['skill'] as String?,
+      reason: data['reason'] as String?,
+    );
+
+    emit(currentState.copyWith(
+      pendingDiceRequest: diceRequest,
+    ),);
+  }
+
+  Future<void> _onRollDice(
+    RollDiceEvent event,
+    Emitter<GameSessionState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! GameSessionActive) return;
+    if (currentState.pendingDiceRequest == null) return;
+
+    // Отправить бросок на сервер
+    _repository.sendDiceRoll(
+      requestId: event.requestId,
+      rolls: event.rolls,
+    );
+
+    // Очистить pending request
+    emit(currentState.copyWith(
+      pendingDiceRequest: null,
+    ),);
   }
 
   Future<void> _onConnectionStateChanged(
@@ -345,7 +395,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     } catch (e) {
       emit(GameSessionState.error(
         message: 'Не удалось завершить сессию: $e',
-      ));
+      ),);
     }
   }
 
@@ -364,7 +414,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     if (result.modifier != null && result.modifier != 0) {
       buffer.write(result.modifier! > 0
           ? '+${result.modifier}'
-          : '${result.modifier}');
+          : '${result.modifier}',);
     }
     if (result.total != null) buffer.write(' = ${result.total}');
     if (result.dc != null) buffer.write(' (DC ${result.dc})');

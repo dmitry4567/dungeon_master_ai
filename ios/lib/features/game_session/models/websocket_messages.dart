@@ -10,9 +10,8 @@ part 'websocket_messages.g.dart';
 class DmResponseMessage {
   DmResponseMessage({
     required this.content,
-    this.diceRequired,
+    required this.timestamp, this.diceRequired,
     this.stateDelta,
-    required this.timestamp,
   });
 
   factory DmResponseMessage.fromJson(Map<String, dynamic> json) =>

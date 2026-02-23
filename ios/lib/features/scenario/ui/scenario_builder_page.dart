@@ -5,13 +5,13 @@ import '../bloc/scenario_bloc.dart';
 import '../bloc/scenario_event.dart';
 import '../bloc/scenario_state.dart';
 
-class ScenarioBuilderPage extends StatefulWidget {
-  final String? scenarioId; // null for new scenario, set for refinement
+class ScenarioBuilderPage extends StatefulWidget { // null for new scenario, set for refinement
 
   const ScenarioBuilderPage({
     super.key,
     this.scenarioId,
   });
+  final String? scenarioId;
 
   @override
   State<ScenarioBuilderPage> createState() => _ScenarioBuilderPageState();
@@ -54,8 +54,7 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: Text(_isRefining ? 'Доработать сценарий' : 'Создать сценарий'),
       ),
@@ -176,16 +175,16 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage> {
                   ],
                   const SizedBox(height: 16),
                   if (!_isRefining)
-                    Card(
+                    const Card(
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Row(
+                            Row(
                               children: [
                                 Icon(Icons.lightbulb_outline,
-                                    color: Colors.amber),
+                                    color: Colors.amber,),
                                 SizedBox(width: 8),
                                 Text(
                                   'Советы',
@@ -193,12 +192,12 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            const Text('• Укажите сеттинг (фэнтези, хоррор, научная фантастика)'),
-                            const Text('• Опишите основной конфликт или цель'),
-                            const Text('• Упомяните количество игроков'),
-                            const Text('• Задайте сложность (новички, опытные игроки)'),
-                            const Text('• Добавьте уникальные элементы или твисты'),
+                            SizedBox(height: 12),
+                            Text('• Укажите сеттинг (фэнтези, хоррор, научная фантастика)'),
+                            Text('• Опишите основной конфликт или цель'),
+                            Text('• Упомяните количество игроков'),
+                            Text('• Задайте сложность (новички, опытные игроки)'),
+                            Text('• Добавьте уникальные элементы или твисты'),
                           ],
                         ),
                       ),
@@ -210,5 +209,4 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage> {
         },
       ),
     );
-  }
 }
