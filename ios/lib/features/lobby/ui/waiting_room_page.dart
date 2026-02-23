@@ -96,6 +96,21 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
     return BlocConsumer<LobbyBloc, LobbyState>(
       listener: (context, state) {
         state.whenOrNull(
+          roomDetail: (room, isHost) {
+            // Если комната активна и текущий пользователь — участник или хост
+            if (room.status == 'active' && _currentUserId != null) {
+              final isParticipant = room.players.any(
+                (p) =>
+                    p.userId == _currentUserId &&
+                    p.status != 'declined' &&
+                    (p.isHost || p.status == 'ready' || p.status == 'approved'),
+              );
+              if (isParticipant) {
+                _refreshTimer?.cancel();
+                context.pushReplacement(Routes.gameSessionPath(room.id));
+              }
+            }
+          },
           gameStarting: (room, session) {
             _refreshTimer?.cancel();
             _showCountdownAndNavigate(room, session.id);

@@ -51,7 +51,7 @@ class WebSocketClient {
         return;
       }
 
-      final wsUrl = '${AppConfig.current.wsBaseUrl}/rooms/$roomId?token=$accessToken';
+      final wsUrl = '${AppConfig.current.wsBaseUrl}/session/$roomId?token=$accessToken';
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
       await _channel!.ready;
@@ -92,8 +92,8 @@ class WebSocketClient {
   /// Отправить действие игрока
   void sendPlayerAction(String action) {
     send({
-      'type': 'player_action',
-      'payload': {'action': action},
+      'type': 'player_message',
+      'content': action,
     });
   }
 

@@ -18,6 +18,9 @@ import '../../features/lobby/ui/room_create_page.dart';
 import '../../features/lobby/ui/waiting_room_page.dart';
 import '../../features/scenario/bloc/scenario_bloc.dart';
 import '../../features/scenario/bloc/scenario_event.dart';
+import '../../features/game_session/bloc/game_session_bloc.dart';
+import '../../features/game_session/bloc/game_session_event.dart';
+import '../../features/game_session/ui/game_session_page.dart';
 import '../../features/scenario/ui/scenario_builder_page.dart';
 import '../../features/scenario/ui/scenario_list_page.dart';
 import '../../features/scenario/ui/scenario_preview_page.dart';
@@ -63,10 +66,12 @@ class AppRouter {
           GoRoute(
             path: Routes.lobby,
             name: 'lobby',
-            builder: (context, state) => BlocProvider(
-              create: (_) => getIt<LobbyBloc>()
-                ..add(const LobbyEvent.loadRooms()),
-              child: const LobbyPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: BlocProvider(
+                create: (_) => getIt<LobbyBloc>()
+                  ..add(const LobbyEvent.loadRooms()),
+                child: const LobbyPage(),
+              ),
             ),
             routes: [
               GoRoute(
@@ -99,10 +104,12 @@ class AppRouter {
           GoRoute(
             path: Routes.scenarios,
             name: 'scenarios',
-            builder: (context, state) => BlocProvider(
-              create: (_) => getIt<ScenarioBloc>()
-                ..add(const ScenarioEvent.loadScenarios()),
-              child: const ScenarioListPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: BlocProvider(
+                create: (_) => getIt<ScenarioBloc>()
+                  ..add(const ScenarioEvent.loadScenarios()),
+                child: const ScenarioListPage(),
+              ),
             ),
             routes: [
               GoRoute(
@@ -145,10 +152,12 @@ class AppRouter {
           GoRoute(
             path: Routes.characters,
             name: 'characters',
-            builder: (context, state) => BlocProvider(
-              create: (_) => getIt<CharacterBloc>()
-                ..add(const CharacterEvent.loadCharacters()),
-              child: const CharacterListPage(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: BlocProvider(
+                create: (_) => getIt<CharacterBloc>()
+                  ..add(const CharacterEvent.loadCharacters()),
+                child: const CharacterListPage(),
+              ),
             ),
             routes: [
               GoRoute(
@@ -178,8 +187,9 @@ class AppRouter {
           GoRoute(
             path: Routes.profile,
             name: 'profile',
-            builder: (context, state) =>
-                const _PlaceholderPage(title: 'Profile'),
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: _PlaceholderPage(title: 'Profile'),
+            ),
             routes: [
               GoRoute(
                 path: 'settings',
@@ -198,7 +208,11 @@ class AppRouter {
         name: 'gameSession',
         builder: (context, state) {
           final roomId = state.pathParameters['roomId']!;
-          return _PlaceholderPage(title: 'Game $roomId');
+          return BlocProvider(
+            create: (_) => getIt<GameSessionBloc>()
+              ..add(GameSessionEvent.connectToSession(roomId: roomId)),
+            child: GameSessionPage(roomId: roomId),
+          );
         },
       ),
     ],
