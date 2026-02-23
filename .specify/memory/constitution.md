@@ -1,50 +1,134 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+=== ОТЧЁТ О СИНХРОНИЗАЦИИ ===
+Изменение версии: 0.0.0 → 1.0.0
+Тип изменения: MAJOR (первоначальное создание конституции)
 
-## Core Principles
+Изменённые принципы: Н/Д (первоначальное создание)
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+Добавленные разделы:
+- Основные принципы (6 принципов)
+- Соответствие App Store
+- Процесс разработки
+- Управление
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Удалённые разделы: Н/Д (первоначальное создание)
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+Шаблоны, требующие обновления:
+- .specify/templates/plan-template.md ✅ (раздел проверки конституции присутствует)
+- .specify/templates/spec-template.md ✅ (обновления не требуются)
+- .specify/templates/tasks-template.md ✅ (обновления не требуются)
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+Последующие задачи: Нет
+========================
+-->
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+# Конституция AI Dungeon Master
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Основные принципы
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### I. AI только на бэкенде (ОБЯЗАТЕЛЬНО)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Все вызовы AI API (Claude Sonnet, Claude Haiku) ДОЛЖНЫ маршрутизироваться через бэкенд FastAPI.
+Прямые вызовы API из Flutter-клиента ЗАПРЕЩЕНЫ согласно требованиям App Store.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- AI-ключи НЕ ДОЛЖНЫ храниться или передаваться на клиент
+- Вся логика оркестрации AI ДОЛЖНА находиться в модуле `ai_service` бэкенда
+- Клиент взаимодействует с бэкендом только через REST/WebSocket
+- Нарушение этого принципа приводит к отклонению в App Store
 
-## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+### II. Архитектура реального времени для мультиплеера
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Игровые сессии ДОЛЖНЫ поддерживать до 5 игроков с синхронизацией в реальном времени.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- WebSocket ДОЛЖЕН использоваться для коммуникации игровых сессий
+- Все действия игроков ДОЛЖНЫ транслироваться всем участникам комнаты
+- Изменения состояния ДОЛЖНЫ сохраняться в PostgreSQL перед трансляцией
+- Redis ДОЛЖЕН использоваться для кэширования состояния сессии и pub/sub
+- Целевая задержка: <500мс для цикла действие-ответ
+
+### III. Безопасность контента и модерация
+
+Весь AI-генерируемый контент ДОЛЖЕН проходить через слой модерации перед доставкой пользователям.
+
+- Рекомендации безопасности Anthropic ДОЛЖНЫ применяться через системный промпт
+- Пользовательские правила модерации ДОЛЖНЫ фильтровать неподходящий для D&D контент
+- Рейтинг App Store: 17+ (насилие в контексте D&D)
+- Политика конфиденциальности ДОЛЖНА описывать обработку AI-контента и голосовых данных
+- Пользовательские промпты сценариев ДОЛЖНЫ санитизироваться
+
+### IV. Оптимизация затрат
+
+Затраты на AI ДОЛЖНЫ активно управляться для поддержания жизнеспособной unit-экономики.
+
+- Кэширование промптов ДОЛЖНО использоваться для системных промптов (целевое сокращение затрат 40-50%)
+- Claude Haiku ДОЛЖЕН использоваться для извлечения состояния (не Sonnet)
+- История сообщений ДОЛЖНА ограничиваться последними 15 сообщениями в контексте
+- Старая история ДОЛЖНА суммироваться через Haiku перед включением
+- Целевая стоимость сессии: <$1.50 за 2-3 часа игры с 4 игроками
+
+### V. Разработка через тестирование
+
+Критическая игровая логика и оркестрация AI ДОЛЖНЫ следовать принципам TDD.
+
+- Логика извлечения состояния ДОЛЖНА иметь unit-тесты перед реализацией
+- Валидация сценариев ДОЛЖНА иметь контрактные тесты
+- Обработка WebSocket-сообщений ДОЛЖНА иметь интеграционные тесты
+- Расчёты бросков кубиков ДОЛЖНЫ иметь исчерпывающие unit-тесты
+- Цикл Red-Green-Refactor ОБЯЗАТЕЛЕН для игровых механик
+
+### VI. Соответствие правилам D&D 5e
+
+Игровые механики ДОЛЖНЫ точно реализовывать правила D&D 5e где применимо.
+
+- Создание персонажа ДОЛЖНО следовать правилам 5e для классов/рас/характеристик
+- Броски кубиков ДОЛЖНЫ использовать корректные модификаторы по правилам 5e
+- Проверки навыков ДОЛЖНЫ использовать соответствующие модификаторы характеристик
+- Боевые механики (при реализации) ДОЛЖНЫ следовать порядку ходов 5e
+- Отклонения от правил 5e ДОЛЖНЫ быть задокументированы и намеренны
+
+## Соответствие App Store
+
+Требования, которые ДОЛЖНЫ быть выполнены для одобрения App Store:
+
+- Sign in with Apple ДОЛЖЕН быть реализован наряду с другими методами авторизации
+- Все платежи ДОЛЖНЫ использовать Apple In-App Purchase (StoreKit / RevenueCat)
+- NSMicrophoneUsageDescription ДОЛЖЕН присутствовать в Info.plist
+- NSSpeechRecognitionUsageDescription ДОЛЖЕН присутствовать в Info.plist
+- Политика конфиденциальности ДОЛЖНА быть доступна и описывать весь сбор данных
+- Никаких внешних платёжных ссылок или предложений альтернативных платежей
+
+## Процесс разработки
+
+### Управление состоянием
+
+- Flutter-клиент ДОЛЖЕН использовать паттерн Bloc/Cubit для управления состоянием
+- Каждый функциональный модуль ДОЛЖЕН иметь изолированное управление состоянием
+- Глобальное состояние (авторизация, пользователь) ДОЛЖНО использовать выделенные Cubit'ы в корне дерева виджетов
+- Модели ДОЛЖНЫ генерироваться через freezed + json_serializable
+
+### Структура проекта
+
+- Функции ДОЛЖНЫ следовать модульной структуре в `lib/features/`
+- Бэкенд-сервисы ДОЛЖНЫ быть изолированы в выделенных модулях
+- Внедрение зависимостей ДОЛЖНО использовать get_it + injectable
+- Навигация ДОЛЖНА использовать go_router
+
+### Контроль версий
+
+- Основная ветка ДОЛЖНА всегда оставаться готовой к развёртыванию
+- Ветки функций ДОЛЖНЫ следовать шаблону: `###-название-функции`
+- Коммиты ДОЛЖНЫ быть атомарными и чётко описывать изменение
+
+## Управление
+
+Эта конституция имеет приоритет над всеми другими практиками разработки в этом проекте.
+
+- Все PR ДОЛЖНЫ проверять соответствие этим принципам
+- Нарушения ДОЛЖНЫ быть отмечены и устранены до слияния
+- Поправки к конституции ТРЕБУЮТ:
+  1. Письменное предложение с обоснованием
+  2. Оценку влияния на существующий код
+  3. План миграции при ломающих изменениях
+  4. Инкремент версии по семантическому версионированию
+
+**Версия**: 1.0.0 | **Ратифицирована**: 2026-02-21 | **Последнее изменение**: 2026-02-21
