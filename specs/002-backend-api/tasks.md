@@ -21,12 +21,12 @@
 
 **Purpose**: Создание структуры проекта и базовой конфигурации
 
-- [ ] T001 Создать структуру проекта согласно plan.md в backend/
-- [ ] T002 Инициализировать Python-проект с pyproject.toml и зависимостями (FastAPI, SQLAlchemy, Pydantic, python-jose, anthropic, websockets, argon2-cffi)
-- [ ] T003 [P] Настроить ruff для линтинга в pyproject.toml
-- [ ] T004 [P] Создать docker-compose.yml для локальной разработки (PostgreSQL, Redis)
-- [ ] T005 [P] Создать .env.example с переменными окружения
-- [ ] T006 [P] Настроить pytest и pytest-asyncio в pyproject.toml
+- [x] T001 Создать структуру проекта согласно plan.md в backend/
+- [x] T002 Инициализировать Python-проект с pyproject.toml и зависимостями (FastAPI, SQLAlchemy, Pydantic, python-jose, anthropic, websockets, argon2-cffi)
+- [x] T003 [P] Настроить ruff для линтинга в pyproject.toml
+- [x] T004 [P] Создать docker-compose.yml для локальной разработки (PostgreSQL, Redis)
+- [x] T005 [P] Создать .env.example с переменными окружения
+- [x] T006 [P] Настроить pytest и pytest-asyncio в pyproject.toml
 
 ---
 
@@ -36,20 +36,20 @@
 
 **CRITICAL**: Никакая работа над историями не может начаться до завершения этой фазы
 
-- [ ] T007 Реализовать конфигурацию приложения в backend/src/core/config.py (Pydantic Settings)
-- [ ] T008 [P] Настроить подключение к базе данных SQLAlchemy в backend/src/core/database.py
-- [ ] T009 [P] Настроить Redis-клиент в backend/src/core/redis.py
-- [ ] T010 [P] Настроить S3/R2-клиент в backend/src/core/storage.py
-- [ ] T011 Создать миграционный фреймворк Alembic в backend/alembic/
-- [ ] T012 Реализовать утилиты безопасности (хэширование паролей Argon2id, JWT) в backend/src/core/security.py
-- [ ] T013 Создать базовую модель User в backend/src/models/user.py
-- [ ] T014 Создать начальную миграцию с таблицей users в backend/alembic/versions/001_initial.py
-- [ ] T015 Реализовать точку входа FastAPI в backend/src/api/main.py (без роутов)
-- [ ] T016 [P] Реализовать middleware: CORS, rate limiting в backend/src/api/middleware.py
-- [ ] T017 [P] Реализовать структурированное логирование JSON в backend/src/core/logging.py
-- [ ] T018 [P] Реализовать correlation ID middleware в backend/src/api/middleware.py
-- [ ] T019 Создать базовые Pydantic-схемы ошибок в backend/src/schemas/common.py
-- [ ] T020 Создать conftest.py с фикстурами pytest в backend/tests/conftest.py
+- [x] T007 Реализовать конфигурацию приложения в backend/src/core/config.py (Pydantic Settings)
+- [x] T008 [P] Настроить подключение к базе данных SQLAlchemy в backend/src/core/database.py
+- [x] T009 [P] Настроить Redis-клиент в backend/src/core/redis.py
+- [x] T010 [P] Настроить S3/R2-клиент в backend/src/core/storage.py
+- [x] T011 Создать миграционный фреймворк Alembic в backend/alembic/
+- [x] T012 Реализовать утилиты безопасности (хэширование паролей Argon2id, JWT) в backend/src/core/security.py
+- [x] T013 Создать базовую модель User в backend/src/models/user.py
+- [x] T014 Создать начальную миграцию с таблицей users в backend/alembic/versions/001_initial.py
+- [x] T015 Реализовать точку входа FastAPI в backend/src/api/main.py (без роутов)
+- [x] T016 [P] Реализовать middleware: CORS, rate limiting в backend/src/api/middleware.py
+- [x] T017 [P] Реализовать структурированное логирование JSON в backend/src/core/logging.py
+- [x] T018 [P] Реализовать correlation ID middleware в backend/src/api/middleware.py
+- [x] T019 Создать базовые Pydantic-схемы ошибок в backend/src/schemas/common.py
+- [x] T020 Создать conftest.py с фикстурами pytest в backend/tests/conftest.py
 
 **Checkpoint**: Инфраструктура готова — можно начинать реализацию пользовательских историй
 
@@ -65,23 +65,23 @@
 
 ### Тесты для User Story 3
 
-- [ ] T021 [P] [US3] Контрактные тесты POST /auth/register (успех, 409 duplicate email, 400 validation) в backend/tests/contract/test_auth_contract.py
-- [ ] T022 [P] [US3] Контрактный тест POST /auth/login в backend/tests/contract/test_auth_contract.py
-- [ ] T023 [P] [US3] Контрактный тест POST /auth/refresh в backend/tests/contract/test_auth_contract.py
-- [ ] T024 [P] [US3] Контрактный тест POST /auth/apple в backend/tests/contract/test_auth_contract.py
-- [ ] T025 [P] [US3] Контрактный тест GET/PATCH /users/me в backend/tests/contract/test_users_contract.py
+- [x] T021 [P] [US3] Контрактные тесты POST /auth/register (успех, 409 duplicate email, 400 validation) в backend/tests/contract/test_auth_contract.py
+- [x] T022 [P] [US3] Контрактный тест POST /auth/login в backend/tests/contract/test_auth_contract.py
+- [x] T023 [P] [US3] Контрактный тест POST /auth/refresh в backend/tests/contract/test_auth_contract.py
+- [x] T024 [P] [US3] Контрактный тест POST /auth/apple в backend/tests/contract/test_auth_contract.py
+- [x] T025 [P] [US3] Контрактный тест GET/PATCH /users/me в backend/tests/contract/test_users_contract.py
 
 ### Реализация User Story 3
 
-- [ ] T026 [P] [US3] Создать Pydantic-схемы аутентификации в backend/src/schemas/auth.py
-- [ ] T027 [P] [US3] Создать Pydantic-схемы пользователя в backend/src/schemas/user.py
-- [ ] T028 [US3] Реализовать AuthService (регистрация, логин, refresh) в backend/src/services/auth_service.py
-- [ ] T029 [US3] Реализовать верификацию Sign in with Apple в backend/src/services/auth_service.py
-- [ ] T030 [US3] Реализовать UserService (получение, обновление профиля) в backend/src/services/user_service.py
-- [ ] T031 [US3] Реализовать dependency для получения текущего пользователя в backend/src/api/dependencies.py
-- [ ] T032 [US3] Реализовать роуты /auth/* в backend/src/api/routes/auth.py
-- [ ] T033 [US3] Реализовать роуты /users/me в backend/src/api/routes/users.py
-- [ ] T034 [US3] Подключить роуты auth и users к main.py
+- [x] T026 [P] [US3] Создать Pydantic-схемы аутентификации в backend/src/schemas/auth.py
+- [x] T027 [P] [US3] Создать Pydantic-схемы пользователя в backend/src/schemas/user.py
+- [x] T028 [US3] Реализовать AuthService (регистрация, логин, refresh) в backend/src/services/auth_service.py
+- [x] T029 [US3] Реализовать верификацию Sign in with Apple в backend/src/services/auth_service.py
+- [x] T030 [US3] Реализовать UserService (получение, обновление профиля) в backend/src/services/user_service.py
+- [x] T031 [US3] Реализовать dependency для получения текущего пользователя в backend/src/api/dependencies.py
+- [x] T032 [US3] Реализовать роуты /auth/* в backend/src/api/routes/auth.py
+- [x] T033 [US3] Реализовать роуты /users/me в backend/src/api/routes/users.py
+- [x] T034 [US3] Подключить роуты auth и users к main.py
 
 **Checkpoint**: Аутентификация работает независимо, можно тестировать регистрацию/вход/токены
 
@@ -95,18 +95,18 @@
 
 ### Тесты для User Story 5
 
-- [ ] T035 [P] [US5] Контрактный тест CRUD /characters в backend/tests/contract/test_characters_contract.py
-- [ ] T036 [P] [US5] Unit-тест валидации D&D 5e в backend/tests/unit/test_dnd_validation.py
+- [x] T035 [P] [US5] Контрактный тест CRUD /characters в backend/tests/contract/test_characters_contract.py
+- [x] T036 [P] [US5] Unit-тест валидации D&D 5e в backend/tests/unit/test_dnd_validation.py
 
 ### Реализация User Story 5
 
-- [ ] T037 [P] [US5] Создать модель Character в backend/src/models/character.py
-- [ ] T038 [US5] Добавить миграцию для таблицы characters в backend/alembic/versions/002_characters.py
-- [ ] T039 [P] [US5] Создать Pydantic-схемы персонажа в backend/src/schemas/character.py
-- [ ] T040 [US5] Реализовать валидатор D&D 5e (классы, расы, характеристики) в backend/src/services/dnd_validator.py
-- [ ] T041 [US5] Реализовать CharacterService в backend/src/services/character_service.py
-- [ ] T042 [US5] Реализовать роуты /characters/* в backend/src/api/routes/characters.py
-- [ ] T043 [US5] Подключить роуты characters к main.py
+- [x] T037 [P] [US5] Создать модель Character в backend/src/models/character.py
+- [x] T038 [US5] Добавить миграцию для таблицы characters в backend/alembic/versions/002_characters.py
+- [x] T039 [P] [US5] Создать Pydantic-схемы персонажа в backend/src/schemas/character.py
+- [x] T040 [US5] Реализовать валидатор D&D 5e (классы, расы, характеристики) в backend/src/services/dnd_validator.py
+- [x] T041 [US5] Реализовать CharacterService в backend/src/services/character_service.py
+- [x] T042 [US5] Реализовать роуты /characters/* в backend/src/api/routes/characters.py
+- [x] T043 [US5] Подключить роуты characters к main.py
 
 **Checkpoint**: CRUD персонажей работает с валидацией D&D 5e
 
@@ -120,22 +120,22 @@
 
 ### Тесты для User Story 2
 
-- [ ] T044 [P] [US2] Контрактный тест POST /scenarios в backend/tests/contract/test_scenarios_contract.py
-- [ ] T045 [P] [US2] Контрактный тест POST /scenarios/{id}/refine в backend/tests/contract/test_scenarios_contract.py
-- [ ] T046 [P] [US2] Интеграционный тест генерации сценария в backend/tests/integration/test_scenario_generation.py
+- [x] T044 [P] [US2] Контрактный тест POST /scenarios в backend/tests/contract/test_scenarios_contract.py
+- [x] T045 [P] [US2] Контрактный тест POST /scenarios/{id}/refine в backend/tests/contract/test_scenarios_contract.py
+- [x] T046 [P] [US2] Интеграционный тест генерации сценария в backend/tests/integration/test_scenario_generation.py
 
 ### Реализация User Story 2
 
-- [ ] T047 [P] [US2] Создать модель Scenario в backend/src/models/scenario.py
-- [ ] T048 [P] [US2] Создать модель ScenarioVersion в backend/src/models/scenario.py
-- [ ] T049 [US2] Добавить миграцию для таблиц scenarios, scenario_versions в backend/alembic/versions/003_scenarios.py
-- [ ] T050 [P] [US2] Создать Pydantic-схемы сценария в backend/src/schemas/scenario.py
-- [ ] T051 [US2] Реализовать базовый AI-сервис (обёртка над Anthropic SDK) в backend/src/services/ai_service.py
-- [ ] T052 [US2] Реализовать генерацию сценария через Claude в backend/src/services/scenario_service.py
-- [ ] T053 [US2] Реализовать валидацию логики сценария (достижимость актов, ссылки на NPC) в backend/src/services/scenario_service.py
-- [ ] T054 [US2] Реализовать версионирование и восстановление в backend/src/services/scenario_service.py
-- [ ] T055 [US2] Реализовать роуты /scenarios/* в backend/src/api/routes/scenarios.py
-- [ ] T056 [US2] Подключить роуты scenarios к main.py
+- [x] T047 [P] [US2] Создать модель Scenario в backend/src/models/scenario.py
+- [x] T048 [P] [US2] Создать модель ScenarioVersion в backend/src/models/scenario.py
+- [x] T049 [US2] Добавить миграцию для таблиц scenarios, scenario_versions в backend/alembic/versions/003_scenarios.py
+- [x] T050 [P] [US2] Создать Pydantic-схемы сценария в backend/src/schemas/scenario.py
+- [x] T051 [US2] Реализовать базовый AI-сервис (обёртка над Anthropic SDK) в backend/src/services/ai_service.py
+- [x] T052 [US2] Реализовать генерацию сценария через Claude в backend/src/services/scenario_service.py
+- [x] T053 [US2] Реализовать валидацию логики сценария (достижимость актов, ссылки на NPC) в backend/src/services/scenario_service.py
+- [x] T054 [US2] Реализовать версионирование и восстановление в backend/src/services/scenario_service.py
+- [x] T055 [US2] Реализовать роуты /scenarios/* в backend/src/api/routes/scenarios.py
+- [x] T056 [US2] Подключить роуты scenarios к main.py
 
 **Checkpoint**: Генерация и управление сценариями работает независимо
 
@@ -149,19 +149,19 @@
 
 ### Тесты для User Story 4
 
-- [ ] T057 [P] [US4] Контрактный тест CRUD /rooms в backend/tests/contract/test_rooms_contract.py
-- [ ] T058 [P] [US4] Контрактный тест /rooms/{id}/join, /ready, /start в backend/tests/contract/test_rooms_contract.py
+- [x] T057 [P] [US4] Контрактный тест CRUD /rooms в backend/tests/contract/test_rooms_contract.py
+- [x] T058 [P] [US4] Контрактный тест /rooms/{id}/join, /ready, /start в backend/tests/contract/test_rooms_contract.py
 
 ### Реализация User Story 4
 
-- [ ] T059 [P] [US4] Создать модель Room в backend/src/models/room.py
-- [ ] T060 [P] [US4] Создать модель RoomPlayer в backend/src/models/room.py
-- [ ] T061 [US4] Добавить миграцию для таблиц rooms, room_players в backend/alembic/versions/004_rooms.py
-- [ ] T062 [P] [US4] Создать Pydantic-схемы комнаты в backend/src/schemas/room.py
-- [ ] T063 [US4] Реализовать LobbyService (создание, присоединение, готовность) в backend/src/services/lobby_service.py
-- [ ] T064 [US4] Реализовать логику старта игры (создание GameSession) в backend/src/services/lobby_service.py
-- [ ] T065 [US4] Реализовать роуты /rooms/* в backend/src/api/routes/rooms.py
-- [ ] T066 [US4] Подключить роуты rooms к main.py
+- [x] T059 [P] [US4] Создать модель Room в backend/src/models/room.py
+- [x] T060 [P] [US4] Создать модель RoomPlayer в backend/src/models/room.py
+- [x] T061 [US4] Добавить миграцию для таблиц rooms, room_players в backend/alembic/versions/004_rooms.py
+- [x] T062 [P] [US4] Создать Pydantic-схемы комнаты в backend/src/schemas/room.py
+- [x] T063 [US4] Реализовать LobbyService (создание, присоединение, готовность) в backend/src/services/lobby_service.py
+- [x] T064 [US4] Реализовать логику старта игры (создание GameSession) в backend/src/services/lobby_service.py
+- [x] T065 [US4] Реализовать роуты /rooms/* в backend/src/api/routes/rooms.py
+- [x] T066 [US4] Подключить роуты rooms к main.py
 
 **Checkpoint**: Лобби и управление комнатами работает, можно запускать игру
 
@@ -175,28 +175,28 @@
 
 ### Тесты для User Story 1
 
-- [ ] T067 [P] [US1] Unit-тест парсера запросов бросков кубиков в backend/tests/unit/test_dice_parser.py
-- [ ] T068 [P] [US1] Unit-тест извлечения состояния в backend/tests/unit/test_state_extractor.py
-- [ ] T069 [P] [US1] Интеграционный тест AI-оркестрации в backend/tests/integration/test_ai_orchestration.py
-- [ ] T070 [P] [US1] Интеграционный тест WebSocket-сессии в backend/tests/integration/test_websocket_session.py
+- [x] T067 [P] [US1] Unit-тест парсера запросов бросков кубиков в backend/tests/unit/test_dice_parser.py
+- [x] T068 [P] [US1] Unit-тест извлечения состояния в backend/tests/unit/test_state_extractor.py
+- [x] T069 [P] [US1] Интеграционный тест AI-оркестрации в backend/tests/integration/test_ai_orchestration.py
+- [x] T070 [P] [US1] Интеграционный тест WebSocket-сессии в backend/tests/integration/test_websocket_session.py
 
 ### Реализация User Story 1
 
-- [ ] T071 [P] [US1] Создать модель GameSession в backend/src/models/session.py
-- [ ] T072 [P] [US1] Создать модель SessionMessage в backend/src/models/message.py
-- [ ] T073 [US1] Добавить миграцию для таблиц game_sessions, session_messages в backend/alembic/versions/005_sessions.py
-- [ ] T074 [P] [US1] Создать Pydantic-схемы сессии в backend/src/schemas/session.py
-- [ ] T075 [P] [US1] Создать Pydantic-схемы WebSocket-сообщений в backend/src/schemas/websocket.py
-- [ ] T076 [US1] Расширить AI-сервис: конструирование промптов мастера с контекстом в backend/src/services/ai_service.py
-- [ ] T077 [US1] Реализовать кэширование промптов для оптимизации затрат в backend/src/services/ai_service.py
-- [ ] T077a [US1] Реализовать трекинг токенов и стоимости AI-вызовов (логирование input/output tokens) в backend/src/services/ai_service.py
-- [ ] T078 [US1] Реализовать парсер запросов бросков кубиков из ответов AI в backend/src/services/dice_parser.py
-- [ ] T079 [US1] Реализовать StateExtractor (извлечение изменений состояния через Haiku) в backend/src/services/state_extractor.py
-- [ ] T080 [US1] Реализовать SessionService (управление сессией, сообщения) в backend/src/services/session_service.py
-- [ ] T081 [US1] Реализовать WebSocket-хендлер с Redis pub/sub в backend/src/api/routes/websocket.py
-- [ ] T082 [US1] Реализовать трансляцию сообщений всем игрокам в комнате в backend/src/api/routes/websocket.py
-- [ ] T083 [US1] Реализовать REST-роуты /sessions/* в backend/src/api/routes/sessions.py
-- [ ] T084 [US1] Подключить роуты sessions и WebSocket к main.py
+- [x] T071 [P] [US1] Создать модель GameSession в backend/src/models/session.py
+- [x] T072 [P] [US1] Создать модель SessionMessage в backend/src/models/message.py
+- [x] T073 [US1] Добавить миграцию для таблиц game_sessions, session_messages в backend/alembic/versions/005_sessions.py
+- [x] T074 [P] [US1] Создать Pydantic-схемы сессии в backend/src/schemas/session.py
+- [x] T075 [P] [US1] Создать Pydantic-схемы WebSocket-сообщений в backend/src/schemas/websocket.py
+- [x] T076 [US1] Расширить AI-сервис: конструирование промптов мастера с контекстом в backend/src/services/ai_service.py
+- [x] T077 [US1] Реализовать кэширование промптов для оптимизации затрат в backend/src/services/ai_service.py
+- [x] T077a [US1] Реализовать трекинг токенов и стоимости AI-вызовов (логирование input/output tokens) в backend/src/services/ai_service.py
+- [x] T078 [US1] Реализовать парсер запросов бросков кубиков из ответов AI в backend/src/services/dice_parser.py
+- [x] T079 [US1] Реализовать StateExtractor (извлечение изменений состояния через Haiku) в backend/src/services/state_extractor.py
+- [x] T080 [US1] Реализовать SessionService (управление сессией, сообщения) в backend/src/services/session_service.py
+- [x] T081 [US1] Реализовать WebSocket-хендлер с Redis pub/sub в backend/src/api/routes/websocket.py
+- [x] T082 [US1] Реализовать трансляцию сообщений всем игрокам в комнате в backend/src/api/routes/websocket.py
+- [x] T083 [US1] Реализовать REST-роуты /sessions/* в backend/src/api/routes/sessions.py
+- [x] T084 [US1] Подключить роуты sessions и WebSocket к main.py
 
 **Checkpoint**: Основная игровая механика работает — AI отвечает, состояние обновляется, игроки синхронизированы
 
