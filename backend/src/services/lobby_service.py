@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from src.models.character import Character
 from src.models.room import Room, RoomPlayer, RoomPlayerStatus, RoomStatus
 from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
+from src.models.session import GameSession
 
 logger = logging.getLogger(__name__)
 
@@ -310,7 +311,7 @@ class LobbyService:
         await self.db.refresh(player)
         return player
 
-    async def start_game(self, room_id: uuid.UUID, host_id: uuid.UUID) -> dict:
+    async def start_game(self, room_id: uuid.UUID, host_id: uuid.UUID) -> GameSession:
         """Start the game (host only, all players must be ready).
 
         Args:
@@ -318,7 +319,7 @@ class LobbyService:
             host_id: ID of user starting the game (must be host)
 
         Returns:
-            Game session data dict
+            Game session object
 
         Raises:
             ValueError: If not host, not all ready, or room not in waiting status
@@ -363,16 +364,16 @@ class LobbyService:
             "turn_order": [],
         }
 
-        # Create a game session record (simplified - full GameSession model in Phase 7)
-        session_id = uuid.uuid4()
-        game_session = {
-            "id": str(session_id),
-            "room_id": str(room.id),
-            "world_state": initial_world_state,
-            "started_at": room.started_at.isoformat(),
-        }
+        # Create a game session record
+        game_session = GameSession(
+            id=uuid.uuid4(),
+            room_id=room.id,
+            world_state=initial_world_state,
+        )
+        self.db.add(game_session)
 
         await self.db.commit()
+        await self.db.refresh(game_session)
 
         logger.info(
             f"Game started for room {room_id}",

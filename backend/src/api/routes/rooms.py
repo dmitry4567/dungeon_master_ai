@@ -287,12 +287,12 @@ async def toggle_ready(
     return {"success": True, "message": "Ready status updated"}
 
 
-@router.post("/{room_id}/start")
+@router.post("/{room_id}/start", response_model=GameSessionResponse)
 async def start_game(
     room_id: UUID,
     current_user: CurrentUser,
     db: DbSession,
-):
+) -> GameSessionResponse:
     """Start the game (host only, all players must be ready)."""
     service = LobbyService(db)
 
@@ -320,4 +320,9 @@ async def start_game(
             detail={"error": "bad_request", "message": str(e)},
         )
 
-    return game_session
+    return GameSessionResponse(
+        id=game_session.id,
+        room_id=game_session.room_id,
+        world_state=game_session.world_state,
+        started_at=game_session.started_at,
+    )

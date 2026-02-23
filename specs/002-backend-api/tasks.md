@@ -175,28 +175,28 @@
 
 ### Тесты для User Story 1
 
-- [ ] T067 [P] [US1] Unit-тест парсера запросов бросков кубиков в backend/tests/unit/test_dice_parser.py
-- [ ] T068 [P] [US1] Unit-тест извлечения состояния в backend/tests/unit/test_state_extractor.py
-- [ ] T069 [P] [US1] Интеграционный тест AI-оркестрации в backend/tests/integration/test_ai_orchestration.py
-- [ ] T070 [P] [US1] Интеграционный тест WebSocket-сессии в backend/tests/integration/test_websocket_session.py
+- [x] T067 [P] [US1] Unit-тест парсера запросов бросков кубиков в backend/tests/unit/test_dice_parser.py
+- [x] T068 [P] [US1] Unit-тест извлечения состояния в backend/tests/unit/test_state_extractor.py
+- [x] T069 [P] [US1] Интеграционный тест AI-оркестрации в backend/tests/integration/test_ai_orchestration.py
+- [x] T070 [P] [US1] Интеграционный тест WebSocket-сессии в backend/tests/integration/test_websocket_session.py
 
 ### Реализация User Story 1
 
-- [ ] T071 [P] [US1] Создать модель GameSession в backend/src/models/session.py
-- [ ] T072 [P] [US1] Создать модель SessionMessage в backend/src/models/message.py
-- [ ] T073 [US1] Добавить миграцию для таблиц game_sessions, session_messages в backend/alembic/versions/005_sessions.py
-- [ ] T074 [P] [US1] Создать Pydantic-схемы сессии в backend/src/schemas/session.py
-- [ ] T075 [P] [US1] Создать Pydantic-схемы WebSocket-сообщений в backend/src/schemas/websocket.py
-- [ ] T076 [US1] Расширить AI-сервис: конструирование промптов мастера с контекстом в backend/src/services/ai_service.py
-- [ ] T077 [US1] Реализовать кэширование промптов для оптимизации затрат в backend/src/services/ai_service.py
-- [ ] T077a [US1] Реализовать трекинг токенов и стоимости AI-вызовов (логирование input/output tokens) в backend/src/services/ai_service.py
-- [ ] T078 [US1] Реализовать парсер запросов бросков кубиков из ответов AI в backend/src/services/dice_parser.py
-- [ ] T079 [US1] Реализовать StateExtractor (извлечение изменений состояния через Haiku) в backend/src/services/state_extractor.py
-- [ ] T080 [US1] Реализовать SessionService (управление сессией, сообщения) в backend/src/services/session_service.py
-- [ ] T081 [US1] Реализовать WebSocket-хендлер с Redis pub/sub в backend/src/api/routes/websocket.py
-- [ ] T082 [US1] Реализовать трансляцию сообщений всем игрокам в комнате в backend/src/api/routes/websocket.py
-- [ ] T083 [US1] Реализовать REST-роуты /sessions/* в backend/src/api/routes/sessions.py
-- [ ] T084 [US1] Подключить роуты sessions и WebSocket к main.py
+- [x] T071 [P] [US1] Создать модель GameSession в backend/src/models/session.py
+- [x] T072 [P] [US1] Создать модель SessionMessage в backend/src/models/message.py
+- [x] T073 [US1] Добавить миграцию для таблиц game_sessions, session_messages в backend/alembic/versions/005_sessions.py
+- [x] T074 [P] [US1] Создать Pydantic-схемы сессии в backend/src/schemas/session.py
+- [x] T075 [P] [US1] Создать Pydantic-схемы WebSocket-сообщений в backend/src/schemas/websocket.py
+- [x] T076 [US1] Расширить AI-сервис: конструирование промптов мастера с контекстом в backend/src/services/ai_service.py
+- [x] T077 [US1] Реализовать кэширование промптов для оптимизации затрат в backend/src/services/ai_service.py
+- [x] T077a [US1] Реализовать трекинг токенов и стоимости AI-вызовов (логирование input/output tokens) в backend/src/services/ai_service.py
+- [x] T078 [US1] Реализовать парсер запросов бросков кубиков из ответов AI в backend/src/services/dice_parser.py
+- [x] T079 [US1] Реализовать StateExtractor (извлечение изменений состояния через Haiku) в backend/src/services/state_extractor.py
+- [x] T080 [US1] Реализовать SessionService (управление сессией, сообщения) в backend/src/services/session_service.py
+- [x] T081 [US1] Реализовать WebSocket-хендлер с Redis pub/sub в backend/src/api/routes/websocket.py
+- [x] T082 [US1] Реализовать трансляцию сообщений всем игрокам в комнате в backend/src/api/routes/websocket.py
+- [x] T083 [US1] Реализовать REST-роуты /sessions/* в backend/src/api/routes/sessions.py
+- [x] T084 [US1] Подключить роуты sessions и WebSocket к main.py
 
 **Checkpoint**: Основная игровая механика работает — AI отвечает, состояние обновляется, игроки синхронизированы
 

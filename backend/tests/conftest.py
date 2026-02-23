@@ -20,6 +20,8 @@ from src.models.user import User
 # Import all models to ensure they're registered with Base.metadata
 from src.models import room  # noqa: F401
 from src.models import scenario  # noqa: F401
+from src.models import session  # noqa: F401
+from src.models import message  # noqa: F401
 
 
 # Test database URL - uses same PostgreSQL but different database
@@ -84,6 +86,8 @@ async def test_engine(setup_test_database):
 
     # Clean up data after each test
     async with engine.begin() as conn:
+        await conn.execute(text("DELETE FROM session_messages"))
+        await conn.execute(text("DELETE FROM game_sessions"))
         await conn.execute(text("DELETE FROM room_players"))
         await conn.execute(text("DELETE FROM rooms"))
         await conn.execute(text("DELETE FROM scenario_versions"))
