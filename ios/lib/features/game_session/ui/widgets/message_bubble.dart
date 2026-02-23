@@ -134,8 +134,7 @@ class MessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildSystemBubble(BuildContext context) {
-    return Center(
+  Widget _buildSystemBubble(BuildContext context) => Center(
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 24),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -151,12 +150,11 @@ class MessageBubble extends StatelessWidget {
                 style: TextStyle(
                   color: AppColors.onSurface.withValues(alpha: 0.6),
                   fontSize: 13,
-                  fontStyle: FontStyle.italic,
+                  // fontStyle: FontStyle.italic,
                 ),
               ),
       ),
     );
-  }
 }
 
 /// Пузырь для стриминга ответа DM
