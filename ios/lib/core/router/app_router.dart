@@ -44,18 +44,12 @@ class AppRouter {
       GoRoute(
         path: Routes.login,
         name: 'login',
-        builder: (context, state) => BlocProvider(
-          create: (_) => getIt<AuthBloc>(),
-          child: const LoginPage(),
-        ),
+        builder: (context, state) => const LoginPage(),
       ),
       GoRoute(
         path: Routes.register,
         name: 'register',
-        builder: (context, state) => BlocProvider(
-          create: (_) => getIt<AuthBloc>(),
-          child: const LoginPage(),
-        ),
+        builder: (context, state) => const LoginPage(),
       ),
 
       // Main shell with bottom navigation

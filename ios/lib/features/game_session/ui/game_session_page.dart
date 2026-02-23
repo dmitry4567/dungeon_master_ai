@@ -1,3 +1,5 @@
+import 'package:ai_dungeon_master/features/auth/bloc/auth_bloc.dart';
+import 'package:ai_dungeon_master/features/auth/bloc/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -132,46 +134,49 @@ class _GameSessionPageState extends State<GameSessionPage> {
 
   Widget _buildBody(BuildContext context, GameSessionState state) {
     return switch (state) {
-      GameSessionInitial() || GameSessionConnecting() => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: AppColors.secondary),
-              SizedBox(height: 16),
-              Text(
-                'Подключение к сессии...',
-                style: TextStyle(color: AppColors.onSurface),
-              ),
-            ],
-          ),
+      GameSessionInitial() ||
+      GameSessionConnecting() =>
+      const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: AppColors.secondary),
+            SizedBox(height: 16),
+            Text(
+              'Подключение к сессии...',
+              style: TextStyle(color: AppColors.onSurface),
+            ),
+          ],
         ),
+      ),
       GameSessionActive() => _buildActiveSession(context, state),
       GameSessionEnded() => _buildEndedSession(context, state),
       GameSessionError() => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.onSurface),
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline,
+                size: 48, color: AppColors.error),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.onSurface),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => context.pop(),
-                child: const Text('Вернуться'),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.pop(),
+              child: const Text('Вернуться'),
+            ),
+          ],
         ),
+      ),
       _ => const Center(
-          child: CircularProgressIndicator(color: AppColors.secondary),
-        ),
+        child: CircularProgressIndicator(color: AppColors.secondary),
+      ),
     };
   }
 
@@ -184,7 +189,13 @@ class _GameSessionPageState extends State<GameSessionPage> {
         WorldStateBar(worldState: state.worldState),
         // Список сообщений
         Expanded(
-          child: _buildMessageList(state),
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              final currentUserId =
+              authState is AuthAuthenticated ? authState.user.id : null;
+              return _buildMessageList(state, currentUserId);
+            },
+          ),
         ),
         // Поле ввода
         MessageInput(
@@ -199,7 +210,7 @@ class _GameSessionPageState extends State<GameSessionPage> {
     );
   }
 
-  Widget _buildMessageList(GameSessionActive state) {
+  Widget _buildMessageList(GameSessionActive state, String? currentUserId) {
     final messages = state.messages;
     final itemCount =
         messages.length + (state.streamingContent != null ? 1 : 0);
@@ -209,7 +220,8 @@ class _GameSessionPageState extends State<GameSessionPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.chat_bubble_outline, size: 48, color: AppColors.outline),
+            Icon(Icons.chat_bubble_outline,
+                size: 48, color: AppColors.outline),
             SizedBox(height: 16),
             Text(
               'Начните приключение!\nОпишите действие вашего персонажа.',
@@ -235,8 +247,7 @@ class _GameSessionPageState extends State<GameSessionPage> {
         }
 
         final message = messages[index];
-        final isCurrentUser = message.role == MessageRole.player &&
-            message.authorId != null;
+        final isCurrentUser = message.authorId == currentUserId;
 
         return MessageBubble(
           message: message,
@@ -271,14 +282,21 @@ class _GameSessionPageState extends State<GameSessionPage> {
         ),
         // История сообщений (только чтение)
         Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: state.messages.length,
-            itemBuilder: (context, index) {
-              final message = state.messages[index];
-              return MessageBubble(
-                message: message,
-                isCurrentUser: message.role == MessageRole.player,
+          child: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, authState) {
+              final currentUserId =
+              authState is AuthAuthenticated ? authState.user.id : null;
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: state.messages.length,
+                itemBuilder: (context, index) {
+                  final message = state.messages[index];
+                  final isCurrentUser = message.authorId == currentUserId;
+                  return MessageBubble(
+                    message: message,
+                    isCurrentUser: isCurrentUser,
+                  );
+                },
               );
             },
           ),
@@ -376,7 +394,9 @@ class _ConnectionIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon) = switch (state) {
       'connected' => (AppColors.success, Icons.wifi),
-      'connecting' || 'reconnecting' => (AppColors.warning, Icons.wifi_find),
+      'connecting' ||
+      'reconnecting' =>
+      (AppColors.warning, Icons.wifi_find),
       'error' => (AppColors.error, Icons.wifi_off),
       _ => (AppColors.outline, Icons.wifi_off),
     };
