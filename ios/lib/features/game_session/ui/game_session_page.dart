@@ -23,6 +23,7 @@ class GameSessionPage extends StatefulWidget {
 
 class _GameSessionPageState extends State<GameSessionPage> {
   final _scrollController = ScrollController();
+  int _previousMessageCount = 0;
 
   @override
   void dispose() {
@@ -30,10 +31,22 @@ class _GameSessionPageState extends State<GameSessionPage> {
     super.dispose();
   }
 
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    // Считаем "внизу" если в пределах 100 пикселей от низа
+    return maxScroll - currentScroll <= 100;
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
       }
     });
   }
@@ -42,7 +55,15 @@ class _GameSessionPageState extends State<GameSessionPage> {
   Widget build(BuildContext context) => BlocConsumer<GameSessionBloc, GameSessionState>(
       listener: (context, state) {
         if (state is GameSessionActive) {
-          _scrollToBottom();
+          final currentCount = state.messages.length;
+          final hasNewMessage = currentCount > _previousMessageCount;
+          final isStreaming = state.streamingContent != null;
+
+          // Скроллим только если: новое сообщение и пользователь уже внизу, или идёт стриминг
+          if ((hasNewMessage && _isNearBottom()) || isStreaming) {
+            _scrollToBottom();
+          }
+          _previousMessageCount = currentCount;
         }
         if (state is GameSessionEnded) {
           ScaffoldMessenger.of(context).showSnackBar(

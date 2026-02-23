@@ -80,8 +80,14 @@ class _LobbyPageState extends State<LobbyPage> {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: RoomCard(
                         room: room,
-                        onTap: () =>
-                            context.push(Routes.waitingRoomPath(room.id)),
+                        onTap: () {
+                          if (room.status == 'active' &&
+                              room.isCurrentUserPlayer) {
+                            context.push(Routes.gameSessionPath(room.id));
+                          } else {
+                            context.push(Routes.waitingRoomPath(room.id));
+                          }
+                        },
                       ),
                     );
                   },

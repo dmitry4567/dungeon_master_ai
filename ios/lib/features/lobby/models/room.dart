@@ -12,7 +12,9 @@ class RoomPlayer with _$RoomPlayer {
     required String id,
     required String userId,
     required String name,
-    required String status, // pending, approved, ready, declined, required bool isHost, Character? character,
+    required String status,
+    required bool isHost,
+    Character? character,
   }) = _RoomPlayer;
 
   factory RoomPlayer.fromJson(Map<String, dynamic> json) =>
@@ -25,7 +27,10 @@ class Room with _$Room {
   const factory Room({
     required String id,
     required String name,
-    required String status, // waiting, active, completed, required int maxPlayers, required DateTime createdAt, Scenario? scenario,
+    required String status,
+    required int maxPlayers,
+    required DateTime createdAt,
+    Scenario? scenario,
     @Default([]) List<RoomPlayer> players,
   }) = _Room;
   const Room._();
@@ -63,6 +68,7 @@ class RoomSummary with _$RoomSummary {
     required int playerCount,
     required int maxPlayers,
     required String status,
+    @Default(false) bool isCurrentUserPlayer,
   }) = _RoomSummary;
 
   factory RoomSummary.fromJson(Map<String, dynamic> json) =>

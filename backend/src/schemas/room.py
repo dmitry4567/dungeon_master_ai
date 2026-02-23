@@ -62,6 +62,7 @@ class RoomSummaryResponse(BaseModel):
     player_count: int
     max_players: int
     status: str
+    is_current_user_player: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

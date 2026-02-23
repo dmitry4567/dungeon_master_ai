@@ -74,7 +74,7 @@ def _build_room_response(room) -> RoomResponse:
     )
 
 
-def _build_room_summary(room) -> RoomSummaryResponse:
+def _build_room_summary(room, current_user_id: UUID | None = None) -> RoomSummaryResponse:
     """Build a RoomSummaryResponse from a Room model."""
     active_players = [
         p for p in room.players
@@ -84,6 +84,10 @@ def _build_room_summary(room) -> RoomSummaryResponse:
     if room.scenario_version and room.scenario_version.scenario:
         scenario_title = room.scenario_version.scenario.title
 
+    is_current_user_player = False
+    if current_user_id:
+        is_current_user_player = any(p.user_id == current_user_id for p in active_players)
+
     return RoomSummaryResponse(
         id=room.id,
         name=room.name,
@@ -92,6 +96,7 @@ def _build_room_summary(room) -> RoomSummaryResponse:
         player_count=len(active_players),
         max_players=room.max_players,
         status=room.status.value if hasattr(room.status, "value") else room.status,
+        is_current_user_player=is_current_user_player,
     )
 
 
@@ -104,7 +109,7 @@ async def list_rooms(
     """List available rooms."""
     service = LobbyService(db)
     rooms = await service.list_rooms(status)
-    return [_build_room_summary(r) for r in rooms]
+    return [_build_room_summary(r, current_user.id) for r in rooms]
 
 
 @router.post("", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
