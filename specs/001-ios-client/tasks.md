@@ -21,13 +21,13 @@
 
 **Purpose**: Создание Flutter-проекта и базовой структуры
 
-- [ ] T001 Создать Flutter-проект в ios/ с именем ai_dungeon_master
-- [ ] T002 Настроить pubspec.yaml с зависимостями: flutter_bloc, get_it, injectable, freezed, go_router, dio, retrofit, web_socket_channel, flutter_tts, speech_to_text, isar, flutter_secure_storage, firebase_core, firebase_crashlytics, firebase_analytics
-- [ ] T003 [P] Настроить analysis_options.yaml с правилами линтинга
-- [ ] T004 [P] Настроить build.yaml для freezed и injectable
-- [ ] T005 [P] Создать структуру директорий согласно plan.md: lib/core/, lib/features/, lib/shared/
-- [ ] T006 [P] Настроить ios/Runner/Info.plist с разрешениями: NSMicrophoneUsageDescription, NSSpeechRecognitionUsageDescription
-- [ ] T007 [P] Создать .env.example с переменными окружения (API_BASE_URL)
+- [x] T001 Создать Flutter-проект в ios/ с именем ai_dungeon_master
+- [x] T002 Настроить pubspec.yaml с зависимостями: flutter_bloc, get_it, injectable, freezed, go_router, dio, retrofit, web_socket_channel, flutter_tts, speech_to_text, isar, flutter_secure_storage, firebase_core, firebase_crashlytics, firebase_analytics
+- [x] T003 [P] Настроить analysis_options.yaml с правилами линтинга
+- [x] T004 [P] Настроить build.yaml для freezed и injectable
+- [x] T005 [P] Создать структуру директорий согласно plan.md: lib/core/, lib/features/, lib/shared/
+- [x] T006 [P] Настроить ios/Runner/Info.plist с разрешениями: NSMicrophoneUsageDescription, NSSpeechRecognitionUsageDescription
+- [x] T007 [P] Создать .env.example с переменными окружения (API_BASE_URL)
 
 ---
 
@@ -35,28 +35,28 @@
 
 **Purpose**: Инфраструктура, БЛОКИРУЮЩАЯ все пользовательские истории
 
-- [ ] T008 Реализовать конфигурацию приложения в ios/lib/core/config/app_config.dart
-- [ ] T009 [P] Настроить get_it + injectable DI в ios/lib/core/di/injection.dart
-- [ ] T010 [P] Создать базовую тему приложения в ios/lib/core/theme/app_theme.dart
-- [ ] T011 [P] Создать цветовую палитру (фэнтези-стиль) в ios/lib/core/theme/colors.dart
-- [ ] T012 [P] Создать типографику с Dynamic Type в ios/lib/core/theme/typography.dart
-- [ ] T013 Реализовать Dio API-клиент с интерсепторами в ios/lib/core/network/api_client.dart
-- [ ] T014 [P] Реализовать auth-интерсептор (JWT) в ios/lib/core/network/interceptors/auth_interceptor.dart
-- [ ] T015 [P] Реализовать error-интерсептор в ios/lib/core/network/interceptors/error_interceptor.dart
-- [ ] T016 Реализовать WebSocket-клиент в ios/lib/core/network/websocket_client.dart
-- [ ] T017 Реализовать secure storage для токенов в ios/lib/core/storage/secure_storage.dart
-- [ ] T018 Настроить Isar базу данных в ios/lib/core/storage/local_database.dart
-- [ ] T019 Настроить go_router в ios/lib/core/router/app_router.dart
-- [ ] T019a [P] Реализовать сохранение состояния навигации между перезапусками в ios/lib/core/router/app_router.dart
-- [ ] T020 [P] Создать константы маршрутов в ios/lib/core/router/routes.dart
-- [ ] T021 Создать точку входа приложения в ios/lib/main.dart
-- [ ] T022 Создать MaterialApp с роутером в ios/lib/app.dart
-- [ ] T023 [P] Создать общие виджеты: LoadingSkeleton в ios/lib/shared/widgets/loading_skeleton.dart
-- [ ] T024 [P] Создать общие виджеты: ErrorView в ios/lib/shared/widgets/error_view.dart
-- [ ] T025 [P] Создать общие виджеты: OfflineBanner в ios/lib/shared/widgets/offline_banner.dart
-- [ ] T026 [P] Создать общие виджеты: FantasyButton в ios/lib/shared/widgets/fantasy_button.dart
-- [ ] T027 Настроить Firebase (Crashlytics, Analytics) в ios/lib/core/firebase/firebase_service.dart
-- [ ] T028 Запустить build_runner для генерации кода: flutter pub run build_runner build
+- [x] T008 Реализовать конфигурацию приложения в ios/lib/core/config/app_config.dart
+- [x] T009 [P] Настроить get_it + injectable DI в ios/lib/core/di/injection.dart
+- [x] T010 [P] Создать базовую тему приложения в ios/lib/core/theme/app_theme.dart
+- [x] T011 [P] Создать цветовую палитру (фэнтези-стиль) в ios/lib/core/theme/colors.dart
+- [x] T012 [P] Создать типографику с Dynamic Type в ios/lib/core/theme/typography.dart
+- [x] T013 Реализовать Dio API-клиент с интерсепторами в ios/lib/core/network/api_client.dart
+- [x] T014 [P] Реализовать auth-интерсептор (JWT) в ios/lib/core/network/interceptors/auth_interceptor.dart
+- [x] T015 [P] Реализовать error-интерсептор в ios/lib/core/network/interceptors/error_interceptor.dart
+- [x] T016 Реализовать WebSocket-клиент в ios/lib/core/network/websocket_client.dart
+- [x] T017 Реализовать secure storage для токенов в ios/lib/core/storage/secure_storage.dart
+- [x] T018 Настроить SQLite базу данных в ios/lib/core/storage/local_database.dart
+- [x] T019 Настроить go_router в ios/lib/core/router/app_router.dart
+- [x] T019a [P] Реализовать сохранение состояния навигации между перезапусками в ios/lib/core/router/app_router.dart
+- [x] T020 [P] Создать константы маршрутов в ios/lib/core/router/routes.dart
+- [x] T021 Создать точку входа приложения в ios/lib/main.dart
+- [x] T022 Создать MaterialApp с роутером в ios/lib/app.dart
+- [x] T023 [P] Создать общие виджеты: LoadingSkeleton в ios/lib/shared/widgets/loading_skeleton.dart
+- [x] T024 [P] Создать общие виджеты: ErrorView в ios/lib/shared/widgets/error_view.dart
+- [x] T025 [P] Создать общие виджеты: OfflineBanner в ios/lib/shared/widgets/offline_banner.dart
+- [x] T026 [P] Создать общие виджеты: FantasyButton в ios/lib/shared/widgets/fantasy_button.dart
+- [x] T027 Настроить Firebase (Crashlytics, Analytics) в ios/lib/core/firebase/firebase_service.dart
+- [x] T028 Запустить build_runner для генерации кода: flutter pub run build_runner build
 
 **Checkpoint**: Инфраструктура готова — можно начинать истории
 
@@ -72,24 +72,24 @@
 
 ### Тесты для User Story 5
 
-- [ ] T029 [P] [US5] Bloc-тест AuthBloc в ios/test/bloc/auth_bloc_test.dart
-- [ ] T030 [P] [US5] Widget-тест LoginPage в ios/test/widget/login_page_test.dart
+- [x] T029 [P] [US5] Bloc-тест AuthBloc в ios/test/bloc/auth_bloc_test.dart
+- [x] T030 [P] [US5] Widget-тест LoginPage в ios/test/widget/login_page_test.dart
 
 ### Реализация User Story 5
 
-- [ ] T031 [P] [US5] Создать freezed-модель User в ios/lib/features/auth/models/user.dart
-- [ ] T032 [P] [US5] Создать freezed-модели AuthTokens, AuthResponse в ios/lib/features/auth/models/auth_tokens.dart
-- [ ] T033 [US5] Создать Retrofit API для auth в ios/lib/features/auth/data/auth_api.dart
-- [ ] T034 [US5] Реализовать AuthRepository в ios/lib/features/auth/data/auth_repository.dart
-- [ ] T035 [US5] Реализовать Sign in with Apple в ios/lib/features/auth/data/apple_auth_service.dart
-- [ ] T036 [US5] Создать AuthEvent в ios/lib/features/auth/bloc/auth_event.dart
-- [ ] T037 [US5] Создать AuthState в ios/lib/features/auth/bloc/auth_state.dart
-- [ ] T038 [US5] Реализовать AuthBloc в ios/lib/features/auth/bloc/auth_bloc.dart
-- [ ] T039 [US5] Создать LoginPage с Sign in with Apple и email-формой в ios/lib/features/auth/ui/login_page.dart
-- [ ] T040 [P] [US5] Создать виджет AppleSignInButton в ios/lib/features/auth/ui/widgets/apple_sign_in_button.dart
-- [ ] T041 [P] [US5] Создать виджет EmailLoginForm в ios/lib/features/auth/ui/widgets/email_login_form.dart
-- [ ] T042 [US5] Добавить маршруты auth в app_router.dart
-- [ ] T043 [US5] Запустить build_runner для генерации auth-моделей
+- [x] T031 [P] [US5] Создать freezed-модель User в ios/lib/features/auth/models/user.dart
+- [x] T032 [P] [US5] Создать freezed-модели AuthTokens, AuthResponse в ios/lib/features/auth/models/auth_tokens.dart
+- [x] T033 [US5] Создать Dio API для auth в ios/lib/features/auth/data/auth_api.dart
+- [x] T034 [US5] Реализовать AuthRepository в ios/lib/features/auth/data/auth_repository.dart
+- [x] T035 [US5] Реализовать Sign in with Apple в ios/lib/features/auth/data/apple_auth_service.dart
+- [x] T036 [US5] Создать AuthEvent в ios/lib/features/auth/bloc/auth_event.dart
+- [x] T037 [US5] Создать AuthState в ios/lib/features/auth/bloc/auth_state.dart
+- [x] T038 [US5] Реализовать AuthBloc в ios/lib/features/auth/bloc/auth_bloc.dart
+- [x] T039 [US5] Создать LoginPage с Sign in with Apple и email-формой в ios/lib/features/auth/ui/login_page.dart
+- [x] T040 [P] [US5] Создать виджет AppleSignInButton в ios/lib/features/auth/ui/widgets/apple_sign_in_button.dart
+- [x] T041 [P] [US5] Создать виджет EmailLoginForm в ios/lib/features/auth/ui/widgets/email_login_form.dart
+- [x] T042 [US5] Добавить маршруты auth в app_router.dart
+- [x] T043 [US5] Запустить build_runner для генерации auth-моделей
 
 **Checkpoint**: Аутентификация работает, можно тестировать вход
 
@@ -103,32 +103,32 @@
 
 ### Тесты для User Story 3
 
-- [ ] T044 [P] [US3] Unit-тест валидации характеристик в ios/test/unit/character/ability_scores_test.dart
-- [ ] T045 [P] [US3] Bloc-тест CharacterBloc в ios/test/bloc/character_bloc_test.dart
-- [ ] T046 [P] [US3] Widget-тест CharacterCard в ios/test/widget/character_card_test.dart
+- [x] T044 [P] [US3] Unit-тест валидации характеристик в ios/test/unit/character/ability_scores_test.dart
+- [x] T045 [P] [US3] Bloc-тест CharacterBloc в ios/test/bloc/character_bloc_test.dart
+- [x] T046 [P] [US3] Widget-тест CharacterCard в ios/test/widget/character_card_test.dart
 
 ### Реализация User Story 3
 
-- [ ] T047 [P] [US3] Создать freezed-модель AbilityScores с расчётом модификаторов в ios/lib/features/character/models/ability_scores.dart
-- [ ] T048 [P] [US3] Создать freezed-модель Character в ios/lib/features/character/models/character.dart
-- [ ] T049 [P] [US3] Создать freezed-модели DndClass, DndRace в ios/lib/features/character/models/dnd_data.dart
-- [ ] T050 [P] [US3] Создать статические данные классов/рас D&D 5e в ios/lib/features/character/data/dnd_reference_data.dart
-- [ ] T051 [US3] Создать Retrofit API для characters в ios/lib/features/character/data/character_api.dart
-- [ ] T052 [US3] Реализовать CharacterRepository в ios/lib/features/character/data/character_repository.dart
-- [ ] T053 [US3] Создать Isar-модель CachedCharacter в ios/lib/features/character/data/cached_character.dart
-- [ ] T054 [US3] Реализовать CharacterValidator в ios/lib/features/character/data/character_validator.dart
-- [ ] T055 [US3] Создать CharacterEvent в ios/lib/features/character/bloc/character_event.dart
-- [ ] T056 [US3] Создать CharacterState в ios/lib/features/character/bloc/character_state.dart
-- [ ] T057 [US3] Реализовать CharacterBloc в ios/lib/features/character/bloc/character_bloc.dart
-- [ ] T058 [US3] Создать CharacterListPage в ios/lib/features/character/ui/character_list_page.dart
-- [ ] T059 [US3] Создать CharacterCreatePage (мастер) в ios/lib/features/character/ui/character_create_page.dart
-- [ ] T060 [US3] Создать CharacterDetailPage в ios/lib/features/character/ui/character_detail_page.dart
-- [ ] T061 [P] [US3] Создать виджет ClassSelector в ios/lib/features/character/ui/widgets/class_selector.dart
-- [ ] T062 [P] [US3] Создать виджет RaceSelector в ios/lib/features/character/ui/widgets/race_selector.dart
-- [ ] T063 [P] [US3] Создать виджет AbilityScoresEditor в ios/lib/features/character/ui/widgets/ability_scores_editor.dart
-- [ ] T064 [P] [US3] Создать виджет CharacterCard в ios/lib/features/character/ui/widgets/character_card.dart
-- [ ] T065 [US3] Добавить маршруты character в app_router.dart
-- [ ] T066 [US3] Запустить build_runner для генерации character-моделей
+- [x] T047 [P] [US3] Создать freezed-модель AbilityScores с расчётом модификаторов в ios/lib/features/character/models/ability_scores.dart
+- [x] T048 [P] [US3] Создать freezed-модель Character в ios/lib/features/character/models/character.dart
+- [x] T049 [P] [US3] Создать freezed-модели DndClass, DndRace в ios/lib/features/character/models/dnd_data.dart
+- [x] T050 [P] [US3] Создать статические данные классов/рас D&D 5e в ios/lib/features/character/data/dnd_reference_data.dart
+- [x] T051 [US3] Создать Retrofit API для characters в ios/lib/features/character/data/character_api.dart
+- [x] T052 [US3] Реализовать CharacterRepository в ios/lib/features/character/data/character_repository.dart
+- [x] T053 [US3] Создать Isar-модель CachedCharacter в ios/lib/features/character/data/cached_character.dart
+- [x] T054 [US3] Реализовать CharacterValidator в ios/lib/features/character/data/character_validator.dart
+- [x] T055 [US3] Создать CharacterEvent в ios/lib/features/character/bloc/character_event.dart
+- [x] T056 [US3] Создать CharacterState в ios/lib/features/character/bloc/character_state.dart
+- [x] T057 [US3] Реализовать CharacterBloc в ios/lib/features/character/bloc/character_bloc.dart
+- [x] T058 [US3] Создать CharacterListPage в ios/lib/features/character/ui/character_list_page.dart
+- [x] T059 [US3] Создать CharacterCreatePage (мастер) в ios/lib/features/character/ui/character_create_page.dart
+- [x] T060 [US3] Создать CharacterDetailPage в ios/lib/features/character/ui/character_detail_page.dart
+- [x] T061 [P] [US3] Создать виджет ClassSelector в ios/lib/features/character/ui/widgets/class_selector.dart
+- [x] T062 [P] [US3] Создать виджет RaceSelector в ios/lib/features/character/ui/widgets/race_selector.dart
+- [x] T063 [P] [US3] Создать виджет AbilityScoresEditor в ios/lib/features/character/ui/widgets/ability_scores_editor.dart
+- [x] T064 [P] [US3] Создать виджет CharacterCard в ios/lib/features/character/ui/widgets/character_card.dart
+- [x] T065 [US3] Добавить маршруты character в app_router.dart
+- [x] T066 [US3] Запустить build_runner для генерации character-моделей
 
 **Checkpoint**: Создание персонажей работает с валидацией D&D 5e
 
@@ -142,27 +142,27 @@
 
 ### Тесты для User Story 2
 
-- [ ] T067 [P] [US2] Bloc-тест ScenarioBloc в ios/test/bloc/scenario_bloc_test.dart
+- [x] T067 [P] [US2] Bloc-тест ScenarioBloc в ios/test/bloc/scenario_bloc_test.dart
 
 ### Реализация User Story 2
 
-- [ ] T068 [P] [US2] Создать freezed-модели Act, Scene, Npc, Location в ios/lib/features/scenario/models/scenario_content.dart
-- [ ] T069 [P] [US2] Создать freezed-модели Scenario, ScenarioVersion в ios/lib/features/scenario/models/scenario.dart
-- [ ] T070 [US2] Создать Retrofit API для scenarios в ios/lib/features/scenario/data/scenario_api.dart
-- [ ] T071 [US2] Реализовать ScenarioRepository в ios/lib/features/scenario/data/scenario_repository.dart
-- [ ] T072 [US2] Создать Isar-модель CachedScenario в ios/lib/features/scenario/data/cached_scenario.dart
-- [ ] T073 [US2] Создать ScenarioEvent в ios/lib/features/scenario/bloc/scenario_event.dart
-- [ ] T074 [US2] Создать ScenarioState в ios/lib/features/scenario/bloc/scenario_state.dart
-- [ ] T075 [US2] Реализовать ScenarioBloc в ios/lib/features/scenario/bloc/scenario_bloc.dart
-- [ ] T076 [US2] Создать ScenarioListPage в ios/lib/features/scenario/ui/scenario_list_page.dart
-- [ ] T077 [US2] Создать ScenarioBuilderPage (ввод описания) в ios/lib/features/scenario/ui/scenario_builder_page.dart
-- [ ] T078 [US2] Создать ScenarioPreviewPage (разворачиваемые секции) в ios/lib/features/scenario/ui/scenario_preview_page.dart
-- [ ] T079 [P] [US2] Создать виджет ScenarioCard в ios/lib/features/scenario/ui/widgets/scenario_card.dart
-- [ ] T080 [P] [US2] Создать виджет ActExpansionTile в ios/lib/features/scenario/ui/widgets/act_expansion_tile.dart
-- [ ] T081 [P] [US2] Создать виджет NpcCard в ios/lib/features/scenario/ui/widgets/npc_card.dart
-- [ ] T082 [P] [US2] Создать виджет VersionHistorySheet в ios/lib/features/scenario/ui/widgets/version_history_sheet.dart
-- [ ] T083 [US2] Добавить маршруты scenario в app_router.dart
-- [ ] T084 [US2] Запустить build_runner для генерации scenario-моделей
+- [x] T068 [P] [US2] Создать freezed-модели Act, Scene, Npc, Location в ios/lib/features/scenario/models/scenario_content.dart
+- [x] T069 [P] [US2] Создать freezed-модели Scenario, ScenarioVersion в ios/lib/features/scenario/models/scenario.dart
+- [x] T070 [US2] Создать Retrofit API для scenarios в ios/lib/features/scenario/data/scenario_api.dart
+- [x] T071 [US2] Реализовать ScenarioRepository в ios/lib/features/scenario/data/scenario_repository.dart
+- [x] T072 [US2] Создать Isar-модель CachedScenario в ios/lib/features/scenario/data/cached_scenario.dart
+- [x] T073 [US2] Создать ScenarioEvent в ios/lib/features/scenario/bloc/scenario_event.dart
+- [x] T074 [US2] Создать ScenarioState в ios/lib/features/scenario/bloc/scenario_state.dart
+- [x] T075 [US2] Реализовать ScenarioBloc в ios/lib/features/scenario/bloc/scenario_bloc.dart
+- [x] T076 [US2] Создать ScenarioListPage в ios/lib/features/scenario/ui/scenario_list_page.dart
+- [x] T077 [US2] Создать ScenarioBuilderPage (ввод описания) в ios/lib/features/scenario/ui/scenario_builder_page.dart
+- [x] T078 [US2] Создать ScenarioPreviewPage (разворачиваемые секции) в ios/lib/features/scenario/ui/scenario_preview_page.dart
+- [x] T079 [P] [US2] Создать виджет ScenarioCard в ios/lib/features/scenario/ui/widgets/scenario_card.dart
+- [x] T080 [P] [US2] Создать виджет ActExpansionTile в ios/lib/features/scenario/ui/widgets/act_expansion_tile.dart
+- [x] T081 [P] [US2] Создать виджет NpcCard в ios/lib/features/scenario/ui/widgets/npc_card.dart
+- [x] T082 [P] [US2] Создать виджет VersionHistorySheet в ios/lib/features/scenario/ui/widgets/version_history_sheet.dart
+- [x] T083 [US2] Добавить маршруты scenario в app_router.dart
+- [x] T084 [US2] Запустить build_runner для генерации scenario-моделей
 
 **Checkpoint**: Генерация и управление сценариями работает
 
@@ -176,24 +176,24 @@
 
 ### Тесты для User Story 4
 
-- [ ] T085 [P] [US4] Bloc-тест LobbyBloc в ios/test/bloc/lobby_bloc_test.dart
+- [x] T085 [P] [US4] Bloc-тест LobbyBloc в ios/test/bloc/lobby_bloc_test.dart
 
 ### Реализация User Story 4
 
-- [ ] T086 [P] [US4] Создать freezed-модели Room, RoomPlayer, RoomSummary в ios/lib/features/lobby/models/room.dart
-- [ ] T087 [US4] Создать Retrofit API для rooms в ios/lib/features/lobby/data/lobby_api.dart
-- [ ] T088 [US4] Реализовать LobbyRepository в ios/lib/features/lobby/data/lobby_repository.dart
-- [ ] T089 [US4] Создать LobbyEvent в ios/lib/features/lobby/bloc/lobby_event.dart
-- [ ] T090 [US4] Создать LobbyState в ios/lib/features/lobby/bloc/lobby_state.dart
-- [ ] T091 [US4] Реализовать LobbyBloc в ios/lib/features/lobby/bloc/lobby_bloc.dart
-- [ ] T092 [US4] Создать LobbyPage (список комнат) в ios/lib/features/lobby/ui/lobby_page.dart
-- [ ] T093 [US4] Создать RoomCreatePage в ios/lib/features/lobby/ui/room_create_page.dart
-- [ ] T094 [US4] Создать WaitingRoomPage с countdown-анимацией (3-2-1) при старте в ios/lib/features/lobby/ui/waiting_room_page.dart
-- [ ] T095 [P] [US4] Создать виджет RoomCard в ios/lib/features/lobby/ui/widgets/room_card.dart
-- [ ] T096 [P] [US4] Создать виджет PlayerAvatar в ios/lib/features/lobby/ui/widgets/player_avatar.dart
-- [ ] T097 [P] [US4] Создать виджет JoinRequestDialog в ios/lib/features/lobby/ui/widgets/join_request_dialog.dart
-- [ ] T098 [US4] Добавить маршруты lobby в app_router.dart
-- [ ] T099 [US4] Запустить build_runner для генерации lobby-моделей
+- [x] T086 [P] [US4] Создать freezed-модели Room, RoomPlayer, RoomSummary в ios/lib/features/lobby/models/room.dart
+- [x] T087 [US4] Создать Retrofit API для rooms в ios/lib/features/lobby/data/lobby_api.dart
+- [x] T088 [US4] Реализовать LobbyRepository в ios/lib/features/lobby/data/lobby_repository.dart
+- [x] T089 [US4] Создать LobbyEvent в ios/lib/features/lobby/bloc/lobby_event.dart
+- [x] T090 [US4] Создать LobbyState в ios/lib/features/lobby/bloc/lobby_state.dart
+- [x] T091 [US4] Реализовать LobbyBloc в ios/lib/features/lobby/bloc/lobby_bloc.dart
+- [x] T092 [US4] Создать LobbyPage (список комнат) в ios/lib/features/lobby/ui/lobby_page.dart
+- [x] T093 [US4] Создать RoomCreatePage в ios/lib/features/lobby/ui/room_create_page.dart
+- [x] T094 [US4] Создать WaitingRoomPage с countdown-анимацией (3-2-1) при старте в ios/lib/features/lobby/ui/waiting_room_page.dart
+- [x] T095 [P] [US4] Создать виджет RoomCard в ios/lib/features/lobby/ui/widgets/room_card.dart
+- [x] T096 [P] [US4] Создать виджет PlayerAvatar в ios/lib/features/lobby/ui/widgets/player_avatar.dart
+- [x] T097 [P] [US4] Создать виджет JoinRequestDialog в ios/lib/features/lobby/ui/widgets/join_request_dialog.dart
+- [x] T098 [US4] Добавить маршруты lobby в app_router.dart
+- [x] T099 [US4] Запустить build_runner для генерации lobby-моделей
 
 **Checkpoint**: Лобби работает, можно создавать/присоединяться к комнатам
 
