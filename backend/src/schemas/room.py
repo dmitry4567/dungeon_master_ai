@@ -16,6 +16,7 @@ class CreateRoomRequest(BaseModel):
     name: str = Field(..., min_length=3, max_length=100, description="Room name")
     scenario_version_id: UUID = Field(..., description="Scenario version to use")
     max_players: int = Field(5, ge=1, le=5, description="Maximum number of players (1 for single player)")
+    character_id: UUID | None = Field(None, description="Character ID to use for single player games")
 
 
 class ReadyRequest(BaseModel):

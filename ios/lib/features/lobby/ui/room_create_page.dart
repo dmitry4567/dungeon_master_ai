@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/di/injection.dart';
 import '../../../core/router/routes.dart';
+import '../../character/bloc/character_bloc.dart';
+import '../../character/bloc/character_event.dart';
+import '../../character/bloc/character_state.dart';
+import '../../character/models/character.dart';
 import '../../scenario/bloc/scenario_bloc.dart';
 import '../../scenario/bloc/scenario_event.dart';
 import '../../scenario/bloc/scenario_state.dart';
@@ -11,19 +16,32 @@ import '../bloc/lobby_bloc.dart';
 import '../bloc/lobby_event.dart';
 import '../bloc/lobby_state.dart';
 
-class RoomCreatePage extends StatefulWidget {
+class RoomCreatePage extends StatelessWidget {
   const RoomCreatePage({super.key});
 
   @override
-  State<RoomCreatePage> createState() => _RoomCreatePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => getIt<CharacterBloc>(),
+      child: const _RoomCreateView(),
+    );
+  }
 }
 
-class _RoomCreatePageState extends State<RoomCreatePage> {
+class _RoomCreateView extends StatefulWidget {
+  const _RoomCreateView();
+
+  @override
+  State<_RoomCreateView> createState() => _RoomCreateViewState();
+}
+
+class _RoomCreateViewState extends State<_RoomCreateView> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   int _maxPlayers = 5;
   bool _isSinglePlayer = false;
   Scenario? _selectedScenario;
+  Character? _selectedCharacter;
 
   @override
   void initState() {
@@ -31,6 +49,7 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
     context.read<ScenarioBloc>().add(
           const ScenarioEvent.loadScenarios(status: 'published'),
         );
+    context.read<CharacterBloc>().add(const CharacterEvent.loadCharacters());
   }
 
   @override
@@ -48,6 +67,13 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
       return;
     }
 
+    if (_isSinglePlayer && _selectedCharacter == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Выберите персонажа для одиночной игры')),
+      );
+      return;
+    }
+
     final versionId = _selectedScenario!.currentVersionId;
     if (versionId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,6 +87,7 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
             name: _nameController.text.trim(),
             scenarioVersionId: versionId,
             maxPlayers: _isSinglePlayer ? 1 : _maxPlayers,
+            characterId: _isSinglePlayer ? _selectedCharacter!.id : null,
           ),
         );
   }
@@ -74,7 +101,6 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
           listener: (context, state) {
             state.whenOrNull(
               roomDetail: (room, _) {
-                // Если одиночная игра, сразу стартуем
                 if (_isSinglePlayer) {
                   context.read<LobbyBloc>().add(
                         LobbyEvent.startGame(roomId: room.id),
@@ -84,7 +110,6 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
                 }
               },
               gameStarting: (room, session) {
-                // Переход в игровую сессию после автостарта
                 context.pushReplacement(
                   Routes.gameSessionPath(room.id, title: room.name),
                 );
@@ -103,7 +128,6 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Room name
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
@@ -121,8 +145,6 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
                     },
                   ),
                   const SizedBox(height: 16),
-
-                  // Single player mode switch
                   Card(
                     child: SwitchListTile(
                       title: const Text('Одиночная игра'),
@@ -144,8 +166,6 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Max players slider (hidden in single player mode)
                   if (!_isSinglePlayer) ...[
                     Text(
                       'Максимум игроков: $_maxPlayers',
@@ -162,120 +182,177 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
                       },
                     ),
                     const SizedBox(height: 24),
-                  ] else
+                  ] else ...[
                     const SizedBox(height: 8),
-
-                  // Scenario selector
+                    Text(
+                      'Персонаж',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildCharacterSelector(),
+                    const SizedBox(height: 24),
+                  ],
                   Text(
                     'Сценарий',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  BlocBuilder<ScenarioBloc, ScenarioState>(
-                    builder: (context, state) => state.when(
-                      initial: () => const Text('Загрузка сценариев...'),
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      loaded: (scenarios) {
-                        if (scenarios.isEmpty) {
-                          return const Card(
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Text(
-                                'Нет доступных сценариев. Создайте сценарий в разделе "Сценарии".',
-                              ),
-                            ),
-                          );
-                        }
-                        return Column(
-                          children: scenarios.map((scenario) {
-                            final isSelected =
-                                _selectedScenario?.id == scenario.id;
-                            return Card(
-                              color: isSelected
-                                  ? Theme.of(context)
-                                      .primaryColor
-                                      .withValues(alpha: 0.15)
-                                  : null,
-                              child: ListTile(
-                                leading: Icon(
-                                  Icons.book,
-                                  color: isSelected
-                                      ? Theme.of(context).primaryColor
-                                      : null,
-                                ),
-                                title: Text(scenario.title),
-                                subtitle: Text(scenario.status),
-                                trailing: isSelected
-                                    ? Icon(
-                                        Icons.check_circle,
-                                        color: Theme.of(context).primaryColor,
-                                      )
-                                    : null,
-                                onTap: () {
-                                  setState(() => _selectedScenario = scenario);
-                                },
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                      generating: (_) =>
-                          const Center(child: CircularProgressIndicator()),
-                      scenarioDetail: (_) => const SizedBox.shrink(),
-                      versionHistory: (_, __) => const SizedBox.shrink(),
-                      error: (message) => Text('Ошибка: $message'),
-                    ),
-                  ),
+                  _buildScenarioSelector(),
                   const SizedBox(height: 32),
-
-                  // Create button
-                  BlocBuilder<LobbyBloc, LobbyState>(
-                    builder: (context, state) {
-                      final isCreating =
-                          state.whenOrNull(creating: () => true) ?? false;
-                      final isStarting =
-                          state.whenOrNull(gameStarting: (_, __) => true) ??
-                              false;
-                      final isLoading = isCreating || isStarting;
-
-                      String buttonText;
-                      if (isStarting) {
-                        buttonText = 'Запуск игры...';
-                      } else if (isCreating) {
-                        buttonText = 'Создание...';
-                      } else if (_isSinglePlayer) {
-                        buttonText = 'Начать игру';
-                      } else {
-                        buttonText = 'Создать комнату';
-                      }
-
-                      return ElevatedButton.icon(
-                        onPressed: isLoading ? null : _createRoom,
-                        icon: isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Icon(
-                                _isSinglePlayer
-                                    ? Icons.play_arrow
-                                    : Icons.add,
-                              ),
-                        label: Text(buttonText),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.all(16),
-                        ),
-                      );
-                    },
-                  ),
+                  _buildCreateButton(),
                 ],
               ),
             ),
           ),
         ),
       );
+
+  Widget _buildCharacterSelector() {
+    return BlocBuilder<CharacterBloc, CharacterState>(
+      builder: (context, state) => state.when(
+        initial: () => const Text('Загрузка персонажей...'),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        loaded: (characters) {
+          if (characters.isEmpty) {
+            return const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Нет доступных персонажей. Создайте персонажа в разделе "Персонажи".',
+                ),
+              ),
+            );
+          }
+          return Column(
+            children: characters.map((character) {
+              final isSelected = _selectedCharacter?.id == character.id;
+              return Card(
+                color: isSelected
+                    ? Theme.of(context).primaryColor.withAlpha(30)
+                    : null,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.person_outline,
+                    color:
+                        isSelected ? Theme.of(context).primaryColor : null,
+                  ),
+                  title: Text(character.name),
+                  subtitle: Text(
+                    '${character.race} ${character.characterClass}, Lvl ${character.level}',
+                  ),
+                  trailing: isSelected
+                      ? Icon(
+                          Icons.check_circle,
+                          color: Theme.of(context).primaryColor,
+                        )
+                      : null,
+                  onTap: () {
+                    setState(() => _selectedCharacter = character);
+                  },
+                ),
+              );
+            }).toList(),
+          );
+        },
+        error: (message, _) => Text('Ошибка: $message'),
+        creating: (_) => const SizedBox.shrink(),
+        submitting: (_) => const SizedBox.shrink(),
+        created: (_) => const SizedBox.shrink(),
+        deleted: (_) => const SizedBox.shrink(),
+        detail: (_) => const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildScenarioSelector() {
+    return BlocBuilder<ScenarioBloc, ScenarioState>(
+      builder: (context, state) => state.when(
+        initial: () => const Text('Загрузка сценариев...'),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        loaded: (scenarios) {
+          if (scenarios.isEmpty) {
+            return const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Нет доступных сценариев. Создайте сценарий в разделе "Сценарии".',
+                ),
+              ),
+            );
+          }
+          return Column(
+            children: scenarios.map((scenario) {
+              final isSelected = _selectedScenario?.id == scenario.id;
+              return Card(
+                color: isSelected
+                    ? Theme.of(context).primaryColor.withAlpha(30)
+                    : null,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.book,
+                    color:
+                        isSelected ? Theme.of(context).primaryColor : null,
+                  ),
+                  title: Text(scenario.title),
+                  subtitle: Text(scenario.status),
+                  trailing: isSelected
+                      ? Icon(
+                          Icons.check_circle,
+                          color: Theme.of(context).primaryColor,
+                        )
+                      : null,
+                  onTap: () {
+                    setState(() => _selectedScenario = scenario);
+                  },
+                ),
+              );
+            }).toList(),
+          );
+        },
+        generating: (_) => const Center(child: CircularProgressIndicator()),
+        scenarioDetail: (_) => const SizedBox.shrink(),
+        versionHistory: (_, __) => const SizedBox.shrink(),
+        error: (message) => Text('Ошибка: $message'),
+      ),
+    );
+  }
+
+  Widget _buildCreateButton() {
+    return BlocBuilder<LobbyBloc, LobbyState>(
+      builder: (context, state) {
+        final isCreating = state.whenOrNull(creating: () => true) ?? false;
+        final isStarting =
+            state.whenOrNull(gameStarting: (_, __) => true) ?? false;
+        final isLoading = isCreating || isStarting;
+
+        String buttonText;
+        if (isStarting) {
+          buttonText = 'Запуск игры...';
+        } else if (isCreating) {
+          buttonText = 'Создание...';
+        } else if (_isSinglePlayer) {
+          buttonText = 'Начать игру';
+        } else {
+          buttonText = 'Создать комнату';
+        }
+
+        return ElevatedButton.icon(
+          onPressed: isLoading ? null : _createRoom,
+          icon: isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Icon(
+                  _isSinglePlayer ? Icons.play_arrow : Icons.add,
+                ),
+          label: Text(buttonText),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.all(16),
+          ),
+        );
+      },
+    );
+  }
 }

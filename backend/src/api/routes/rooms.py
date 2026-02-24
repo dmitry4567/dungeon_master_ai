@@ -127,6 +127,7 @@ async def create_room(
             name=data.name,
             scenario_version_id=data.scenario_version_id,
             max_players=data.max_players,
+            character_id=data.character_id,
         )
     except ValueError as e:
         error_msg = str(e).lower()

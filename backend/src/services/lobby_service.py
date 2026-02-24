@@ -31,6 +31,7 @@ class LobbyService:
         name: str,
         scenario_version_id: uuid.UUID,
         max_players: int = 5,
+        character_id: uuid.UUID | None = None,
     ) -> Room:
         """Create a new game room.
 
@@ -39,27 +40,44 @@ class LobbyService:
             name: Room display name
             scenario_version_id: ID of the scenario version to use
             max_players: Maximum number of players (1-5, 1 for single player)
+            character_id: Required character for single player games
 
         Returns:
             Created room with host as first player
 
         Raises:
-            ValueError: If scenario version not found
+            ValueError: If scenario/character is invalid or not found
         """
         # Verify scenario version exists and scenario is published
-        result = await self.db.execute(
+        version = await self.db.scalar(
             select(ScenarioVersion).where(ScenarioVersion.id == scenario_version_id)
         )
-        version = result.scalar_one_or_none()
         if not version:
             raise ValueError("Scenario version not found")
 
-        scenario_result = await self.db.execute(
+        scenario = await self.db.scalar(
             select(Scenario).where(Scenario.id == version.scenario_id)
         )
-        scenario = scenario_result.scalar_one_or_none()
         if not scenario or scenario.status != ScenarioStatus.PUBLISHED:
             raise ValueError("Scenario must be published before creating a room")
+
+        if max_players == 1 and not character_id:
+            raise ValueError("Character ID is required for single player games")
+
+        # Add host as first player
+        host_player_character_id = None
+        initial_status = RoomPlayerStatus.APPROVED
+        if max_players == 1:
+            # Verify character exists and belongs to user
+            character = await self.db.scalar(
+                select(Character).where(
+                    Character.id == character_id, Character.user_id == host_id
+                )
+            )
+            if not character:
+                raise ValueError("Character not found or not owned by user")
+            host_player_character_id = character_id
+            initial_status = RoomPlayerStatus.READY
 
         room = Room(
             id=uuid.uuid4(),
@@ -72,15 +90,13 @@ class LobbyService:
         self.db.add(room)
         await self.db.flush()
 
-        # Add host as first player
-        # For single player (max_players=1), auto-approve and set ready
-        initial_status = RoomPlayerStatus.READY if max_players == 1 else RoomPlayerStatus.APPROVED
         host_player = RoomPlayer(
             id=uuid.uuid4(),
             room_id=room.id,
             user_id=host_id,
             status=initial_status,
             is_host=True,
+            character_id=host_player_character_id,
         )
         self.db.add(host_player)
         await self.db.commit()

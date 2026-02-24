@@ -82,6 +82,7 @@ class CreateRoomRequest with _$CreateRoomRequest {
     required String name,
     required String scenarioVersionId,
     @Default(5) int maxPlayers,
+    String? characterId,
   }) = _CreateRoomRequest;
 
   factory CreateRoomRequest.fromJson(Map<String, dynamic> json) =>

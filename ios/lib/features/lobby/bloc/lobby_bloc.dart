@@ -49,6 +49,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         name: event.name,
         scenarioVersionId: event.scenarioVersionId,
         maxPlayers: event.maxPlayers,
+        characterId: event.characterId,
       );
       final isHost = await _isCurrentUserHost(room);
       emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
