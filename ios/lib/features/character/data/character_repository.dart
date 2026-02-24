@@ -1,5 +1,5 @@
 import 'package:injectable/injectable.dart';
-import 'package:sqflite/sqflite.dart' show ConflictAlgorithm;
+import 'package:sqflite_common/sql.dart';
 
 import '../../../core/storage/local_database.dart';
 import '../models/character.dart';

@@ -83,7 +83,9 @@ class _LobbyPageState extends State<LobbyPage> {
                         onTap: () {
                           if (room.status == 'active' &&
                               room.isCurrentUserPlayer) {
-                            context.push(Routes.gameSessionPath(room.id));
+                            context.push(
+                              Routes.gameSessionPath(room.id, title: room.name),
+                            );
                           } else {
                             context.push(Routes.waitingRoomPath(room.id));
                           }

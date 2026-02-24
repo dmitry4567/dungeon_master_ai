@@ -2,7 +2,6 @@
 import json
 import logging
 import re
-import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -45,10 +44,11 @@ class AIService:
         """Initialize AI service with OpenRouter client."""
         settings = get_settings()
         self.api_key = settings.OPENROUTER_API_KEY
+        self.model = settings.OPENROUTER_MODEL
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "openrouter/free"
         self.max_tokens = 8192
         self._usage_log: list[TokenUsage] = []
+        logger.info(f"Using OpenRouter with model: {self.model}")
 
     def _build_dm_system_prompt(
         self,
@@ -146,20 +146,28 @@ When a player attempts an action that requires a dice roll (attack, skill check,
 
 1. STOP your narration BEFORE describing the outcome
 2. Describe the attempt/setup, but NOT the result
-3. End your message with a single [DICE:...] marker
-4. DO NOT continue after the dice marker - wait for the roll result
+3. End your message with EXACTLY ONE [DICE:...] marker at the VERY END
+4. DO NOT write ANY text after the [DICE:...] marker
+5. DO NOT ask the player to roll dice in natural language - ONLY use the [DICE:...] format
 
 Format: [DICE: d20+modifier DC:difficulty Skill:SkillName Reason:Description]
 
-CORRECT example (player says "I attack the guard"):
+CORRECT example:
 "You raise your sword and swing at the guard, aiming for a gap in his armor.
 [DICE: d20+5 DC:15 Reason:Attack roll against the guard]"
 
-INCORRECT example (DO NOT DO THIS):
-"You swing at the guard. Your blade strikes true and he falls!
-[DICE: d20+5 DC:15 Reason:Attack roll]"
+WRONG - dice marker not at the end:
+"[DICE: d20+5 DC:15 Reason:Attack] You swing your sword..."
 
-After the player rolls, you will receive another message with the result, and THEN you describe what happens.
+WRONG - asking to roll in natural language:
+"You swing at the guard. Roll a d20 for the attack."
+
+## After Receiving Dice Results
+When you receive a message like "[DICE RESULT: d20+5 rolled 18 = 23 vs DC 15 - SUCCESS]":
+- This means the player ALREADY rolled the dice
+- DO NOT ask for another roll
+- Describe the OUTCOME based on the result (success or failure)
+- Continue the narrative normally
 
 Remember: ALWAYS respond in the same language the player uses!"""
 
@@ -242,20 +250,40 @@ Remember: ALWAYS respond in the same language the player uses!"""
                 response.raise_for_status()
 
                 total_output_tokens = 0
-                async for line in response.aiter_lines():
-                    if line.startswith("data: "):
-                        data = line[6:]
-                        if data == "[DONE]":
-                            break
-                        try:
-                            chunk = json.loads(data)
-                            delta = chunk.get("choices", [{}])[0].get("delta", {})
-                            content = delta.get("content", "")
-                            if content:
-                                total_output_tokens += 1  # Approximate
-                                yield content
-                        except json.JSONDecodeError:
+                buffer = ""
+                chunk_count = 0
+
+                logger.info("Starting AI stream response...")
+
+                # Use aiter_bytes for immediate chunk delivery without buffering
+                async for chunk_bytes in response.aiter_bytes():
+                    buffer += chunk_bytes.decode("utf-8", errors="ignore")
+
+                    # Process complete lines from buffer
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+                        line = line.strip()
+
+                        if not line:
                             continue
+
+                        if line.startswith("data: "):
+                            data = line[6:]
+                            if data == "[DONE]":
+                                logger.info(f"Stream complete. Total chunks: {chunk_count}")
+                                break
+                            try:
+                                chunk = json.loads(data)
+                                delta = chunk.get("choices", [{}])[0].get("delta", {})
+                                content = delta.get("content", "")
+                                if content:
+                                    chunk_count += 1
+                                    total_output_tokens += 1
+                                    if chunk_count <= 5 or chunk_count % 20 == 0:
+                                        logger.debug(f"Yielding chunk #{chunk_count}: {repr(content[:50])}")
+                                    yield content
+                            except json.JSONDecodeError:
+                                continue
 
                 # Log approximate usage for streaming
                 self._log_usage(0, total_output_tokens)

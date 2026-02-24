@@ -49,8 +49,8 @@ class ScenarioContent(BaseModel):
         ...,
         description="Difficulty level (beginner, intermediate, hardcore)",
     )
-    players_min: int = Field(..., ge=2, le=5, description="Minimum number of players")
-    players_max: int = Field(..., ge=2, le=5, description="Maximum number of players")
+    players_min: int = Field(..., ge=1, le=5, description="Minimum number of players (1 for single player)")
+    players_max: int = Field(..., ge=1, le=5, description="Maximum number of players")
     world_lore: str = Field(..., description="World background and lore")
     acts: list[dict[str, Any]] = Field(..., description="Story acts")
     npcs: list[dict[str, Any]] = Field(..., description="Non-player characters")

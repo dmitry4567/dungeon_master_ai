@@ -33,7 +33,7 @@ class _MessageInputState extends State<MessageInput> {
 
     widget.onSend(text);
     _controller.clear();
-    _focusNode.requestFocus();
+    _focusNode.unfocus(); // Скрываем клавиатуру после отправки
   }
 
   @override
@@ -49,15 +49,15 @@ class _MessageInputState extends State<MessageInput> {
         left: 12,
         right: 8,
         top: 8,
-        bottom: MediaQuery.of(context).padding.bottom + 8,
+        bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          top: BorderSide(
-            color: AppColors.outline.withValues(alpha: 0.3),
-          ),
-        ),
+        // color: AppColors.surface,
+        // border: Border(
+        //   top: BorderSide(
+        //     color: AppColors.outline.withValues(alpha: 0.3),
+        //   ),
+        // ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -99,8 +99,8 @@ class _MessageInputState extends State<MessageInput> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
+                  borderSide: BorderSide(
+                    color: AppColors.primary.withValues(alpha: 0.8),
                     width: 1.5,
                   ),
                 ),

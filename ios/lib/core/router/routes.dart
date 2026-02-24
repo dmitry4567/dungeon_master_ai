@@ -30,7 +30,13 @@ abstract final class Routes {
 
   // Game Session
   static const gameSession = '/game/:roomId';
-  static String gameSessionPath(String roomId) => '/game/$roomId';
+  static String gameSessionPath(String roomId, {String? title}) {
+    final path = '/game/$roomId';
+    if (title != null) {
+      return '$path?title=${Uri.encodeComponent(title)}';
+    }
+    return path;
+  }
 
   // Profile
   static const settings = '/profile/settings';

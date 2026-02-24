@@ -6,7 +6,6 @@ import 'core/di/injection.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/bloc/auth_bloc.dart';
-import 'shared/widgets/offline_banner.dart';
 
 /// Главный виджет приложения
 class App extends StatelessWidget {
@@ -16,8 +15,11 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     final appRouter = getIt<AppRouter>();
 
-    return BlocProvider(
-      create: (_) => getIt<AuthBloc>()..add(const AuthEvent.checkSession()),
+    // Используем singleton AuthBloc и запускаем проверку сессии
+    final authBloc = getIt<AuthBloc>()..add(const AuthEvent.checkSession());
+
+    return BlocProvider.value(
+      value: authBloc,
       child: MaterialApp.router(
         title: 'AI Dungeon Master',
         debugShowCheckedModeBanner: false,
@@ -29,9 +31,7 @@ class App extends StatelessWidget {
               MediaQuery.of(context).textScaler.scale(1).clamp(0.8, 1.4),
             ),
           ),
-          child: OfflineBanner(
-            child: child ?? const SizedBox.shrink(),
-          ),
+          child: child ?? const SizedBox.shrink(),
         ),
       ),
     );

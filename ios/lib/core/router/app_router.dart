@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../features/auth/bloc/auth_bloc.dart';
+import '../../features/auth/bloc/auth_state.dart';
 import '../../features/auth/ui/login_page.dart';
 import '../../features/character/bloc/character_bloc.dart';
 import '../../features/character/bloc/character_event.dart';
@@ -25,20 +26,36 @@ import '../../features/scenario/ui/scenario_builder_page.dart';
 import '../../features/scenario/ui/scenario_list_page.dart';
 import '../../features/scenario/ui/scenario_preview_page.dart';
 import '../di/injection.dart';
-import '../storage/secure_storage.dart';
 import 'routes.dart';
+
+/// Listenable адаптер для AuthBloc, уведомляющий GoRouter об изменениях авторизации
+class AuthStateNotifier extends ChangeNotifier {
+  AuthStateNotifier(this._authBloc) {
+    _authBloc.stream.listen((state) {
+      notifyListeners();
+    });
+  }
+
+  final AuthBloc _authBloc;
+
+  bool get isAuthenticated => _authBloc.state is AuthAuthenticated;
+  bool get isLoading => _authBloc.state is AuthLoading || _authBloc.state is AuthInitial;
+}
 
 /// Конфигурация go_router
 @lazySingleton
 class AppRouter {
-  AppRouter(this._secureStorage);
+  AppRouter(this._authBloc);
 
-  final SecureStorage _secureStorage;
+  final AuthBloc _authBloc;
+
+  late final _authStateNotifier = AuthStateNotifier(_authBloc);
 
   late final GoRouter router = GoRouter(
     initialLocation: Routes.login,
     debugLogDiagnostics: true,
     redirect: _guardRoute,
+    refreshListenable: _authStateNotifier,
     routes: [
       // Auth routes
       GoRoute(
@@ -62,8 +79,8 @@ class AppRouter {
             name: 'lobby',
             pageBuilder: (context, state) => NoTransitionPage(
               child: BlocProvider(
-                create: (_) => getIt<LobbyBloc>()
-                  ..add(const LobbyEvent.loadRooms()),
+                create: (_) =>
+                    getIt<LobbyBloc>()..add(const LobbyEvent.loadRooms()),
                 child: const LobbyPage(),
               ),
             ),
@@ -202,10 +219,15 @@ class AppRouter {
         name: 'gameSession',
         builder: (context, state) {
           final roomId = state.pathParameters['roomId']!;
+          final title = state.uri.queryParameters['title'] ?? 'Игровая сессия';
+
           return BlocProvider(
             create: (_) => getIt<GameSessionBloc>()
               ..add(GameSessionEvent.connectToSession(roomId: roomId)),
-            child: GameSessionPage(roomId: roomId),
+            child: GameSessionPage(
+              roomId: roomId,
+              title: title,
+            ),
           );
         },
       ),
@@ -218,9 +240,15 @@ class AppRouter {
     BuildContext context,
     GoRouterState state,
   ) async {
-    final isAuthenticated = await _secureStorage.hasTokens();
     final isAuthRoute = state.matchedLocation == Routes.login ||
         state.matchedLocation == Routes.register;
+
+    // Ждём пока AuthBloc завершит проверку сессии
+    if (_authStateNotifier.isLoading) {
+      return null;
+    }
+
+    final isAuthenticated = _authStateNotifier.isAuthenticated;
 
     // Not authenticated - redirect to login
     if (!isAuthenticated && !isAuthRoute) {

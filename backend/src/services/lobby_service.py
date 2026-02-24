@@ -1,4 +1,5 @@
 """Lobby service for managing game rooms and player coordination."""
+import asyncio
 import logging
 import uuid
 from datetime import UTC, datetime
@@ -7,10 +8,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.core.database import get_db_context
 from src.models.character import Character
 from src.models.room import Room, RoomPlayer, RoomPlayerStatus, RoomStatus
 from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
 from src.models.session import GameSession
+from src.services.ai_service import AIService
+from src.services.session_service import SessionService
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +38,7 @@ class LobbyService:
             host_id: ID of the user creating the room
             name: Room display name
             scenario_version_id: ID of the scenario version to use
-            max_players: Maximum number of players (2-5)
+            max_players: Maximum number of players (1-5, 1 for single player)
 
         Returns:
             Created room with host as first player
@@ -68,12 +72,14 @@ class LobbyService:
         self.db.add(room)
         await self.db.flush()
 
-        # Add host as first player (auto-approved)
+        # Add host as first player
+        # For single player (max_players=1), auto-approve and set ready
+        initial_status = RoomPlayerStatus.READY if max_players == 1 else RoomPlayerStatus.APPROVED
         host_player = RoomPlayer(
             id=uuid.uuid4(),
             room_id=room.id,
             user_id=host_id,
-            status=RoomPlayerStatus.APPROVED,
+            status=initial_status,
             is_host=True,
         )
         self.db.add(host_player)
@@ -339,8 +345,8 @@ class LobbyService:
             p for p in room.players if p.status != RoomPlayerStatus.DECLINED
         ]
 
-        if len(active_players) < 2:
-            raise ValueError("Need at least 2 players to start")
+        if len(active_players) < 1:
+            raise ValueError("Need at least 1 player to start")
 
         not_ready = [p for p in active_players if p.status != RoomPlayerStatus.READY]
         if not_ready:
@@ -380,7 +386,100 @@ class LobbyService:
             extra={"room_id": str(room_id), "host_id": str(host_id)},
         )
 
+        # Generate opening DM message asynchronously to not block the response
+        asyncio.create_task(
+            self._generate_opening_message(
+                game_session.id,
+                str(room_id),
+                content,
+                initial_world_state,
+                active_players,
+            )
+        )
+
         return game_session
+
+    async def _generate_opening_message(
+        self,
+        session_id: uuid.UUID,
+        room_id: str,
+        scenario_content: dict,
+        world_state: dict,
+        active_players: list,
+    ) -> None:
+        """Generate and broadcast opening DM message in background."""
+        import json
+        try:
+            # Use a fresh DB session for background task
+            async with get_db_context() as db:
+                from src.core.redis import get_redis_service
+
+                session_service = SessionService(db)
+                ai_service = AIService()
+                redis = await get_redis_service()
+
+                # Build player info for the AI
+                players = []
+                for rp in active_players:
+                    if rp.character:
+                        players.append({
+                            "id": str(rp.user_id),
+                            "name": rp.user.name if rp.user else "Unknown",
+                            "character": {
+                                "name": rp.character.name,
+                                "class": rp.character.character_class,
+                                "race": rp.character.race,
+                                "level": rp.character.level,
+                            },
+                        })
+
+                # Generate opening narration with streaming
+                opening_prompt = "[SESSION START] Это начало приключения. Опиши начальную сцену, представь игроков и их персонажей, опиши атмосферу и локацию. Погрузи их в мир и дай понять что происходит. Сделай это живым и увлекательным вступлением. Не спрашивай что они делают - просто установи сцену."
+
+                dm_message_id = uuid.uuid4()
+                full_response = ""
+
+                # Stream the opening message
+                async for chunk in ai_service.stream_dm_response(
+                    player_message=opening_prompt,
+                    scenario_content=scenario_content,
+                    world_state=world_state,
+                    players=players,
+                    conversation_history=[],
+                ):
+                    full_response += chunk
+                    # Broadcast chunk to all players
+                    chunk_msg = {
+                        "type": "dm_response_chunk",
+                        "chunk": chunk,
+                        "message_id": str(dm_message_id),
+                    }
+                    await redis.publish(f"room:{room_id}", json.dumps(chunk_msg))
+
+                # Send end marker
+                end_msg = {
+                    "type": "dm_response_end",
+                    "message_id": str(dm_message_id),
+                    "full_content": full_response,
+                }
+                await redis.publish(f"room:{room_id}", json.dumps(end_msg))
+
+                # Save the opening message
+                await session_service.add_dm_message(
+                    session_id=session_id,
+                    content=full_response,
+                )
+
+                logger.info(
+                    f"Opening DM message generated for session {session_id}",
+                    extra={"session_id": str(session_id)},
+                )
+
+        except Exception as e:
+            logger.error(
+                f"Failed to generate opening message: {e}",
+                extra={"session_id": str(session_id), "error": str(e)},
+            )
 
     async def _get_room_with_relations(self, room_id: uuid.UUID) -> Room | None:
         """Get room with all relationships loaded."""

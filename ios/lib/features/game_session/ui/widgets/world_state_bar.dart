@@ -41,57 +41,66 @@ class _WorldStateBarState extends State<WorldStateBar> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  // Индикатор боя
-                  if (widget.worldState.combatActive)
-                    Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.error.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppColors.error),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.flash_on, color: AppColors.error, size: 12),
-                          SizedBox(width: 2),
-                          Text(
-                            'БОЙ',
-                            style: TextStyle(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
+                  // Контент слева (все чипы с ограничением по ширине)
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Индикатор боя
+                        if (widget.worldState.combatActive)
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: AppColors.error),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.flash_on, color: AppColors.error, size: 12),
+                                SizedBox(width: 2),
+                                Text(
+                                  'БОЙ',
+                                  style: TextStyle(
+                                    color: AppColors.error,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        // Акт
+                        _InfoChip(
+                          icon: Icons.menu_book,
+                          label: widget.worldState.currentAct,
+                        ),
+                        if (widget.worldState.currentScene != null) ...[
+                          const SizedBox(width: 8),
+                          _InfoChip(
+                            icon: Icons.theaters,
+                            label: widget.worldState.currentScene!,
+                          ),
+                        ],
+                        if (widget.worldState.currentLocation != null) ...[
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: _InfoChip(
+                              icon: Icons.location_on,
+                              label: widget.worldState.currentLocation!,
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  // Акт
-                  _InfoChip(
-                    icon: Icons.menu_book,
-                    label: widget.worldState.currentAct,
                   ),
-                  if (widget.worldState.currentScene != null) ...[
-                    const SizedBox(width: 8),
-                    _InfoChip(
-                      icon: Icons.theaters,
-                      label: widget.worldState.currentScene!,
-                    ),
-                  ],
-                  if (widget.worldState.currentLocation != null) ...[
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: _InfoChip(
-                        icon: Icons.location_on,
-                        label: widget.worldState.currentLocation!,
-                      ),
-                    ),
-                  ],
-                  const Spacer(),
+                  // Иконка справа (фиксированная)
+                  const SizedBox(width: 8),
                   Icon(
                     _expanded
                         ? Icons.keyboard_arrow_up

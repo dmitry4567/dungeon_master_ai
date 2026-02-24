@@ -24,6 +24,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     on<EndSessionEvent>(_onEndSession);
     on<LeaveSessionEvent>(_onLeaveSession);
     on<RollDiceEvent>(_onRollDice);
+    on<MarkMessageRolledEvent>(_onMarkMessageRolled);
   }
 
   final GameSessionRepository _repository;
@@ -371,6 +372,18 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     ),);
   }
 
+  Future<void> _onMarkMessageRolled(
+    MarkMessageRolledEvent event,
+    Emitter<GameSessionState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! GameSessionActive) return;
+
+    emit(currentState.copyWith(
+      rolledMessageIds: {...currentState.rolledMessageIds, event.messageId},
+    ));
+  }
+
   Future<void> _onConnectionStateChanged(
     ConnectionStateChangedEvent event,
     Emitter<GameSessionState> emit,
@@ -408,8 +421,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
   }
 
   String _formatDiceResult(DiceResult result) {
-    final buffer = StringBuffer();
-    buffer.write('${result.type}: ');
+    final buffer = StringBuffer()..write('${result.type}: ');
     if (result.baseRoll != null) buffer.write('${result.baseRoll}');
     if (result.modifier != null && result.modifier != 0) {
       buffer.write(result.modifier! > 0

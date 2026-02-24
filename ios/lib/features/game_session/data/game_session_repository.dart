@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:injectable/injectable.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common/sql.dart';
 
 import '../../../core/network/websocket_client.dart';
 import '../../../core/storage/local_database.dart';

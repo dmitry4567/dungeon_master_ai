@@ -6,16 +6,20 @@ import '../../../core/theme/colors.dart';
 import '../bloc/game_session_bloc.dart';
 import '../bloc/game_session_event.dart';
 import '../bloc/game_session_state.dart';
-import 'widgets/dice_roll_request_widget.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/message_input.dart';
 import 'widgets/world_state_bar.dart';
 
 /// Основная страница игровой сессии
 class GameSessionPage extends StatefulWidget {
-  const GameSessionPage({required this.roomId, super.key});
+  const GameSessionPage({
+    required this.roomId,
+    required this.title,
+    super.key,
+  });
 
   final String roomId;
+  final String title;
 
   @override
   State<GameSessionPage> createState() => _GameSessionPageState();
@@ -23,7 +27,7 @@ class GameSessionPage extends StatefulWidget {
 
 class _GameSessionPageState extends State<GameSessionPage> {
   final _scrollController = ScrollController();
-  int _previousMessageCount = 0;
+  DateTime? _lastScrollTime;
 
   @override
   void dispose() {
@@ -31,52 +35,62 @@ class _GameSessionPageState extends State<GameSessionPage> {
     super.dispose();
   }
 
-  bool _isNearBottom() {
-    if (!_scrollController.hasClients) return true;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    // Считаем "внизу" если в пределах 100 пикселей от низа
-    return maxScroll - currentScroll <= 100;
-  }
-
-  void _scrollToBottom() {
+  void _scrollToBottom({bool smooth = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
+        // Для reverse: true maxScrollExtent = 0 (начало списка)
+        if (smooth) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          // Для быстрого скролла при стриминге
+          _scrollController.jumpTo(
+            0,
+          );
+        }
       }
     });
   }
 
-  @override
-  Widget build(BuildContext context) => BlocConsumer<GameSessionBloc, GameSessionState>(
-      listener: (context, state) {
-        if (state is GameSessionActive) {
-          final currentCount = state.messages.length;
-          final hasNewMessage = currentCount > _previousMessageCount;
-          final isStreaming = state.streamingContent != null;
+  bool _shouldScrollForStreaming() {
+    // Ограничиваем частоту скролла во время стриминга до 1 раза в 100мс
+    final now = DateTime.now();
+    if (_lastScrollTime == null ||
+        now.difference(_lastScrollTime!) > const Duration(milliseconds: 100)) {
+      _lastScrollTime = now;
+      return true;
+    }
+    return false;
+  }
 
-          // Скроллим только если: новое сообщение и пользователь уже внизу, или идёт стриминг
-          if ((hasNewMessage && _isNearBottom()) || isStreaming) {
-            _scrollToBottom();
+  @override
+  Widget build(BuildContext context) =>
+      BlocConsumer<GameSessionBloc, GameSessionState>(
+        listener: (context, state) {
+          if (state is GameSessionActive) {
+            final isStreaming = state.streamingContent != null;
+
+            // Скролл только во время стриминга ответа DM (не при отправке своего сообщения)
+            if (isStreaming && _shouldScrollForStreaming()) {
+              _scrollToBottom(smooth: false);
+            }
           }
-          _previousMessageCount = currentCount;
-        }
-        if (state is GameSessionEnded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Сессия завершена')),
-          );
-        }
-      },
-      builder: (context, state) => Scaffold(
+          if (state is GameSessionEnded) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Сессия завершена')),
+            );
+          }
+        },
+        builder: (context, state) => Scaffold(
           backgroundColor: AppColors.background,
+          resizeToAvoidBottomInset: true,
           appBar: _buildAppBar(context, state),
           body: _buildBody(context, state),
         ),
-    );
+      );
 
   PreferredSizeWidget _buildAppBar(
     BuildContext context,
@@ -88,6 +102,7 @@ class _GameSessionPageState extends State<GameSessionPage> {
 
     return AppBar(
       backgroundColor: AppColors.surface,
+      scrolledUnderElevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () => _showLeaveDialog(context),
@@ -97,11 +112,11 @@ class _GameSessionPageState extends State<GameSessionPage> {
         children: [
           const Icon(Icons.auto_stories, color: AppColors.secondary, size: 20),
           const SizedBox(width: 8),
-          const Flexible(
+          Flexible(
             child: Text(
-              'Игровая сессия',
+              widget.title,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ),
           if (connectionIndicator != null) ...[
@@ -141,77 +156,67 @@ class _GameSessionPageState extends State<GameSessionPage> {
     );
   }
 
-  Widget _buildBody(BuildContext context, GameSessionState state) => switch (state) {
-      GameSessionInitial() || GameSessionConnecting() => const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: AppColors.secondary),
-              SizedBox(height: 16),
-              Text(
-                'Подключение к сессии...',
-                style: TextStyle(color: AppColors.onSurface),
-              ),
-            ],
-          ),
-        ),
-      GameSessionActive() => _buildActiveSession(context, state),
-      GameSessionEnded() => _buildEndedSession(context, state),
-      GameSessionError() => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.onSurface),
+  Widget _buildBody(BuildContext context, GameSessionState state) =>
+      switch (state) {
+        GameSessionInitial() || GameSessionConnecting() => const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(color: AppColors.secondary),
+                SizedBox(height: 16),
+                Text(
+                  'Подключение к сессии...',
+                  style: TextStyle(color: AppColors.onSurface),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => context.pop(),
-                child: const Text('Вернуться'),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      _ => const Center(
-          child: CircularProgressIndicator(color: AppColors.secondary),
-        ),
-    };
+        GameSessionActive() => _buildActiveSession(context, state),
+        GameSessionEnded() => _buildEndedSession(context, state),
+        GameSessionError() => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: AppColors.error,
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: AppColors.onSurface),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => context.pop(),
+                  child: const Text('Вернуться'),
+                ),
+              ],
+            ),
+          ),
+        _ => const Center(
+            child: CircularProgressIndicator(color: AppColors.secondary),
+          ),
+      };
 
   Widget _buildActiveSession(BuildContext context, GameSessionActive state) {
     final isStreaming = state.streamingContent != null;
-    final hasPendingDiceRequest = state.pendingDiceRequest != null;
 
-    return Column(
-      children: [
-        // Панель состояния мира
-        WorldStateBar(worldState: state.worldState),
-        // Список сообщений
-        Expanded(
-          child: Stack(
-            children: [
-              _buildMessageList(state),
-              // Запрос на бросок кубика поверх чата
-              if (hasPendingDiceRequest)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: DiceRollRequestWidget(
-                    request: state.pendingDiceRequest!,
-                  ),
-                ),
-            ],
+    return LayoutBuilder(
+      builder: (context, constraints) => Column(
+        children: [
+          // Панель состояния мира
+          WorldStateBar(worldState: state.worldState),
+          // Список сообщений
+          Expanded(
+            child: _buildMessageList(context, state),
           ),
-        ),
-        // Поле ввода (скрыто, когда ждём бросок кубика)
-        if (!hasPendingDiceRequest)
+          // Поле ввода
           MessageInput(
             onSend: (content) {
               context
@@ -220,16 +225,16 @@ class _GameSessionPageState extends State<GameSessionPage> {
             },
             isStreaming: isStreaming,
           ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildMessageList(GameSessionActive state) {
+  Widget _buildMessageList(BuildContext context, GameSessionActive state) {
     final messages = state.messages;
-    final itemCount =
-        messages.length + (state.streamingContent != null ? 1 : 0);
+    final hasStreaming = state.streamingContent != null;
 
-    if (messages.isEmpty && state.streamingContent == null) {
+    if (messages.isEmpty && !hasStreaming) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -252,80 +257,80 @@ class _GameSessionPageState extends State<GameSessionPage> {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(vertical: 8),
-      itemCount: itemCount,
+      reverse: true,
+      itemCount: messages.length + (hasStreaming ? 1 : 0),
       itemBuilder: (context, index) {
-        // Стриминг-пузырь в конце
-        if (index == messages.length && state.streamingContent != null) {
+        // Из-за reverse: true, индекс 0 - это низ списка
+        // Стриминг-пузырь должен быть внизу (индекс 0)
+        if (index == 0 && hasStreaming) {
           return StreamingBubble(content: state.streamingContent!);
         }
-
-        final message = messages[index];
-
-        return MessageBubble(
-          message: message,
-        );
+        // Сообщения: сдвигаем индекс на 1 из-за стриминг-пузыря внизу
+        final messageIndex = hasStreaming ? index - 1 : index;
+        return MessageBubble(message: messages[messages.length - 1 - messageIndex]);
       },
     );
   }
 
-  Widget _buildEndedSession(BuildContext context, GameSessionEnded state) => Column(
-      children: [
-        // Баннер завершения
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          color: AppColors.surfaceVariant,
-          child: const Column(
-            children: [
-              Icon(Icons.flag, color: AppColors.secondary, size: 32),
-              SizedBox(height: 8),
-              Text(
-                'Сессия завершена',
-                style: TextStyle(
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // История сообщений (только чтение)
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: state.messages.length,
-            itemBuilder: (context, index) {
-              final message = state.messages[index];
-              return MessageBubble(
-                message: message,
-              );
-            },
-          ),
-        ),
-        // Кнопка выхода
-        Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 8,
-            bottom: MediaQuery.of(context).padding.bottom + 8,
-          ),
-          child: SizedBox(
+  Widget _buildEndedSession(BuildContext context, GameSessionEnded state) =>
+      Column(
+        children: [
+          // Баннер завершения
+          Container(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => context.pop(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: const Text('Вернуться в лобби'),
+            padding: const EdgeInsets.all(16),
+            color: AppColors.surfaceVariant,
+            child: const Column(
+              children: [
+                Icon(Icons.flag, color: AppColors.secondary, size: 32),
+                SizedBox(height: 8),
+                Text(
+                  'Сессия завершена',
+                  style: TextStyle(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
-    );
+          // История сообщений (только чтение)
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: state.messages.length,
+              itemBuilder: (context, index) {
+                final message = state.messages[index];
+                return MessageBubble(
+                  message: message,
+                );
+              },
+            ),
+          ),
+          // Кнопка выхода
+          Padding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 8,
+              bottom: MediaQuery.of(context).padding.bottom + 8,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: const Text('Вернуться в лобби'),
+              ),
+            ),
+          ),
+        ],
+      );
 
   void _showLeaveDialog(BuildContext context) {
     showDialog<bool>(
@@ -396,6 +401,7 @@ class _ConnectionIndicator extends StatelessWidget {
     final (color, icon) = switch (state) {
       'connected' => (AppColors.success, Icons.wifi),
       'connecting' || 'reconnecting' => (AppColors.warning, Icons.wifi_find),
+      'disconnected' => (AppColors.warning, Icons.wifi_off),
       'error' => (AppColors.error, Icons.wifi_off),
       _ => (AppColors.outline, Icons.wifi_off),
     };

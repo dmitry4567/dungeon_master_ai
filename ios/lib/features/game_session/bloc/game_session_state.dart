@@ -26,6 +26,8 @@ class GameSessionState with _$GameSessionState {
     @Default('connected') String connectionState,
     /// Ожидающий запрос на бросок кубика (для текущего игрока)
     DiceRequest? pendingDiceRequest,
+    /// ID сообщений DM, для которых уже был выполнен бросок кубика
+    @Default({}) Set<String> rolledMessageIds,
   }) = GameSessionActive;
 
   /// Сессия завершена

@@ -22,6 +22,7 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   int _maxPlayers = 5;
+  bool _isSinglePlayer = false;
   Scenario? _selectedScenario;
 
   @override
@@ -59,7 +60,7 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
           LobbyEvent.createRoom(
             name: _nameController.text.trim(),
             scenarioVersionId: versionId,
-            maxPlayers: _maxPlayers,
+            maxPlayers: _isSinglePlayer ? 1 : _maxPlayers,
           ),
         );
   }
@@ -73,7 +74,20 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
           listener: (context, state) {
             state.whenOrNull(
               roomDetail: (room, _) {
-                context.pushReplacement(Routes.waitingRoomPath(room.id));
+                // Если одиночная игра, сразу стартуем
+                if (_isSinglePlayer) {
+                  context.read<LobbyBloc>().add(
+                        LobbyEvent.startGame(roomId: room.id),
+                      );
+                } else {
+                  context.pushReplacement(Routes.waitingRoomPath(room.id));
+                }
+              },
+              gameStarting: (room, session) {
+                // Переход в игровую сессию после автостарта
+                context.pushReplacement(
+                  Routes.gameSessionPath(room.id, title: room.name),
+                );
               },
               error: (message) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -108,22 +122,48 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Max players slider
-                  Text(
-                    'Максимум игроков: $_maxPlayers',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  // Single player mode switch
+                  Card(
+                    child: SwitchListTile(
+                      title: const Text('Одиночная игра'),
+                      subtitle: const Text(
+                        'Начать игру сразу, без других игроков',
+                      ),
+                      value: _isSinglePlayer,
+                      onChanged: (value) {
+                        setState(() {
+                          _isSinglePlayer = value;
+                          if (!value && _maxPlayers == 1) {
+                            _maxPlayers = 2;
+                          }
+                        });
+                      },
+                      secondary: Icon(
+                        _isSinglePlayer ? Icons.person : Icons.group,
+                      ),
+                    ),
                   ),
-                  Slider(
-                    value: _maxPlayers.toDouble(),
-                    min: 2,
-                    max: 5,
-                    divisions: 3,
-                    label: _maxPlayers.toString(),
-                    onChanged: (value) {
-                      setState(() => _maxPlayers = value.round());
-                    },
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+
+                  // Max players slider (hidden in single player mode)
+                  if (!_isSinglePlayer) ...[
+                    Text(
+                      'Максимум игроков: $_maxPlayers',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Slider(
+                      value: _maxPlayers.toDouble(),
+                      min: 2,
+                      max: 5,
+                      divisions: 3,
+                      label: _maxPlayers.toString(),
+                      onChanged: (value) {
+                        setState(() => _maxPlayers = value.round());
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                  ] else
+                    const SizedBox(height: 8),
 
                   // Scenario selector
                   Text(
@@ -195,19 +235,37 @@ class _RoomCreatePageState extends State<RoomCreatePage> {
                     builder: (context, state) {
                       final isCreating =
                           state.whenOrNull(creating: () => true) ?? false;
+                      final isStarting =
+                          state.whenOrNull(gameStarting: (_, __) => true) ??
+                              false;
+                      final isLoading = isCreating || isStarting;
+
+                      String buttonText;
+                      if (isStarting) {
+                        buttonText = 'Запуск игры...';
+                      } else if (isCreating) {
+                        buttonText = 'Создание...';
+                      } else if (_isSinglePlayer) {
+                        buttonText = 'Начать игру';
+                      } else {
+                        buttonText = 'Создать комнату';
+                      }
+
                       return ElevatedButton.icon(
-                        onPressed: isCreating ? null : _createRoom,
-                        icon: isCreating
+                        onPressed: isLoading ? null : _createRoom,
+                        icon: isLoading
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
                                 child:
                                     CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : const Icon(Icons.add),
-                        label: Text(
-                          isCreating ? 'Создание...' : 'Создать комнату',
-                        ),
+                            : Icon(
+                                _isSinglePlayer
+                                    ? Icons.play_arrow
+                                    : Icons.add,
+                              ),
+                        label: Text(buttonText),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.all(16),
                         ),

@@ -20,7 +20,6 @@ import '../models/room.dart';
 import 'widgets/player_avatar.dart';
 
 class WaitingRoomPage extends StatefulWidget {
-
   const WaitingRoomPage({required this.roomId, super.key});
   final String roomId;
 
@@ -86,42 +85,44 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
   }
 
   void _startGame() {
-    context
-        .read<LobbyBloc>()
-        .add(LobbyEvent.startGame(roomId: widget.roomId));
+    context.read<LobbyBloc>().add(LobbyEvent.startGame(roomId: widget.roomId));
   }
 
   @override
   Widget build(BuildContext context) => BlocConsumer<LobbyBloc, LobbyState>(
-      listener: (context, state) {
-        state.whenOrNull(
-          roomDetail: (room, isHost) {
-            // Если комната активна и текущий пользователь — участник или хост
-            if (room.status == 'active' && _currentUserId != null) {
-              final isParticipant = room.players.any(
-                (p) =>
-                    p.userId == _currentUserId &&
-                    p.status != 'declined' &&
-                    (p.isHost || p.status == 'ready' || p.status == 'approved'),
-              );
-              if (isParticipant) {
-                _refreshTimer?.cancel();
-                context.pushReplacement(Routes.gameSessionPath(room.id));
+        listener: (context, state) {
+          state.whenOrNull(
+            roomDetail: (room, isHost) {
+              // Если комната активна и текущий пользователь — участник или хост
+              if (room.status == 'active' && _currentUserId != null) {
+                final isParticipant = room.players.any(
+                  (p) =>
+                      p.userId == _currentUserId &&
+                      p.status != 'declined' &&
+                      (p.isHost ||
+                          p.status == 'ready' ||
+                          p.status == 'approved'),
+                );
+                if (isParticipant) {
+                  _refreshTimer?.cancel();
+                  context.pushReplacement(
+                    Routes.gameSessionPath(room.id, title: room.name),
+                  );
+                }
               }
-            }
-          },
-          gameStarting: (room, session) {
-            _refreshTimer?.cancel();
-            _showCountdownAndNavigate(room, session.id);
-          },
-          error: (message) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(message)),
-            );
-          },
-        );
-      },
-      builder: (context, state) => state.when(
+            },
+            gameStarting: (room, session) {
+              _refreshTimer?.cancel();
+              _showCountdownAndNavigate(room, session.id);
+            },
+            error: (message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(message)),
+              );
+            },
+          );
+        },
+        builder: (context, state) => state.when(
           initial: () => _buildScaffold(
             body: const Center(child: Text('Загрузка...')),
           ),
@@ -140,12 +141,12 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
             body: ErrorView(message: message, onRetry: _loadRoom),
           ),
         ),
-    );
+      );
 
   Widget _buildScaffold({required Widget body}) => Scaffold(
-      appBar: AppBar(title: const Text('Комната ожидания')),
-      body: body,
-    );
+        appBar: AppBar(title: const Text('Комната ожидания')),
+        body: body,
+      );
 
   Widget _buildRoomContent(Room room, bool isHost) {
     final nonDeclinedPlayers =
@@ -202,10 +203,8 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                   child: PlayerAvatar(
                     player: player,
                     isCurrentUser: isCurrentUser,
-                    onApprove:
-                        isHost ? () => _approvePlayer(player.id) : null,
-                    onDecline:
-                        isHost ? () => _declinePlayer(player.id) : null,
+                    onApprove: isHost ? () => _approvePlayer(player.id) : null,
+                    onDecline: isHost ? () => _declinePlayer(player.id) : null,
                   ),
                 );
               },
@@ -220,9 +219,8 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
   }
 
   Widget _buildBottomActions(Room room, bool isHost) {
-    final currentPlayer = room.players
-        .where((p) => p.userId == _currentUserId)
-        .firstOrNull;
+    final currentPlayer =
+        room.players.where((p) => p.userId == _currentUserId).firstOrNull;
 
     return SafeArea(
       child: Container(
@@ -371,8 +369,8 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) => BlocProvider(
-        create: (_) => getIt<CharacterBloc>()
-          ..add(const CharacterEvent.loadCharacters()),
+        create: (_) =>
+            getIt<CharacterBloc>()..add(const CharacterEvent.loadCharacters()),
         child: _CharacterSelectorSheet(
           onSelected: (character) {
             Navigator.of(sheetContext).pop();
@@ -396,7 +394,9 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
       builder: (dialogContext) => _CountdownDialog(
         onFinished: () {
           Navigator.of(dialogContext).pop();
-          context.pushReplacement(Routes.gameSessionPath(room.id));
+          context.pushReplacement(
+            Routes.gameSessionPath(room.id, title: room.name),
+          );
         },
       ),
     );
@@ -405,25 +405,24 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
 
 /// Character selector bottom sheet
 class _CharacterSelectorSheet extends StatelessWidget {
-
   const _CharacterSelectorSheet({required this.onSelected});
   final void Function(Character) onSelected;
 
   @override
   Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Выберите персонажа',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 16),
-          Flexible(
-            child: BlocBuilder<CharacterBloc, CharacterState>(
-              builder: (context, state) => state.when(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Выберите персонажа',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            Flexible(
+              child: BlocBuilder<CharacterBloc, CharacterState>(
+                builder: (context, state) => state.when(
                   initial: () => const Center(child: Text('Загрузка...')),
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
@@ -459,16 +458,15 @@ class _CharacterSelectorSheet extends StatelessWidget {
                   error: (message, _) =>
                       Center(child: Text('Ошибка: $message')),
                 ),
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
 }
 
 /// Countdown dialog (3-2-1-Поехали!)
 class _CountdownDialog extends StatefulWidget {
-
   const _CountdownDialog({required this.onFinished});
   final VoidCallback onFinished;
 
@@ -514,55 +512,54 @@ class _CountdownDialogState extends State<_CountdownDialog>
 
   @override
   Widget build(BuildContext context) => Dialog(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      child: ScaleTransition(
-        scale: CurvedAnimation(
-          parent: _controller,
-          curve: Curves.elasticOut,
-        ),
-        child: Center(
-          child: Text(
-            _count > 0 ? '$_count' : 'Поехали!',
-            style: const TextStyle(
-              fontSize: 96,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  blurRadius: 20,
-                  color: Colors.black54,
-                ),
-              ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: ScaleTransition(
+          scale: CurvedAnimation(
+            parent: _controller,
+            curve: Curves.elasticOut,
+          ),
+          child: Center(
+            child: Text(
+              _count > 0 ? '$_count' : 'Поехали!',
+              style: const TextStyle(
+                fontSize: 96,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    blurRadius: 20,
+                    color: Colors.black54,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 }
 
 /// Status badge widget
 class _StatusBadge extends StatelessWidget {
-
   const _StatusBadge({required this.status});
   final String status;
 
   @override
   Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getColor().withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        _getText(),
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: _getColor(),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: _getColor().withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
         ),
-      ),
-    );
+        child: Text(
+          _getText(),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: _getColor(),
+          ),
+        ),
+      );
 
   Color _getColor() => switch (status) {
         'waiting' => Colors.orange,

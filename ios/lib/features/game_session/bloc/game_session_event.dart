@@ -36,4 +36,9 @@ class GameSessionEvent with _$GameSessionEvent {
     required String requestId,
     required List<int> rolls,
   }) = RollDiceEvent;
+
+  /// Отметить сообщение DM как обработанное (бросок уже выполнен)
+  const factory GameSessionEvent.markMessageRolled({
+    required String messageId,
+  }) = MarkMessageRolledEvent;
 }

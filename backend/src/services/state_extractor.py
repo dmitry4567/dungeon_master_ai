@@ -52,33 +52,46 @@ class StateUpdate:
 class StateExtractor:
     """Extracts world state changes from DM responses using AI."""
 
-    STATE_EXTRACTION_PROMPT = """Analyze the Dungeon Master's response and extract any world state changes as JSON.
+    STATE_EXTRACTION_PROMPT = """You are a state extraction system for a D&D game. Analyze the Dungeon Master's response and extract world state changes.
 
-Return ONLY a valid JSON object with this exact structure:
+CRITICAL: You MUST respond with ONLY valid JSON. No explanations, no markdown, no additional text.
+
+Return this exact JSON structure:
 {
-  "events_occurred": ["event_id", ...],
-  "location_changed": "location_id or null",
-  "scene_completed": "scene_id or null",
-  "flags_changed": {"flag_name": true/false, ...}
+  "events_occurred": [],
+  "location_changed": null,
+  "scene_completed": null,
+  "flags_changed": {}
 }
 
 Guidelines:
-- events_occurred: Key plot events (e.g., "npc_rescued", "combat_started", "door_opened")
-- location_changed: Only if characters moved to a new location (use location_id from scenario)
-- scene_completed: Only if a scene has definitively ended
-- flags_changed: Important story flags that changed state
+- events_occurred: Array of key plot events as strings (e.g., ["npc_rescued", "combat_started"])
+- location_changed: String location_id if moved to new location, otherwise null
+- scene_completed: String scene_id if scene definitively ended, otherwise null
+- flags_changed: Object with flag names as keys and boolean values (e.g., {"door_open": true})
 
-If no changes occurred, return empty arrays/objects.
-Always return valid JSON, nothing else."""
+Examples:
+DM says "You enter the tavern": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
+DM says "Combat begins!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": true}}
+DM says nothing special: {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {}}
+
+If unsure or no clear changes, return empty structure. Always return valid JSON."""
 
     def __init__(self) -> None:
         """Initialize state extractor with OpenRouter client."""
         settings = get_settings()
         self.api_key = settings.OPENROUTER_API_KEY
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        # Use a fast model for state extraction
-        self.model = "nousresearch/deephermes-3-llama-3-8b-preview:free"
+        # Use OpenRouter's auto-routing to available free models
+        self.model = "openrouter/free"
         self.max_tokens = 500
+
+        # Warn if API key is not set
+        if not self.api_key:
+            logger.warning(
+                "OPENROUTER_API_KEY not set. State extraction will fail. "
+                "Consider setting it or state updates will be disabled."
+            )
 
     async def extract_state_update(
         self,
@@ -96,6 +109,16 @@ Always return valid JSON, nothing else."""
         Returns:
             StateUpdate with any changes
         """
+        # Return empty state if API key is not configured
+        if not self.api_key:
+            logger.debug("OpenRouter API key not set, skipping state extraction")
+            return StateUpdate(
+                events_occurred=[],
+                location_changed=None,
+                scene_completed=None,
+                flags_changed={},
+            )
+
         # Build context for the extraction
         context = self._build_context(current_world_state, scenario_content)
 
@@ -109,8 +132,44 @@ Extract any state changes from this response."""
 
         try:
             result = await self._call_model(user_prompt)
-            response_text = result["choices"][0]["message"]["content"]
+
+            # Check if response has content
+            if not result.get("choices") or not result["choices"][0].get("message"):
+                logger.warning("State extraction API returned no choices/message")
+                return StateUpdate(
+                    events_occurred=[],
+                    location_changed=None,
+                    scene_completed=None,
+                    flags_changed={},
+                )
+
+            response_text = result["choices"][0]["message"].get("content", "")
+
+            # Check if content is empty
+            if not response_text or response_text.strip() == "":
+                logger.warning("State extraction returned empty content")
+                return StateUpdate(
+                    events_occurred=[],
+                    location_changed=None,
+                    scene_completed=None,
+                    flags_changed={},
+                )
+
+            # Log the raw response for debugging
+            logger.debug(f"State extraction raw response: {response_text[:200]}")
+
             json_text = _extract_json(response_text)
+
+            # Check if json_text is empty after extraction
+            if not json_text or json_text.strip() == "":
+                logger.warning("State extraction JSON extraction resulted in empty string")
+                return StateUpdate(
+                    events_occurred=[],
+                    location_changed=None,
+                    scene_completed=None,
+                    flags_changed={},
+                )
+
             data = json.loads(json_text)
 
             return StateUpdate(
@@ -121,7 +180,10 @@ Extract any state changes from this response."""
             )
 
         except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse state extraction JSON: {e}")
+            logger.warning(
+                f"Failed to parse state extraction JSON: {e}. "
+                f"Response text: {response_text[:500] if 'response_text' in locals() else 'N/A'}"
+            )
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -129,7 +191,7 @@ Extract any state changes from this response."""
                 flags_changed={},
             )
         except Exception as e:
-            logger.error(f"Failed to extract state: {e}")
+            logger.error(f"Failed to extract state: {e}", exc_info=True)
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -162,6 +224,8 @@ Available Scenes: {scenes}"""
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
+            "HTTP-Referer": "https://github.com/dungeon-master-ai",  # Required by OpenRouter
+            "X-Title": "Dungeon Master AI",  # Optional, for OpenRouter analytics
         }
 
         payload = {
@@ -174,10 +238,28 @@ Available Scenes: {scenes}"""
             "temperature": 0.1,  # Low temperature for consistent JSON
         }
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(self.base_url, headers=headers, json=payload)
-            response.raise_for_status()
-            return response.json()
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(self.base_url, headers=headers, json=payload)
+                response.raise_for_status()
+                result = response.json()
+
+                # Check if the response has the expected structure
+                if "choices" not in result or not result["choices"]:
+                    logger.error(f"Unexpected API response structure: {result}")
+                    raise ValueError("Invalid API response: missing 'choices'")
+
+                return result
+
+        except httpx.HTTPStatusError as e:
+            logger.error(f"OpenRouter API HTTP error: {e.response.status_code} - {e.response.text}")
+            raise
+        except httpx.RequestError as e:
+            logger.error(f"OpenRouter API request error: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error calling OpenRouter API: {e}")
+            raise
 
     def apply_state_update(
         self,

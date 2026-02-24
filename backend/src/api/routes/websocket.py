@@ -340,6 +340,9 @@ async def websocket_session(
 
                 try:
                     # Stream DM response token by token
+                    chunk_count = 0
+                    logger.info(f"Starting DM response streaming for room {room_id}")
+
                     async for chunk in ai_service.stream_dm_response(
                         player_message=content,
                         scenario_content=scenario_content,
@@ -347,6 +350,7 @@ async def websocket_session(
                         players=players,
                         conversation_history=conversation_history,
                     ):
+                        chunk_count += 1
                         full_response += chunk
                         # Send chunk to all players
                         chunk_msg = WSDMResponseChunk(
@@ -356,6 +360,8 @@ async def websocket_session(
                         await manager.broadcast_to_room_direct(
                             room_id, chunk_msg.model_dump(mode="json")
                         )
+
+                    logger.info(f"DM streaming complete. Sent {chunk_count} chunks to room {room_id}")
 
                     # Send end marker
                     end_msg = WSDMResponseEnd(
