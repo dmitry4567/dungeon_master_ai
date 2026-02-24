@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/network/websocket_client.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../scenario/models/scenario_content.dart';
 import '../data/game_session_repository.dart';
 import '../models/dice_result.dart';
 import '../models/message.dart';
@@ -41,14 +42,20 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     emit(const GameSessionState.connecting());
 
     try {
-      // Загрузить сессию через REST
+      // 1. Загрузить сессию по ID комнаты
       final session = await _repository.getSessionByRoom(event.roomId);
 
-      // Загрузить начальные сообщения
-      final messages = await _repository.getMessages(session.id);
+      // 2. Параллельно загрузить остальное, используя session.id
+      final results = await Future.wait([
+        _repository.getMessages(session.id),
+        _repository.getScenarioContent(session.id),
+        _secureStorage.getUserId(),
+      ]);
 
-      // Определить, является ли текущий пользователь хостом
-      _currentUserId = await _secureStorage.getUserId();
+      final messages = results[0] as List<Message>;
+      final scenarioContent = results[1] as ScenarioContent;
+      _currentUserId = results[2] as String?;
+
       final isHost = _currentUserId != null; // Упрощённо, TODO: проверить через room
 
       // Подписаться на WS-события
@@ -70,6 +77,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         roomId: event.roomId,
         messages: messages,
         worldState: session.worldState,
+        scenarioContent: scenarioContent,
         isHost: isHost,
       ),);
     } catch (e) {

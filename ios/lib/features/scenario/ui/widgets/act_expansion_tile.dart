@@ -15,7 +15,7 @@ class ActExpansionTile extends StatelessWidget {
         childrenPadding: const EdgeInsets.all(16),
         leading: const Icon(Icons.movie_filter),
         title: Text(
-          act.id,
+          act.name,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -30,7 +30,7 @@ class ActExpansionTile extends StatelessWidget {
           _InfoRow(
             icon: Icons.login,
             label: 'Условие входа',
-            value: act.entryCondition,
+            value: act.entryCondition.description,
           ),
           const SizedBox(height: 12),
 
@@ -38,7 +38,7 @@ class ActExpansionTile extends StatelessWidget {
           _InfoRow(
             icon: Icons.logout,
             label: 'Условия выхода',
-            value: act.exitConditions.join(', '),
+            value: act.exitConditions.map((c) => c.description).join(', '),
           ),
           const SizedBox(height: 16),
 
@@ -150,7 +150,7 @@ class _SceneCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Сцена $index: ${scene.id}',
+                    'Сцена $index: ${scene.name}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,

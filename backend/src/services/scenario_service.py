@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
-# from src.services.ai_service import AIService
-from src.services.ai_service_openrouter import AIServiceOpenRouter
+from src.services.ai_service import AIService
+# from src.services.ai_service_openrouter import AIServiceOpenRouter
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class ScenarioService:
         """Initialize scenario service."""
         self.db = db
         # self.ai_service = AIService()
-        self.ai_service = AIServiceOpenRouter()
+        self.ai_service = AIService()
 
     async def generate_scenario(
         self, user_id: uuid.UUID, description: str

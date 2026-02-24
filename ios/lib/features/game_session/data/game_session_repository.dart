@@ -6,6 +6,7 @@ import 'package:sqflite_common/sql.dart';
 
 import '../../../core/network/websocket_client.dart';
 import '../../../core/storage/local_database.dart';
+import '../../scenario/models/scenario_content.dart';
 import '../models/message.dart';
 import '../models/world_state.dart';
 import 'game_session_api.dart';
@@ -86,6 +87,11 @@ class GameSessionRepository {
       // При ошибке попробовать из кэша
       return _getCachedMessages(sessionId);
     }
+  }
+
+  /// Получить контент сценария
+  Future<ScenarioContent> getScenarioContent(String sessionId) async {
+    return _api.getScenarioContent(sessionId);
   }
 
   /// Завершить сессию

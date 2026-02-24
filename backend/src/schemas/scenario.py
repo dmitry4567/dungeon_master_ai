@@ -8,13 +8,29 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 
+class Condition(BaseModel):
+    """Schema for a condition."""
+    condition: str = Field(..., description="Machine-readable condition ID")
+    description: str = Field(..., description="Human-readable description")
+
+
+class ScenarioScene(BaseModel):
+    """Schema for a scene within an act."""
+    id: str = Field(..., description="Unique scene identifier")
+    name: str = Field(..., description="Human-readable scene name")
+    mandatory: bool = Field(...)
+    description_for_ai: str = Field(...)
+    dm_hints: list[str] = Field(...)
+    possible_outcomes: list[str] = Field(...)
+
+
 class ScenarioAct(BaseModel):
     """Schema for scenario act."""
-
     id: str = Field(..., description="Unique act identifier")
-    entry_condition: str = Field(..., description="Condition to enter this act")
-    exit_conditions: list[str] = Field(..., description="Conditions to exit this act")
-    scenes: list[dict[str, Any]] = Field(..., description="Scenes in this act")
+    name: str = Field(..., description="Human-readable act name")
+    entry_condition: Condition = Field(..., description="Condition to enter this act")
+    exit_conditions: list[Condition] = Field(..., description="Conditions to exit this act")
+    scenes: list[ScenarioScene] = Field(..., description="Scenes in this act")
 
 
 class ScenarioNPC(BaseModel):
@@ -52,9 +68,9 @@ class ScenarioContent(BaseModel):
     players_min: int = Field(..., ge=1, le=5, description="Minimum number of players (1 for single player)")
     players_max: int = Field(..., ge=1, le=5, description="Maximum number of players")
     world_lore: str = Field(..., description="World background and lore")
-    acts: list[dict[str, Any]] = Field(..., description="Story acts")
-    npcs: list[dict[str, Any]] = Field(..., description="Non-player characters")
-    locations: list[dict[str, Any]] = Field(..., description="Game locations")
+    acts: list[ScenarioAct] = Field(..., description="Story acts")
+    npcs: list[ScenarioNPC] = Field(..., description="Non-player characters")
+    locations: list[ScenarioLocation] = Field(..., description="Game locations")
 
 
 class CreateScenarioRequest(BaseModel):

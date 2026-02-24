@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../scenario/models/scenario_content.dart';
 import '../models/message.dart';
 import '../models/world_state.dart';
 
@@ -36,6 +37,14 @@ class GameSessionApi {
     return data
         .map((json) => Message.fromJson(json as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Получить контент сценария
+  Future<ScenarioContent> getScenarioContent(String sessionId) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/sessions/$sessionId/scenario',
+    );
+    return ScenarioContent.fromJson(response.data!);
   }
 
   /// Завершить сессию (хост)

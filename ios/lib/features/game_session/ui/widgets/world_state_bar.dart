@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/colors.dart';
+import '../../../scenario/models/scenario_content.dart';
 import '../../models/world_state.dart';
 
 /// Панель состояния мира
 class WorldStateBar extends StatefulWidget {
   const WorldStateBar({
-    required this.worldState, super.key,
+    required this.worldState,
+    required this.scenarioContent,
+    super.key,
   });
 
   final WorldState worldState;
+  final ScenarioContent scenarioContent;
 
   @override
   State<WorldStateBar> createState() => _WorldStateBarState();
@@ -19,7 +23,41 @@ class _WorldStateBarState extends State<WorldStateBar> {
   bool _expanded = false;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
+  Widget build(BuildContext context) {
+    Act? currentAct;
+    for (final act in widget.scenarioContent.acts) {
+      if (act.id == widget.worldState.currentAct) {
+        currentAct = act;
+        break;
+      }
+    }
+    final actName = currentAct?.name ?? widget.worldState.currentAct;
+
+    Location? currentLocation;
+    if (widget.worldState.currentLocation != null) {
+      for (final loc in widget.scenarioContent.locations) {
+        if (loc.id == widget.worldState.currentLocation!) {
+          currentLocation = loc;
+          break;
+        }
+      }
+    }
+    final locationName =
+        currentLocation?.name ?? widget.worldState.currentLocation;
+
+    final completedSceneNames =
+        widget.worldState.completedScenes.map((sceneId) {
+      for (final act in widget.scenarioContent.acts) {
+        for (final scene in act.scenes) {
+          if (scene.id == sceneId) {
+            return scene.name;
+          }
+        }
+      }
+      return sceneId; // Fallback to ID if not found
+    }).toList();
+
+    return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -62,7 +100,8 @@ class _WorldStateBarState extends State<WorldStateBar> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.flash_on, color: AppColors.error, size: 12),
+                                Icon(Icons.flash_on,
+                                    color: AppColors.error, size: 12),
                                 SizedBox(width: 2),
                                 Text(
                                   'БОЙ',
@@ -78,7 +117,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                         // Акт
                         _InfoChip(
                           icon: Icons.menu_book,
-                          label: widget.worldState.currentAct,
+                          label: actName,
                         ),
                         if (widget.worldState.currentScene != null) ...[
                           const SizedBox(width: 8),
@@ -87,12 +126,12 @@ class _WorldStateBarState extends State<WorldStateBar> {
                             label: widget.worldState.currentScene!,
                           ),
                         ],
-                        if (widget.worldState.currentLocation != null) ...[
+                        if (locationName != null) ...[
                           const SizedBox(width: 8),
                           Flexible(
                             child: _InfoChip(
                               icon: Icons.location_on,
-                              label: widget.worldState.currentLocation!,
+                              label: locationName,
                             ),
                           ),
                         ],
@@ -122,7 +161,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                     const Divider(color: AppColors.outline, height: 1),
                     const SizedBox(height: 8),
                     // Пройденные сцены
-                    if (widget.worldState.completedScenes.isNotEmpty) ...[
+                    if (completedSceneNames.isNotEmpty) ...[
                       Text(
                         'Пройденные сцены:',
                         style: TextStyle(
@@ -134,8 +173,8 @@ class _WorldStateBarState extends State<WorldStateBar> {
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
-                        children: widget.worldState.completedScenes
-                            .map((s) => _MiniChip(label: s))
+                        children: completedSceneNames
+                            .map((name) => _MiniChip(label: name))
                             .toList(),
                       ),
                       const SizedBox(height: 8),
@@ -163,7 +202,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                             .toList(),
                       ),
                     ],
-                    if (widget.worldState.completedScenes.isEmpty &&
+                    if (completedSceneNames.isEmpty &&
                         widget.worldState.flags.isEmpty)
                       Text(
                         'Нет дополнительной информации',
@@ -180,6 +219,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
         ),
       ),
     );
+  }
 }
 
 class _InfoChip extends StatelessWidget {
@@ -190,22 +230,22 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: AppColors.secondaryLight, size: 14),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(
-            label,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: AppColors.onSurface.withValues(alpha: 0.8),
-              fontSize: 12,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.secondaryLight, size: 14),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.onSurface.withValues(alpha: 0.8),
+                fontSize: 12,
+              ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
 }
 
 class _MiniChip extends StatelessWidget {
@@ -216,26 +256,26 @@ class _MiniChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: active
-            ? AppColors.tertiary.withValues(alpha: 0.15)
-            : AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
           color: active
-              ? AppColors.tertiary.withValues(alpha: 0.4)
-              : AppColors.outline.withValues(alpha: 0.3),
+              ? AppColors.tertiary.withValues(alpha: 0.15)
+              : AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: active
+                ? AppColors.tertiary.withValues(alpha: 0.4)
+                : AppColors.outline.withValues(alpha: 0.3),
+          ),
         ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: active
-              ? AppColors.tertiaryLight
-              : AppColors.onSurface.withValues(alpha: 0.5),
-          fontSize: 11,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active
+                ? AppColors.tertiaryLight
+                : AppColors.onSurface.withValues(alpha: 0.5),
+            fontSize: 11,
+          ),
         ),
-      ),
-    );
+      );
 }

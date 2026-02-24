@@ -401,11 +401,21 @@ Return ONLY a valid JSON object with this exact structure:
     "acts": [
       {
         "id": "act_1",
-        "entry_condition": "session_start",
-        "exit_conditions": ["flag_name"],
+        "name": "Начало приключения",
+        "entry_condition": {
+          "condition": "session_start",
+          "description": "Сессия начинается"
+        },
+        "exit_conditions": [
+          {
+            "condition": "первый_квест_завершен",
+            "description": "Игроки выполнили первый квест"
+          }
+        ],
         "scenes": [
           {
             "id": "scene_1",
+            "name": "Встреча с таинственным незнакомцем",
             "mandatory": true,
             "description_for_ai": "What happens in this scene...",
             "dm_hints": ["Hint 1", "Hint 2"],

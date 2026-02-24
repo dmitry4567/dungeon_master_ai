@@ -211,7 +211,10 @@ class _GameSessionPageState extends State<GameSessionPage> {
       builder: (context, constraints) => Column(
         children: [
           // Панель состояния мира
-          WorldStateBar(worldState: state.worldState),
+          WorldStateBar(
+            worldState: state.worldState,
+            scenarioContent: state.scenarioContent,
+          ),
           // Список сообщений
           Expanded(
             child: _buildMessageList(context, state),
