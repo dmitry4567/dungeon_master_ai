@@ -1,5 +1,4 @@
 """Scenario service for managing scenario generation and versioning."""
-import logging
 import uuid
 from typing import Any
 
@@ -9,9 +8,10 @@ from sqlalchemy.orm import selectinload
 
 from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
 from src.services.ai_service import AIService
+from src.core.logging import get_logger
 # from src.services.ai_service_openrouter import AIServiceOpenRouter
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ScenarioService:
@@ -70,8 +70,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Created scenario {scenario.id} with version {version.version}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario created",
+            scenario_id=str(scenario.id),
+            version=version.version,
+            user_id=str(user_id),
         )
 
         return scenario
@@ -151,8 +153,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Refined scenario {scenario.id} to version {new_version.version}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario refined",
+            scenario_id=str(scenario.id),
+            version=new_version.version,
+            user_id=str(user_id),
         )
 
         return scenario
@@ -294,8 +298,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Restored scenario {scenario.id} to version {version.version}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario restored",
+            scenario_id=str(scenario.id),
+            version=version.version,
+            user_id=str(user_id),
         )
 
         return scenario
@@ -329,8 +335,9 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Published scenario {scenario.id}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario published",
+            scenario_id=str(scenario.id),
+            user_id=str(user_id),
         )
         return scenario
 

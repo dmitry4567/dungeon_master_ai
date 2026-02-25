@@ -1,6 +1,5 @@
 """State extractor for extracting world state changes from DM responses."""
 import json
-import logging
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -8,8 +7,9 @@ from typing import Any
 import httpx
 
 from src.core.config import get_settings
+from src.core.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _extract_json(text: str) -> str:
@@ -78,18 +78,18 @@ DM says nothing special: {"events_occurred": [], "location_changed": null, "scen
 If unsure or no clear changes, return empty structure. Always return valid JSON."""
 
     def __init__(self) -> None:
-        """Initialize state extractor with OpenRouter client."""
+        """Initialize state extractor with Anthropic Claude client."""
         settings = get_settings()
-        self.api_key = settings.OPENROUTER_API_KEY
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        # Use OpenRouter's auto-routing to available free models
-        self.model = "openrouter/free"
+        self.api_key = settings.ANTHROPIC_API_KEY
+        self.base_url = "https://api.anthropic.com/v1/messages"
+        # Use Claude Haiku for fast, lightweight state extraction
+        self.model = settings.model_state_extraction
         self.max_tokens = 500
 
         # Warn if API key is not set
         if not self.api_key:
             logger.warning(
-                "OPENROUTER_API_KEY not set. State extraction will fail. "
+                "ANTHROPIC_API_KEY not set. State extraction will fail. "
                 "Consider setting it or state updates will be disabled."
             )
 
@@ -111,7 +111,7 @@ If unsure or no clear changes, return empty structure. Always return valid JSON.
         """
         # Return empty state if API key is not configured
         if not self.api_key:
-            logger.debug("OpenRouter API key not set, skipping state extraction")
+            logger.debug("Anthropic API key not set, skipping state extraction")
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -134,8 +134,8 @@ Extract any state changes from this response."""
             result = await self._call_model(user_prompt)
 
             # Check if response has content
-            if not result.get("choices") or not result["choices"][0].get("message"):
-                logger.warning("State extraction API returned no choices/message")
+            if not result.get("content") or not result["content"]:
+                logger.warning("State extraction API returned no content")
                 return StateUpdate(
                     events_occurred=[],
                     location_changed=None,
@@ -143,7 +143,7 @@ Extract any state changes from this response."""
                     flags_changed={},
                 )
 
-            response_text = result["choices"][0]["message"].get("content", "")
+            response_text = result["content"][0].get("text", "")
 
             # Check if content is empty
             if not response_text or response_text.strip() == "":
@@ -156,7 +156,7 @@ Extract any state changes from this response."""
                 )
 
             # Log the raw response for debugging
-            logger.debug(f"State extraction raw response: {response_text[:200]}")
+            logger.debug("State extraction raw response", response_preview=response_text[:200])
 
             json_text = _extract_json(response_text)
 
@@ -181,8 +181,9 @@ Extract any state changes from this response."""
 
         except json.JSONDecodeError as e:
             logger.warning(
-                f"Failed to parse state extraction JSON: {e}. "
-                f"Response text: {response_text[:500] if 'response_text' in locals() else 'N/A'}"
+                "Failed to parse state extraction JSON",
+                error=str(e),
+                response_preview=locals().get("response_text", "N/A")[:500],
             )
             return StateUpdate(
                 events_occurred=[],
@@ -191,7 +192,7 @@ Extract any state changes from this response."""
                 flags_changed={},
             )
         except Exception as e:
-            logger.error(f"Failed to extract state: {e}", exc_info=True)
+            logger.error("Failed to extract state", error=str(e), exc_info=True)
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -220,20 +221,19 @@ Available Locations: {locations}
 Available Scenes: {scenes}"""
 
     async def _call_model(self, user_prompt: str) -> dict:
-        """Call OpenRouter API."""
+        """Call Anthropic Claude API."""
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "x-api-key": self.api_key,
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/dungeon-master-ai",  # Required by OpenRouter
-            "X-Title": "Dungeon Master AI",  # Optional, for OpenRouter analytics
+            "anthropic-version": "2023-06-01",
         }
 
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": self.STATE_EXTRACTION_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
+            "system": self.STATE_EXTRACTION_PROMPT,
             "max_tokens": self.max_tokens,
             "temperature": 0.1,  # Low temperature for consistent JSON
         }
@@ -245,20 +245,20 @@ Available Scenes: {scenes}"""
                 result = response.json()
 
                 # Check if the response has the expected structure
-                if "choices" not in result or not result["choices"]:
-                    logger.error(f"Unexpected API response structure: {result}")
-                    raise ValueError("Invalid API response: missing 'choices'")
+                if "content" not in result or not result["content"]:
+                    logger.error("Unexpected API response structure", response=result)
+                    raise ValueError("Invalid API response: missing 'content'")
 
                 return result
 
         except httpx.HTTPStatusError as e:
-            logger.error(f"OpenRouter API HTTP error: {e.response.status_code} - {e.response.text}")
+            logger.error("Anthropic API HTTP error", status_code=e.response.status_code, error=e.response.text)
             raise
         except httpx.RequestError as e:
-            logger.error(f"OpenRouter API request error: {e}")
+            logger.error("Anthropic API request error", error=str(e))
             raise
         except Exception as e:
-            logger.error(f"Unexpected error calling OpenRouter API: {e}")
+            logger.error("Unexpected error calling Anthropic API", error=str(e))
             raise
 
     def apply_state_update(

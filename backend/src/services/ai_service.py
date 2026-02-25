@@ -1,6 +1,5 @@
-"""AI service for OpenRouter API integration with streaming support."""
+"""AI service for Anthropic Claude API integration with streaming support."""
 import json
-import logging
 import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
@@ -10,8 +9,9 @@ from typing import Any
 import httpx
 
 from src.core.config import get_settings
+from src.core.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _extract_json(text: str) -> str:
@@ -38,17 +38,17 @@ class TokenUsage:
 
 
 class AIService:
-    """Service for AI generation using OpenRouter with streaming support."""
+    """Service for AI generation using Anthropic Claude with streaming support."""
 
     def __init__(self) -> None:
-        """Initialize AI service with OpenRouter client."""
+        """Initialize AI service with Anthropic Claude client."""
         settings = get_settings()
-        self.api_key = settings.OPENROUTER_API_KEY
-        self.model = settings.OPENROUTER_MODEL
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.api_key = settings.ANTHROPIC_API_KEY
+        self.model = settings.model_dm_response
+        self.base_url = "https://api.anthropic.com/v1/messages"
         self.max_tokens = 8192
         self._usage_log: list[TokenUsage] = []
-        logger.info(f"Using OpenRouter with model: {self.model}")
+        logger.info("Anthropic Claude initialized", model=self.model)
 
     def _build_dm_system_prompt(
         self,
@@ -177,7 +177,7 @@ Remember: ALWAYS respond in the same language the player uses!"""
         messages: list[dict[str, str]],
         stream: bool = False,
     ) -> dict | AsyncIterator[str]:
-        """Internal helper to call OpenRouter.
+        """Internal helper to call Anthropic Claude API.
 
         Args:
             system_prompt: System prompt for the model
@@ -188,16 +188,23 @@ Remember: ALWAYS respond in the same language the player uses!"""
             Response dict or async iterator of chunks
         """
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "x-api-key": self.api_key,
             "Content-Type": "application/json",
+            "anthropic-version": "2023-06-01",
         }
+
+        # Claude uses a different message format with system prompt separate
+        claude_messages = []
+        for msg in messages:
+            claude_messages.append({
+                "role": msg["role"],
+                "content": msg["content"],
+            })
 
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                *messages,
-            ],
+            "messages": claude_messages,
+            "system": system_prompt,
             "max_tokens": self.max_tokens,
             "temperature": 0.8,
             "stream": stream,
@@ -216,12 +223,12 @@ Remember: ALWAYS respond in the same language the player uses!"""
                 # Log token usage
                 usage = result.get("usage", {})
                 self._log_usage(
-                    usage.get("prompt_tokens", 0),
-                    usage.get("completion_tokens", 0),
+                    usage.get("input_tokens", 0),
+                    usage.get("output_tokens", 0),
                 )
 
-                finish_reason = result.get("choices", [{}])[0].get("finish_reason")
-                if finish_reason == "length":
+                finish_reason = result.get("stop_reason")
+                if finish_reason == "max_tokens":
                     logger.warning("AI response was truncated due to max_tokens limit")
 
                 return result
@@ -231,7 +238,7 @@ Remember: ALWAYS respond in the same language the player uses!"""
         headers: dict,
         payload: dict,
     ) -> AsyncIterator[str]:
-        """Stream response from OpenRouter.
+        """Stream response from Anthropic Claude API.
 
         Args:
             headers: Request headers
@@ -270,18 +277,25 @@ Remember: ALWAYS respond in the same language the player uses!"""
                         if line.startswith("data: "):
                             data = line[6:]
                             if data == "[DONE]":
-                                logger.info(f"Stream complete. Total chunks: {chunk_count}")
+                                logger.info("Stream complete", chunk_count=chunk_count)
                                 break
                             try:
                                 chunk = json.loads(data)
-                                delta = chunk.get("choices", [{}])[0].get("delta", {})
-                                content = delta.get("content", "")
-                                if content:
-                                    chunk_count += 1
-                                    total_output_tokens += 1
-                                    if chunk_count <= 5 or chunk_count % 20 == 0:
-                                        logger.debug(f"Yielding chunk #{chunk_count}: {repr(content[:50])}")
-                                    yield content
+                                # Claude uses different event types
+                                event_type = chunk.get("type", "")
+
+                                if event_type == "content_block_delta":
+                                    delta = chunk.get("delta", {})
+                                    content = delta.get("text", "")
+                                    if content:
+                                        chunk_count += 1
+                                        total_output_tokens += 1
+                                        if chunk_count <= 5 or chunk_count % 20 == 0:
+                                            logger.debug("Yielding chunk", chunk_number=chunk_count, content_preview=content[:50])
+                                        yield content
+                                elif event_type == "message_stop":
+                                    logger.info("Stream complete", chunk_count=chunk_count)
+                                    break
                             except json.JSONDecodeError:
                                 continue
 
@@ -298,12 +312,10 @@ Remember: ALWAYS respond in the same language the player uses!"""
         )
         self._usage_log.append(usage)
         logger.info(
-            f"AI usage: {input_tokens} input, {output_tokens} output tokens",
-            extra={
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "model": self.model,
-            },
+            "AI token usage",
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            model=self.model,
         )
 
     def get_usage_stats(self) -> dict[str, Any]:
@@ -347,7 +359,7 @@ Remember: ALWAYS respond in the same language the player uses!"""
         messages.append({"role": "user", "content": player_message})
 
         result = await self._call_model(system_prompt, messages, stream=False)
-        return result["choices"][0]["message"]["content"]
+        return result["content"][0]["text"]
 
     async def stream_dm_response(
         self,
@@ -456,22 +468,22 @@ Ensure valid JSON only."""
                 stream=False,
             )
 
-            response_text = result["choices"][0]["message"]["content"]
+            response_text = result["content"][0]["text"]
             json_text = _extract_json(response_text)
             response_data = json.loads(json_text)
 
             title = response_data.get("title", "Untitled Scenario")
             content = response_data.get("content", {})
 
-            logger.info(f"Generated scenario: {title}")
+            logger.info("Scenario generated", title=title)
 
             return title, content
 
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse AI response as JSON: {e}")
+            logger.error("Failed to parse AI response as JSON", error=str(e))
             raise ValueError("AI generated invalid JSON response")
         except Exception as e:
-            logger.error(f"Failed to generate scenario: {e}")
+            logger.error("Failed to generate scenario", error=str(e))
             raise
 
     async def refine_scenario(
@@ -510,20 +522,20 @@ Generate the updated scenario."""
                 stream=False,
             )
 
-            response_text = result["choices"][0]["message"]["content"]
+            response_text = result["content"][0]["text"]
             json_text = _extract_json(response_text)
             response_data = json.loads(json_text)
 
             title = response_data.get("title", current_title)
             content = response_data.get("content", current_content)
 
-            logger.info(f"Refined scenario: {title}")
+            logger.info("Scenario refined", title=title)
 
             return title, content
 
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse AI response as JSON: {e}")
+            logger.error("Failed to parse AI response as JSON", error=str(e))
             raise ValueError("AI generated invalid JSON response")
         except Exception as e:
-            logger.error(f"Failed to refine scenario: {e}")
+            logger.error("Failed to refine scenario", error=str(e))
             raise

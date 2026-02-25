@@ -40,18 +40,23 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware to log requests and responses."""
+    """Middleware to log requests and responses with beautiful formatting."""
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.perf_counter()
 
+        # Extract path without query params for cleaner logs
+        path = request.url.path
+        if request.url.query:
+            path = f"{path}?{request.url.query[:100]}"  # Truncate long query strings
+
         bind_context(
             method=request.method,
-            path=request.url.path,
+            path=path,
             client_ip=request.client.host if request.client else None,
         )
 
-        logger.info("Request started")
+        logger.info("Request started", method=request.method, path=path)
 
         try:
             response = await call_next(request)
@@ -61,7 +66,15 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         process_time = (time.perf_counter() - start_time) * 1000
 
-        logger.info(
+        # Log with appropriate level based on status code
+        if response.status_code >= 500:
+            log_method = logger.error
+        elif response.status_code >= 400:
+            log_method = logger.warning
+        else:
+            log_method = logger.info
+
+        log_method(
             "Request completed",
             status_code=response.status_code,
             duration_ms=round(process_time, 2),

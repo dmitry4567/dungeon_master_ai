@@ -1,6 +1,5 @@
 """Lobby service for managing game rooms and player coordination."""
 import asyncio
-import logging
 import uuid
 from datetime import UTC, datetime
 
@@ -9,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.core.database import get_db_context
+from src.core.logging import get_logger
 from src.models.character import Character
 from src.models.room import Room, RoomPlayer, RoomPlayerStatus, RoomStatus
 from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
@@ -16,7 +16,7 @@ from src.models.session import GameSession
 from src.services.ai_service import AIService
 from src.services.session_service import SessionService
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class LobbyService:
@@ -196,8 +196,9 @@ class LobbyService:
         await self.db.refresh(player)
 
         logger.info(
-            f"User {user_id} joined room {room_id}",
-            extra={"user_id": str(user_id), "room_id": str(room_id)},
+            "Player joined room",
+            user_id=str(user_id),
+            room_id=str(room_id),
         )
         return player
 
@@ -398,8 +399,9 @@ class LobbyService:
         await self.db.refresh(game_session)
 
         logger.info(
-            f"Game started for room {room_id}",
-            extra={"room_id": str(room_id), "host_id": str(host_id)},
+            "Game started",
+            room_id=str(room_id),
+            host_id=str(host_id),
         )
 
         # Generate opening DM message asynchronously to not block the response
@@ -487,14 +489,15 @@ class LobbyService:
                 )
 
                 logger.info(
-                    f"Opening DM message generated for session {session_id}",
-                    extra={"session_id": str(session_id)},
+                    "Opening DM message generated",
+                    session_id=str(session_id),
                 )
 
         except Exception as e:
             logger.error(
-                f"Failed to generate opening message: {e}",
-                extra={"session_id": str(session_id), "error": str(e)},
+                "Failed to generate opening message",
+                session_id=str(session_id),
+                error=str(e),
             )
 
     async def _get_room_with_relations(self, room_id: uuid.UUID) -> Room | None:

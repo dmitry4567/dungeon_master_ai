@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from uuid import UUID
 
 import httpx
@@ -11,6 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import get_settings
+from src.core.logging import get_logger
 from src.core.security import (
     check_needs_rehash,
     create_access_token,
@@ -28,7 +28,7 @@ from src.schemas.auth import (
     TokenResponse,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 settings = get_settings()
 
 
@@ -93,7 +93,7 @@ class AuthService:
         await self.db.commit()
         await self.db.refresh(user)
 
-        logger.info("User registered", extra={"user_id": str(user.id), "email": user.email})
+        logger.info("User registered", user_id=str(user.id), email=user.email)
 
         return self._create_auth_response(user)
 
@@ -110,7 +110,7 @@ class AuthService:
             user.password_hash = hash_password(request.password)
             await self.db.commit()
 
-        logger.info("User logged in", extra={"user_id": str(user.id)})
+        logger.info("User logged in", user_id=str(user.id))
 
         return self._create_auth_response(user)
 
@@ -128,7 +128,7 @@ class AuthService:
         if not user:
             raise InvalidTokenError()
 
-        logger.info("Token refreshed", extra={"user_id": str(user.id)})
+        logger.info("Token refreshed", user_id=str(user.id))
 
         return self._create_token_response(user)
 
@@ -139,7 +139,7 @@ class AuthService:
         user = await self._get_user_by_apple_id(apple_user_id)
 
         if user:
-            logger.info("User signed in with Apple", extra={"user_id": str(user.id)})
+            logger.info("User signed in with Apple", user_id=str(user.id))
             return self._create_auth_response(user)
 
         existing_by_email = await self._get_user_by_email(email) if email else None
@@ -149,7 +149,7 @@ class AuthService:
             await self.db.refresh(existing_by_email)
             logger.info(
                 "Linked Apple ID to existing user",
-                extra={"user_id": str(existing_by_email.id)},
+                user_id=str(existing_by_email.id),
             )
             return self._create_auth_response(existing_by_email)
 
@@ -168,7 +168,7 @@ class AuthService:
 
         logger.info(
             "User registered via Apple Sign In",
-            extra={"user_id": str(user.id)},
+            user_id=str(user.id),
         )
 
         return self._create_auth_response(user)
@@ -215,10 +215,10 @@ class AuthService:
             return apple_user_id, email
 
         except jose_jwt.JWTError as e:
-            logger.warning("Apple token verification failed", extra={"error": str(e)})
+            logger.warning("Apple token verification failed", error=str(e))
             raise AppleAuthError(f"Token verification failed: {str(e)}") from e
         except httpx.HTTPError as e:
-            logger.error("Failed to fetch Apple public keys", extra={"error": str(e)})
+            logger.error("Failed to fetch Apple public keys", error=str(e))
             raise AppleAuthError("Failed to verify Apple token") from e
 
     async def _get_user_by_email(self, email: str) -> User | None:

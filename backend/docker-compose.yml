@@ -28,7 +28,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis_insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - ./redis_insight_data:/db
+    depends_on:
+      - redis
+    restart: unless-stopped
+
 
 volumes:
+  redis_insight_data:
+    driver: local
   postgres_data:
   redis_data:

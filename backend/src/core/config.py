@@ -32,9 +32,30 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
-    # OpenRouter
-    OPENROUTER_API_KEY: str = Field(default="", alias="OPENROUTER_API_KEY")
-    OPENROUTER_MODEL: str = Field(default="openrouter/auto", alias="OPENROUTER_MODEL")
+    # Anthropic Claude API
+    ANTHROPIC_API_KEY: str = Field(default="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", alias="ANTHROPIC_API_KEY")
+    
+    # Model selection for different request types
+    model_dm_response: str = Field(
+        default="claude-haiku-4-5-20251001",
+        alias="MODEL_DM_RESPONSE",
+        description="Model for DM responses during gameplay",
+    )
+    model_scenario_generation: str = Field(
+        default="claude-haiku-4-5-20251001",
+        alias="MODEL_SCENARIO_GENERATION",
+        description="Model for generating new scenarios",
+    )
+    model_scenario_refinement: str = Field(
+        default="claude-haiku-4-5-20251001",
+        alias="MODEL_SCENARIO_REFINEMENT",
+        description="Model for refining existing scenarios",
+    )
+    model_state_extraction: str = Field(
+        default="claude-haiku-4-5-20251001",
+        alias="MODEL_STATE_EXTRACTION",
+        description="Model for extracting game state from conversations",
+    )
 
     # JWT Authentication
     jwt_secret_key: str = Field(default="change-me-in-production", alias="JWT_SECRET_KEY")
@@ -66,7 +87,7 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
-    log_format: str = Field(default="json", alias="LOG_FORMAT")
+    log_format: str = Field(default="console", alias="LOG_FORMAT")
 
     @field_validator("cors_origins", mode="before")
     @classmethod
