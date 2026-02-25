@@ -18,10 +18,22 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
+  bool _isInitialized = false;
+
   @override
   void initState() {
     super.initState();
     _loadRooms();
+    _isInitialized = true;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Обновляем данные при возврате на страницу (когда пользователь вышел из игры)
+    if (_isInitialized) {
+      _loadRooms();
+    }
   }
 
   void _loadRooms() {
@@ -32,8 +44,17 @@ class _LobbyPageState extends State<LobbyPage> {
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Игровое лобби'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadRooms,
+          ),
+        ],
       ),
-      body: BlocBuilder<LobbyBloc, LobbyState>(
+      body: BlocConsumer<LobbyBloc, LobbyState>(
+        listener: (context, state) {
+          // Handle state changes if needed
+        },
         builder: (context, state) => state.when(
             initial: () => const Center(
               child: Text('Создайте или присоединитесь к комнате'),
@@ -70,7 +91,11 @@ class _LobbyPageState extends State<LobbyPage> {
                 );
               }
               return RefreshIndicator(
-                onRefresh: () async => _loadRooms(),
+                onRefresh: () async {
+                  context.read<LobbyBloc>().add(const LobbyEvent.loadRooms());
+                  // Wait for state to update
+                  await Future<void>.delayed(const Duration(milliseconds: 300));
+                },
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: rooms.length,

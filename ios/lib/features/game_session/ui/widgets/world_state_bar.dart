@@ -22,6 +22,20 @@ class WorldStateBar extends StatefulWidget {
 class _WorldStateBarState extends State<WorldStateBar> {
   bool _expanded = false;
 
+  String _getFlagName(String flagId) {
+    // Ищем в predefined flags сценария
+    for (final flag in widget.scenarioContent.flags) {
+      if (flag.id == flagId) {
+        return flag.name;
+      }
+    }
+    
+    // Если не найдено, показываем ID
+    // AI создаёт флаги на языке пользователя, поэтому новые флаги
+    // будут сразу с нормальными названиями (например, "dver_otkryta")
+    return flagId;
+  }
+
   @override
   Widget build(BuildContext context) {
     Act? currentAct;
@@ -195,7 +209,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                         children: widget.worldState.flags.entries
                             .map(
                               (e) => _MiniChip(
-                                label: e.key,
+                                label: _getFlagName(e.key),
                                 active: e.value,
                               ),
                             )

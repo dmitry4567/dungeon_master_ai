@@ -379,6 +379,26 @@ class ScenarioService:
             if field not in content:
                 errors.append(f"Missing required field: {field}")
 
+        # Validate flags if present (optional field)
+        if "flags" in content:
+            flag_ids = set()
+            for i, flag in enumerate(content["flags"]):
+                if "id" not in flag:
+                    errors.append(f"Flag {i} missing 'id' field")
+                elif flag["id"] in flag_ids:
+                    errors.append(f"Duplicate flag ID: {flag['id']}")
+                else:
+                    flag_ids.add(flag["id"])
+                if "name" not in flag:
+                    errors.append(f"Flag {flag.get('id', i)} missing 'name' field")
+                if "description" not in flag:
+                    errors.append(f"Flag {flag.get('id', i)} missing 'description' field")
+
+        # Skip remaining validation if required fields are missing
+        if errors:
+            return errors
+
+
         # Validate acts
         if "acts" in content:
             if not content["acts"]:

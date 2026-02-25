@@ -454,6 +454,18 @@ Return ONLY a valid JSON object with this exact structure:
         "atmosphere": "Atmosphere description",
         "rooms": ["room1", "room2"]
       }
+    ],
+    "flags": [
+      {
+        "id": "dragon_defeated",
+        "name": "Дракон побеждён",
+        "description": "Игроки победили дракона"
+      },
+      {
+        "id": "door_open",
+        "name": "Дверь открыта",
+        "description": "Тайная дверь была открыта"
+      }
     ]
   }
 }

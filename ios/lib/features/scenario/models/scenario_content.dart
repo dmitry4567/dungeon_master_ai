@@ -73,6 +73,18 @@ class Location with _$Location {
       _$LocationFromJson(json);
 }
 
+/// Flag definition
+@freezed
+class Flag with _$Flag {
+  const factory Flag({
+    required String id,
+    required String name,
+    required String description,
+  }) = _Flag;
+
+  factory Flag.fromJson(Map<String, dynamic> json) => _$FlagFromJson(json);
+}
+
 /// Complete scenario content
 @freezed
 class ScenarioContent with _$ScenarioContent {
@@ -85,6 +97,7 @@ class ScenarioContent with _$ScenarioContent {
     required List<Act> acts,
     required List<Npc> npcs,
     required List<Location> locations,
+    @Default([]) List<Flag> flags,
   }) = _ScenarioContent;
 
   factory ScenarioContent.fromJson(Map<String, dynamic> json) =>

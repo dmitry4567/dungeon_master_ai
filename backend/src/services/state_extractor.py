@@ -54,7 +54,10 @@ class StateExtractor:
 
     STATE_EXTRACTION_PROMPT = """You are a state extraction system for a D&D game. Analyze the Dungeon Master's response and extract world state changes.
 
-CRITICAL: You MUST respond with ONLY valid JSON. No explanations, no markdown, no additional text.
+CRITICAL RULES:
+1. You MUST respond with ONLY valid JSON. No explanations, no markdown, no additional text.
+2. For flags_changed: use ONLY flag IDs from the "Available Flags" list in the context.
+3. If a new game state needs a flag that doesn't exist, create it using the SAME LANGUAGE as the DM's response (e.g., if DM writes in Russian, use "dver_otkryta" for "Дверь открыта").
 
 Return this exact JSON structure:
 {
@@ -68,12 +71,17 @@ Guidelines:
 - events_occurred: Array of key plot events as strings (e.g., ["npc_rescued", "combat_started"])
 - location_changed: String location_id if moved to new location, otherwise null
 - scene_completed: String scene_id if scene definitively ended, otherwise null
-- flags_changed: Object with flag names as keys and boolean values (e.g., {"door_open": true})
+- flags_changed: Object with flag IDs as keys and boolean values. PREFER flags from the scenario. For NEW flags, use transliterated IDs in the SAME LANGUAGE as the DM's response.
 
-Examples:
+Examples (Russian):
+DM says "Вы входите в таверну": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
+DM says "Бой начинается!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": true}}
+DM says "Дверь со скрипом открывается": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"dver_otkryta": true}}
+
+Examples (English):
 DM says "You enter the tavern": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
 DM says "Combat begins!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": true}}
-DM says nothing special: {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {}}
+DM says "The door creaks open": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"door_open": true}}
 
 If unsure or no clear changes, return empty structure. Always return valid JSON."""
 
@@ -209,6 +217,10 @@ Extract any state changes from this response."""
         scenes = []
         for act in scenario_content.get("acts", []):
             scenes.extend([s.get("id") for s in act.get("scenes", [])])
+        
+        # Build flags list with IDs and names
+        flags = scenario_content.get("flags", [])
+        flags_info = [f"- {f.get('id')}: {f.get('name')}" for f in flags] if flags else ["No flags defined"]
 
         return f"""Current World State:
 - Current Act: {world_state.get("current_act")}
@@ -217,7 +229,9 @@ Extract any state changes from this response."""
 - Active Flags: {world_state.get("flags", {})}
 
 Available Locations: {locations}
-Available Scenes: {scenes}"""
+Available Scenes: {scenes}
+Available Flags:
+{chr(10).join(flags_info)}"""
 
     async def _call_model(self, user_prompt: str) -> dict:
         """Call Anthropic Claude API."""

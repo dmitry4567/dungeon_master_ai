@@ -54,6 +54,14 @@ class ScenarioLocation(BaseModel):
     rooms: list[str] = Field(default_factory=list, description="Rooms or areas in this location")
 
 
+class ScenarioFlag(BaseModel):
+    """Schema for scenario flag definition."""
+
+    id: str = Field(..., description="Unique flag identifier (machine-readable key)")
+    name: str = Field(..., description="Human-readable flag name for display")
+    description: str = Field(..., description="Description of what this flag represents")
+
+
 class ScenarioContent(BaseModel):
     """Schema for scenario content structure."""
 
@@ -71,6 +79,7 @@ class ScenarioContent(BaseModel):
     acts: list[ScenarioAct] = Field(..., description="Story acts")
     npcs: list[ScenarioNPC] = Field(..., description="Non-player characters")
     locations: list[ScenarioLocation] = Field(..., description="Game locations")
+    flags: list[ScenarioFlag] = Field(default_factory=list, description="World flag definitions")
 
 
 class CreateScenarioRequest(BaseModel):
