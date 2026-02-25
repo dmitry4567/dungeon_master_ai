@@ -87,7 +87,7 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
-    log_format: str = Field(default="console", alias="LOG_FORMAT")
+    log_format: str = Field(default="console", alias="LOG_FORMAT")  # console, json, or dungeon
 
     @field_validator("cors_origins", mode="before")
     @classmethod

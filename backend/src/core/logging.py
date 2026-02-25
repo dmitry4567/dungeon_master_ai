@@ -1,155 +1,215 @@
+"""
+Beautiful colored logging configuration for the application.
+Provides console output with syntax highlighting and optional JSON formatting.
+"""
+
 from __future__ import annotations
 
 import logging
 import sys
-from typing import Any
+from datetime import datetime
+from typing import Any, Literal
 
-import structlog
-from structlog.dev import ConsoleRenderer
-from structlog.types import Processor
+from rich.console import Console
+from rich.logging import RichHandler
+from rich.theme import Theme
 
-from src.core.config import get_settings
+# Custom theme for logging
+logging_theme = Theme(
+    {
+        "info": "cyan",
+        "warning": "yellow",
+        "error": "red",
+        "critical": "bold red",
+        "debug": "green",
+        "success": "bold green",
+    }
+)
 
-settings = get_settings()
+console = Console(theme=logging_theme)
 
 
-class CustomConsoleRenderer(ConsoleRenderer):
-    """Custom console renderer with improved formatting and colors."""
+class ColoredFormatter(logging.Formatter):
+    """
+    Custom formatter with colors for different log levels.
+    Uses ANSI escape codes for terminal coloring.
+    """
 
-    # Color palette for log levels
-    level_styles = {
-        "debug": {"fg": "blue"},
-        "info": {"fg": "green"},
-        "warning": {"fg": "yellow"},
-        "error": {"fg": "red"},
-        "critical": {"fg": "red", "bold": True},
-        "exception": {"fg": "red", "bold": True},
+    # ANSI color codes
+    COLORS = {
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[35m",  # Magenta
+        "RESET": "\033[0m",  # Reset
     }
 
-    # Color palette for key-value pairs
-    key_styles = {
-        "correlation_id": {"fg": "cyan"},
-        "duration_ms": {"fg": "magenta"},
-        "status_code": {"fg": "magenta"},
-        "method": {"fg": "white", "bold": True},
-        "path": {"fg": "white"},
-        "client_ip": {"fg": "white"},
-        "logger": {"fg": "white", "dim": True},
-        "timestamp": {"fg": "white", "dim": True},
+    # Emoji for each log level
+    EMOJIS = {
+        "DEBUG": "🐛",
+        "INFO": "ℹ️",
+        "WARNING": "⚠️",
+        "ERROR": "❌",
+        "CRITICAL": "🔥",
     }
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        fmt: str | None = None,
+        datefmt: str | None = None,
+        use_colors: bool = True,
+    ) -> None:
         super().__init__(
-            colors=True,
-            force_colors=True,
-            level_styles=self.level_styles,
-            key_styles=self.key_styles,
-            timestamp_key="timestamp",
-            repr_native_str=False,
+            fmt=fmt or "%(asctime)s %(level_emoji)s %(name)s | %(message)s",
+            datefmt=datefmt or "%H:%M:%S",
         )
+        self.use_colors = use_colors
 
-    def __call__(
-        self, logger: logging.Logger, name: str, event_dict: dict[str, Any]
-    ) -> str:
-        # Add level alias for exception logs
-        if "exc_info" in event_dict or "exception" in event_dict:
-            event_dict["level"] = "exception"
+    def format(self, record: logging.LogRecord) -> str:
+        # Save original levelname
+        original_levelname = record.levelname
 
-        return super().__call__(logger, name, event_dict)
+        # Add emoji
+        emoji = self.EMOJIS.get(record.levelname, "")
+        record.level_emoji = emoji  # type: ignore
 
+        # Apply colors if enabled and stream supports it
+        if self.use_colors and sys.stdout.isatty():
+            color = self.COLORS.get(record.levelname, self.COLORS["RESET"])
+            record.levelname = f"{color}{record.levelname}{self.COLORS['RESET']}"
+            record.name = f"\033[36m{record.name}\033[0m"  # Cyan for logger name
+            record.msg = f"\033[1m{record.msg}\033[0m"  # Bold for message
 
-def _add_custom_timestamp(
-    logger: logging.Logger, method_name: str, event_dict: dict[str, Any]
-) -> dict[str, Any]:
-    """Add timestamp in human-readable format with timezone."""
-    from datetime import datetime, timezone
+        # Format the record
+        result = super().format(record)
 
-    event_dict["timestamp"] = datetime.now(timezone.utc).strftime(
-        "%Y-%m-%d %H:%M:%S.%f"
-    )[:-3] + " UTC"
-    return event_dict
+        # Restore original levelname
+        record.levelname = original_levelname
 
-
-def _format_duration(
-    logger: logging.Logger, method_name: str, event_dict: dict[str, Any]
-) -> dict[str, Any]:
-    """Format duration in milliseconds with proper unit."""
-    if "duration_ms" in event_dict:
-        duration = event_dict["duration_ms"]
-        if isinstance(duration, (int, float)):
-            event_dict["duration_ms"] = f"{duration:.2f}ms"
-    return event_dict
+        return result
 
 
-def setup_logging() -> None:
-    """Setup structured logging with beautiful console output for development."""
-    log_level = getattr(logging, settings.log_level.upper(), logging.INFO)
+class DungeonMasterFormatter(ColoredFormatter):
+    """
+    Themed formatter with Dungeon Master aesthetic.
+    """
 
-    # Choose processors based on format setting
-    if settings.log_format == "json":
-        processors: list[Processor] = [
-            structlog.contextvars.merge_contextvars,
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.add_logger_name,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-            structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer(),
-        ]
+    # Dungeon Master specific colors
+    COLORS = {
+        "DEBUG": "\033[38;5;27m",  # Deep blue
+        "INFO": "\033[38;5;34m",  # Forest green
+        "WARNING": "\033[38;5;214m",  # Orange
+        "ERROR": "\033[38;5;196m",  # Bright red
+        "CRITICAL": "\033[38;5;129m",  # Purple
+        "RESET": "\033[0m",
+    }
+
+    # Fantasy-themed emojis
+    EMOJIS = {
+        "DEBUG": "🔮",  # Crystal ball
+        "INFO": "📜",  # Scroll
+        "WARNING": "⚔️",  # Swords
+        "ERROR": "🐉",  # Dragon
+        "CRITICAL": "💀",  # Skull
+    }
+
+
+def setup_logging(
+    level: str = "INFO",
+    log_format: Literal["console", "json", "dungeon"] = "console",
+    logger_name: str | None = None,
+) -> logging.Logger:
+    """
+    Configure logging with beautiful colored output.
+
+    Args:
+        level: Minimum log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        log_format: Output format - 'console' (colored), 'json', or 'dungeon' (themed)
+        logger_name: Name of the logger. If None, configures root logger.
+
+    Returns:
+        Configured logger instance
+    """
+    # Get logger
+    if logger_name:
+        logger = logging.getLogger(logger_name)
     else:
-        # Development mode with beautiful console output
-        processors = [
-            structlog.contextvars.merge_contextvars,
-            structlog.stdlib.add_log_level,
-            structlog.stdlib.add_logger_name,
-            structlog.stdlib.PositionalArgumentsFormatter(),
-            _add_custom_timestamp,
-            structlog.processors.StackInfoRenderer(),
-            structlog.processors.format_exc_info,
-            structlog.processors.UnicodeDecoder(),
-            _format_duration,
-            CustomConsoleRenderer(),
-        ]
+        logger = logging.getLogger()
 
-    structlog.configure(
-        processors=processors,
-        wrapper_class=structlog.stdlib.BoundLogger,
-        context_class=dict,
-        logger_factory=structlog.stdlib.LoggerFactory(),
-        cache_logger_on_first_use=True,
+    logger.setLevel(getattr(logging, level.upper()))
+
+    # Clear existing handlers
+    logger.handlers.clear()
+
+    # Select formatter
+    if log_format == "json":
+        formatter = logging.Formatter(
+            '{"timestamp": "%(asctime)s", "level": "%(levelname)s", "logger": "%(name)s", "message": "%(message)s"}',
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    elif log_format == "dungeon":
+        formatter = DungeonMasterFormatter()
+    else:  # console
+        formatter = ColoredFormatter()
+
+    # Create Rich handler for beautiful console output
+    rich_handler = RichHandler(
+        console=console,
+        rich_tracebacks=True,
+        tracebacks_show_locals=True,
+        tracebacks_width=120,
+        markup=True,
+        show_time=True,
+        show_path=True,
+        omit_repeated_times=True,
+        level=logging.getLevelName(level),
     )
+    rich_handler.setFormatter(formatter)
 
-    # Configure standard logging to work with structlog
-    logging.basicConfig(
-        format="%(message)s",
-        stream=sys.stdout,
-        level=log_level,
-    )
+    # Add handler
+    logger.addHandler(rich_handler)
 
-    # Suppress default uvicorn logging (we'll handle it ourselves)
-    for logger_name in ["uvicorn", "uvicorn.error", "uvicorn.access"]:
-        uvicorn_logger = logging.getLogger(logger_name)
-        uvicorn_logger.handlers = []
-        uvicorn_logger.propagate = False
+    # Prevent propagation to avoid duplicate logs
+    logger.propagate = False
+
+    return logger
 
 
-def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
-    """Get a structured logger instance."""
-    return structlog.get_logger(name)
+def get_logger(name: str) -> logging.Logger:
+    """
+    Get a logger instance with the given name.
+
+    Args:
+        name: Logger name (usually __name__)
+
+    Returns:
+        Configured logger instance
+    """
+    return logging.getLogger(name)
 
 
-def bind_context(**kwargs: Any) -> None:
-    """Bind context variables to the current logger context."""
-    structlog.contextvars.bind_contextvars(**kwargs)
+# Convenience functions for direct logging
+def debug(msg: str, *args: Any, **kwargs: Any) -> None:
+    """Log a debug message."""
+    logging.debug(msg, *args, **kwargs)
 
 
-def clear_context() -> None:
-    """Clear all context variables."""
-    structlog.contextvars.clear_contextvars()
+def info(msg: str, *args: Any, **kwargs: Any) -> None:
+    """Log an info message."""
+    logging.info(msg, *args, **kwargs)
 
 
-def unbind_context(*keys: str) -> None:
-    """Unbind specific context variables."""
-    structlog.contextvars.unbind_contextvars(*keys)
+def warning(msg: str, *args: Any, **kwargs: Any) -> None:
+    """Log a warning message."""
+    logging.warning(msg, *args, **kwargs)
+
+
+def error(msg: str, *args: Any, **kwargs: Any) -> None:
+    """Log an error message."""
+    logging.error(msg, *args, **kwargs)
+
+
+def critical(msg: str, *args: Any, **kwargs: Any) -> None:
+    """Log a critical message."""
+    logging.critical(msg, *args, **kwargs)

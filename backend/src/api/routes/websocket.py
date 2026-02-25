@@ -74,9 +74,9 @@ class ConnectionManager:
             )
 
         logger.info(
-            "User connected to room",
-            user_id=user_id,
-            room_id=room_id,
+            "User connected to room: user_id=%s, room_id=%s",
+            user_id,
+            room_id,
         )
 
     async def disconnect(self, websocket: WebSocket, room_id: str, user_id: str) -> None:
@@ -97,9 +97,9 @@ class ConnectionManager:
         await redis.srem(f"room:{room_id}:connections", user_id)
 
         logger.info(
-            "User disconnected from room",
-            user_id=user_id,
-            room_id=room_id,
+            "User disconnected from room: user_id=%s, room_id=%s",
+            user_id,
+            room_id,
         )
 
     async def send_personal(self, user_id: str, message: dict) -> None:
@@ -117,7 +117,7 @@ class ConnectionManager:
             try:
                 await ws.send_json(message)
             except Exception as e:
-                logger.error("Failed to send personal message", user_id=user_id, error=str(e))
+                logger.error("Failed to send personal message to user=%s: %s", user_id, str(e))
 
     async def broadcast_to_room(self, room_id: str, message: dict) -> None:
         """Broadcast a message to all users in a room via Redis pub/sub."""
@@ -133,7 +133,7 @@ class ConnectionManager:
             try:
                 await ws.send_json(message)
             except Exception as e:
-                logger.error("Failed to send to user", user_id=user_id, error=str(e))
+                logger.error("Failed to send to user=%s: %s", user_id, str(e))
                 disconnected.append(user_id)
 
         # Clean up disconnected
@@ -159,7 +159,7 @@ class ConnectionManager:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error("Redis subscription error for room", room_id=room_id, error=str(e))
+            logger.error("Redis subscription error for room=%s: %s", room_id, str(e))
 
 
 manager = ConnectionManager()
@@ -204,7 +204,7 @@ async def _process_dm_response_completion(
             state_delta = state_update.to_dict()
 
     except Exception as e:
-        logger.error("State extraction error", error=str(e))
+        logger.error("State extraction error: %s", str(e))
 
     # Save DM message
     async with get_db_context() as db:
@@ -273,7 +273,7 @@ async def websocket_session(
             character_name = character.get("name")
 
     except Exception as e:
-        logger.error("Session lookup error", error=str(e))
+        logger.error("Session lookup error: %s", str(e))
         await websocket.close(code=4000, reason="Session error")
         return
 
@@ -343,7 +343,7 @@ async def websocket_session(
                 try:
                     # Stream DM response token by token
                     chunk_count = 0
-                    logger.info("Starting DM response streaming", room_id=room_id)
+                    logger.info("Starting DM response streaming: room_id=%s", room_id)
 
                     async for chunk in ai_service.stream_dm_response(
                         player_message=content,
@@ -363,7 +363,7 @@ async def websocket_session(
                             room_id, chunk_msg.model_dump(mode="json")
                         )
 
-                    logger.info("DM streaming complete", chunk_count=chunk_count, room_id=room_id)
+                    logger.info("DM streaming complete: chunk_count=%s, room_id=%s", chunk_count, room_id)
 
                     # Send end marker
                     end_msg = WSDMResponseEnd(
@@ -373,7 +373,7 @@ async def websocket_session(
                     await manager.broadcast_to_room(room_id, end_msg.model_dump(mode="json"))
 
                 except Exception as e:
-                    logger.error("AI streaming error", error=str(e))
+                    logger.error("AI streaming error: %s", str(e))
                     error_msg = WSError(
                         error="ai_error",
                         message="Failed to generate DM response",
@@ -542,7 +542,7 @@ async def websocket_session(
                     await manager.broadcast_to_room(pending["room_id"], end_msg.model_dump(mode="json"))
 
                 except Exception as e:
-                    logger.error("AI continuation error", error=str(e))
+                    logger.error("AI continuation error: %s", str(e))
                     # Even if continuation fails, we still process the original response
 
                 # Combine original response + continuation for storage
@@ -560,9 +560,9 @@ async def websocket_session(
                 )
 
     except WebSocketDisconnect:
-        logger.info("User disconnected", user_id=user_id)
+        logger.info("User disconnected: user_id=%s", user_id)
     except Exception as e:
-        logger.exception("WebSocket error", user_id=user_id, error=str(e))
+        logger.exception("WebSocket error for user=%s: %s", user_id, str(e))
     finally:
         # Disconnect and notify room
         await manager.disconnect(websocket, room_id, user_id)

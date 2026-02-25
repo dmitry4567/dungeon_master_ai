@@ -48,7 +48,7 @@ class AIService:
         self.base_url = "https://api.anthropic.com/v1/messages"
         self.max_tokens = 8192
         self._usage_log: list[TokenUsage] = []
-        logger.info("Anthropic Claude initialized", model=self.model)
+        logger.info(f"Anthropic Claude initialized: {self.model}")
 
     def _build_dm_system_prompt(
         self,
@@ -277,7 +277,7 @@ Remember: ALWAYS respond in the same language the player uses!"""
                         if line.startswith("data: "):
                             data = line[6:]
                             if data == "[DONE]":
-                                logger.info("Stream complete", chunk_count=chunk_count)
+                                logger.info("Stream complete: chunk_count=%s", chunk_count)
                                 break
                             try:
                                 chunk = json.loads(data)
@@ -291,10 +291,10 @@ Remember: ALWAYS respond in the same language the player uses!"""
                                         chunk_count += 1
                                         total_output_tokens += 1
                                         if chunk_count <= 5 or chunk_count % 20 == 0:
-                                            logger.debug("Yielding chunk", chunk_number=chunk_count, content_preview=content[:50])
+                                            logger.debug("Yielding chunk: chunk_number=%s, content_preview=%s", chunk_count, content[:50])
                                         yield content
                                 elif event_type == "message_stop":
-                                    logger.info("Stream complete", chunk_count=chunk_count)
+                                    logger.info("Stream complete: chunk_count=%s", chunk_count)
                                     break
                             except json.JSONDecodeError:
                                 continue
@@ -312,10 +312,10 @@ Remember: ALWAYS respond in the same language the player uses!"""
         )
         self._usage_log.append(usage)
         logger.info(
-            "AI token usage",
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            model=self.model,
+            "AI token usage: input_tokens=%s, output_tokens=%s, model=%s",
+            input_tokens,
+            output_tokens,
+            self.model,
         )
 
     def get_usage_stats(self) -> dict[str, Any]:
@@ -462,28 +462,37 @@ Ensure valid JSON only."""
         user_prompt = f"Create a D&D scenario: {user_description}"
 
         try:
+            logger.info("Generating scenario: %s", user_description[:100])
+            
             result = await self._call_model(
                 system_prompt,
                 [{"role": "user", "content": user_prompt}],
                 stream=False,
             )
 
+            logger.info("AI model response received: result_keys=%s", list(result.keys()))
+            
             response_text = result["content"][0]["text"]
+            logger.info("Response text preview: %s", response_text[:200])
+            
             json_text = _extract_json(response_text)
+            logger.info("JSON extracted: %s", json_text[:200])
+            
             response_data = json.loads(json_text)
+            logger.info("JSON parsed successfully: keys=%s", list(response_data.keys()))
 
             title = response_data.get("title", "Untitled Scenario")
             content = response_data.get("content", {})
 
-            logger.info("Scenario generated", title=title)
+            logger.info("Scenario generated: title=%s", title)
 
             return title, content
 
         except json.JSONDecodeError as e:
-            logger.error("Failed to parse AI response as JSON", error=str(e))
+            logger.error("Failed to parse AI response as JSON: %s", str(e), exc_info=True)
             raise ValueError("AI generated invalid JSON response")
         except Exception as e:
-            logger.error("Failed to generate scenario", error=str(e))
+            logger.error("Failed to generate scenario: %s", str(e), exc_info=True)
             raise
 
     async def refine_scenario(
@@ -529,13 +538,13 @@ Generate the updated scenario."""
             title = response_data.get("title", current_title)
             content = response_data.get("content", current_content)
 
-            logger.info("Scenario refined", title=title)
+            logger.info("Scenario refined: title=%s", title)
 
             return title, content
 
         except json.JSONDecodeError as e:
-            logger.error("Failed to parse AI response as JSON", error=str(e))
+            logger.error("Failed to parse AI response as JSON: %s", str(e))
             raise ValueError("AI generated invalid JSON response")
         except Exception as e:
-            logger.error("Failed to refine scenario", error=str(e))
+            logger.error("Failed to refine scenario: %s", str(e))
             raise

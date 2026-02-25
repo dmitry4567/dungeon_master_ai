@@ -93,7 +93,7 @@ class AuthService:
         await self.db.commit()
         await self.db.refresh(user)
 
-        logger.info("User registered", user_id=str(user.id), email=user.email)
+        logger.info("User registered: user_id=%s, email=%s", str(user.id), user.email)
 
         return self._create_auth_response(user)
 
@@ -110,7 +110,7 @@ class AuthService:
             user.password_hash = hash_password(request.password)
             await self.db.commit()
 
-        logger.info("User logged in", user_id=str(user.id))
+        logger.info("User logged in: user_id=%s", str(user.id))
 
         return self._create_auth_response(user)
 
@@ -128,7 +128,7 @@ class AuthService:
         if not user:
             raise InvalidTokenError()
 
-        logger.info("Token refreshed", user_id=str(user.id))
+        logger.info("Token refreshed: user_id=%s", str(user.id))
 
         return self._create_token_response(user)
 
@@ -139,7 +139,7 @@ class AuthService:
         user = await self._get_user_by_apple_id(apple_user_id)
 
         if user:
-            logger.info("User signed in with Apple", user_id=str(user.id))
+            logger.info("User signed in with Apple: user_id=%s", str(user.id))
             return self._create_auth_response(user)
 
         existing_by_email = await self._get_user_by_email(email) if email else None
@@ -215,10 +215,10 @@ class AuthService:
             return apple_user_id, email
 
         except jose_jwt.JWTError as e:
-            logger.warning("Apple token verification failed", error=str(e))
+            logger.warning("Apple token verification failed: %s", str(e))
             raise AppleAuthError(f"Token verification failed: {str(e)}") from e
         except httpx.HTTPError as e:
-            logger.error("Failed to fetch Apple public keys", error=str(e))
+            logger.error("Failed to fetch Apple public keys: %s", str(e))
             raise AppleAuthError("Failed to verify Apple token") from e
 
     async def _get_user_by_email(self, email: str) -> User | None:

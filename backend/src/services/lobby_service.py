@@ -196,9 +196,9 @@ class LobbyService:
         await self.db.refresh(player)
 
         logger.info(
-            "Player joined room",
-            user_id=str(user_id),
-            room_id=str(room_id),
+            "Player joined room: user_id=%s, room_id=%s",
+            str(user_id),
+            str(room_id),
         )
         return player
 
@@ -399,9 +399,9 @@ class LobbyService:
         await self.db.refresh(game_session)
 
         logger.info(
-            "Game started",
-            room_id=str(room_id),
-            host_id=str(host_id),
+            "Game started: room_id=%s, host_id=%s",
+            str(room_id),
+            str(host_id),
         )
 
         # Generate opening DM message asynchronously to not block the response
@@ -489,15 +489,15 @@ class LobbyService:
                 )
 
                 logger.info(
-                    "Opening DM message generated",
-                    session_id=str(session_id),
+                    "Opening DM message generated: session_id=%s",
+                    str(session_id),
                 )
 
         except Exception as e:
             logger.error(
-                "Failed to generate opening message",
-                session_id=str(session_id),
-                error=str(e),
+                "Failed to generate opening message: session_id=%s, error=%s",
+                str(session_id),
+                str(e),
             )
 
     async def _get_room_with_relations(self, room_id: uuid.UUID) -> Room | None:

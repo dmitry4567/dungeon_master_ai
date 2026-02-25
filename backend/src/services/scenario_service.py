@@ -36,13 +36,21 @@ class ScenarioService:
         Returns:
             Created scenario with initial version
         """
+        logger.info("Starting scenario generation for user=%s, description=%s", str(user_id), description[:100])
+        
         # Generate scenario content using AI
+        logger.info("Calling AI service to generate scenario")
         title, content = await self.ai_service.generate_scenario(description)
+        logger.info("AI scenario generation complete: title=%s, content_keys=%s", title, list(content.keys()))
 
         # Validate the generated content
+        logger.info("Validating scenario content")
         validation_errors = self._validate_scenario_content(content)
+        if validation_errors:
+            logger.warning("Validation errors found: %s", validation_errors)
 
         # Create scenario
+        logger.info("Creating scenario record in database")
         scenario = Scenario(
             id=uuid.uuid4(),
             creator_id=user_id,
@@ -51,8 +59,10 @@ class ScenarioService:
         )
         self.db.add(scenario)
         await self.db.flush()
+        logger.info("Scenario record created: scenario_id=%s", str(scenario.id))
 
         # Create initial version
+        logger.info("Creating initial scenario version")
         version = ScenarioVersion(
             id=uuid.uuid4(),
             scenario_id=scenario.id,
@@ -63,6 +73,7 @@ class ScenarioService:
         )
         self.db.add(version)
         await self.db.flush()
+        logger.info("Scenario version created: version_id=%s", str(version.id))
 
         # Set current version
         scenario.current_version_id = version.id
@@ -70,10 +81,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            "Scenario created",
-            scenario_id=str(scenario.id),
-            version=version.version,
-            user_id=str(user_id),
+            "Scenario created: scenario_id=%s, version=%s, user_id=%s",
+            str(scenario.id),
+            version.version,
+            str(user_id),
         )
 
         return scenario
@@ -335,9 +346,9 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            "Scenario published",
-            scenario_id=str(scenario.id),
-            user_id=str(user_id),
+            "Scenario published: scenario_id=%s, user_id=%s",
+            str(scenario.id),
+            str(user_id),
         )
         return scenario
 

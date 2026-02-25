@@ -56,12 +56,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             client_ip=request.client.host if request.client else None,
         )
 
-        logger.info("Request started", method=request.method, path=path)
+        logger.info("Request started: method=%s, path=%s", request.method, path)
 
         try:
             response = await call_next(request)
         except Exception as exc:
-            logger.exception("Request failed", exc_info=exc)
+            logger.exception("Request failed: %s", str(exc))
             raise
 
         process_time = (time.perf_counter() - start_time) * 1000
@@ -75,9 +75,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             log_method = logger.info
 
         log_method(
-            "Request completed",
-            status_code=response.status_code,
-            duration_ms=round(process_time, 2),
+            "Request completed: status_code=%s, duration_ms=%s",
+            response.status_code,
+            round(process_time, 2),
         )
 
         response.headers["X-Process-Time"] = str(round(process_time, 2))

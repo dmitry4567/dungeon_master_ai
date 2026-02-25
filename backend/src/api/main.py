@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.routes import auth, characters, rooms, scenarios, sessions, users, websocket
+from src.api.routes import auth, characters, rooms, scenarios, sessions, users, voice, websocket
 from src.core.config import get_settings
 from src.core.database import close_db, init_db
 from src.core.logging import setup_logging
@@ -19,7 +19,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    setup_logging()
+    setup_logging(level=settings.log_level, log_format=settings.log_format)
     await init_db()
     await get_redis()
     yield
@@ -52,6 +52,7 @@ app.include_router(characters.router, prefix="/api/v1")
 app.include_router(scenarios.router, prefix="/api/v1")
 app.include_router(rooms.router, prefix="/api/v1")
 app.include_router(sessions.router, prefix="/api/v1")
+app.include_router(voice.router, prefix="/api/v1")
 app.include_router(websocket.router, prefix="/api/v1")
 
 

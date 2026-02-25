@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, status
 
 from src.api.dependencies import CurrentUser, DbSession
+from src.core.logging import get_logger
 from src.models.scenario import ScenarioStatus
 from src.schemas.scenario import (
     CreateScenarioRequest,
@@ -15,6 +16,8 @@ from src.schemas.scenario import (
     ScenarioWithVersionResponse,
 )
 from src.services.scenario_service import ScenarioService
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/scenarios", tags=["scenarios"])
 
@@ -45,6 +48,7 @@ async def create_scenario(
     try:
         scenario = await service.generate_scenario(current_user.id, data.description)
     except ValueError as e:
+        logger.error("ValueError during scenario generation: %s", str(e))
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={
@@ -52,12 +56,13 @@ async def create_scenario(
                 "message": str(e),
             },
         )
-    except Exception:
+    except Exception as e:
+        logger.error("Unexpected error during scenario generation: %s", str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
                 "error": "internal_error",
-                "message": "Failed to generate scenario",
+                "message": f"Failed to generate scenario: {str(e)}",
             },
         )
 

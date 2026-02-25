@@ -25,6 +25,11 @@ import '../../features/scenario/bloc/scenario_event.dart';
 import '../../features/scenario/ui/scenario_builder_page.dart';
 import '../../features/scenario/ui/scenario_list_page.dart';
 import '../../features/scenario/ui/scenario_preview_page.dart';
+import '../../features/profile/bloc/profile_bloc.dart';
+import '../../features/profile/bloc/profile_event.dart';
+import '../../features/profile/data/profile_repository.dart';
+import '../../features/profile/ui/profile_page.dart';
+import '../../features/profile/ui/settings_page.dart';
 import '../di/injection.dart';
 import 'routes.dart';
 
@@ -52,7 +57,7 @@ class AppRouter {
   late final _authStateNotifier = AuthStateNotifier(_authBloc);
 
   late final GoRouter router = GoRouter(
-    initialLocation: Routes.login,
+    initialLocation: Routes.lobby,
     debugLogDiagnostics: true,
     redirect: _guardRoute,
     refreshListenable: _authStateNotifier,
@@ -198,15 +203,19 @@ class AppRouter {
           GoRoute(
             path: Routes.profile,
             name: 'profile',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: _PlaceholderPage(title: 'Profile'),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: BlocProvider(
+                create: (_) => ProfileBloc(getIt<ProfileRepository>())
+                  ..add(const ProfileEvent.loadProfile())
+                  ..add(const ProfileEvent.loadHistory()),
+                child: const ProfilePage(),
+              ),
             ),
             routes: [
               GoRoute(
                 path: 'settings',
                 name: 'settings',
-                builder: (context, state) =>
-                    const _PlaceholderPage(title: 'Settings'),
+                builder: (context, state) => const SettingsPage(),
               ),
             ],
           ),
@@ -245,7 +254,8 @@ class AppRouter {
 
     // Ждём пока AuthBloc завершит проверку сессии
     if (_authStateNotifier.isLoading) {
-      return null;
+      // Возвращаем текущий путь, чтобы остаться на месте во время загрузки
+      return state.matchedLocation;
     }
 
     final isAuthenticated = _authStateNotifier.isAuthenticated;

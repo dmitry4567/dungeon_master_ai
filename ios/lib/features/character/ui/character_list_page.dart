@@ -82,8 +82,6 @@ class CharacterListPage extends StatelessWidget {
         },
         icon: const Icon(Icons.add),
         label: const Text('Создать'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
       ),
     );
 }

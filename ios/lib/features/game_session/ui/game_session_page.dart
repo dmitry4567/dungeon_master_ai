@@ -74,8 +74,12 @@ class _GameSessionPageState extends State<GameSessionPage> {
             final isStreaming = state.streamingContent != null;
 
             // Скролл только во время стриминга ответа DM (не при отправке своего сообщения)
-            if (isStreaming && _shouldScrollForStreaming()) {
-              _scrollToBottom(smooth: false);
+            if (!_scrollController.hasClients) {
+              if (isStreaming && _shouldScrollForStreaming()) {
+                _scrollToBottom(smooth: false);
+              }
+            } else {
+              _scrollToBottom();
             }
           }
           if (state is GameSessionEnded) {
@@ -270,7 +274,8 @@ class _GameSessionPageState extends State<GameSessionPage> {
         }
         // Сообщения: сдвигаем индекс на 1 из-за стриминг-пузыря внизу
         final messageIndex = hasStreaming ? index - 1 : index;
-        return MessageBubble(message: messages[messages.length - 1 - messageIndex]);
+        return MessageBubble(
+            message: messages[messages.length - 1 - messageIndex]);
       },
     );
   }

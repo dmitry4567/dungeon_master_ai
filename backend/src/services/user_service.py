@@ -73,4 +73,4 @@ class UserService:
         await self.db.delete(user)
         await self.db.commit()
 
-        logger.info("User deleted", user_id=str(user_id))
+        logger.info("User deleted: user_id=%s", str(user_id))

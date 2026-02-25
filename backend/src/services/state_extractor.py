@@ -156,7 +156,7 @@ Extract any state changes from this response."""
                 )
 
             # Log the raw response for debugging
-            logger.debug("State extraction raw response", response_preview=response_text[:200])
+            logger.debug("State extraction raw response: %s", response_text[:200])
 
             json_text = _extract_json(response_text)
 
@@ -181,9 +181,8 @@ Extract any state changes from this response."""
 
         except json.JSONDecodeError as e:
             logger.warning(
-                "Failed to parse state extraction JSON",
-                error=str(e),
-                response_preview=locals().get("response_text", "N/A")[:500],
+                "Failed to parse state extraction JSON: %s",
+                str(e),
             )
             return StateUpdate(
                 events_occurred=[],
@@ -192,7 +191,7 @@ Extract any state changes from this response."""
                 flags_changed={},
             )
         except Exception as e:
-            logger.error("Failed to extract state", error=str(e), exc_info=True)
+            logger.error("Failed to extract state: %s", str(e), exc_info=True)
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -246,19 +245,19 @@ Available Scenes: {scenes}"""
 
                 # Check if the response has the expected structure
                 if "content" not in result or not result["content"]:
-                    logger.error("Unexpected API response structure", response=result)
+                    logger.error("Unexpected API response structure: %s", result)
                     raise ValueError("Invalid API response: missing 'content'")
 
                 return result
 
         except httpx.HTTPStatusError as e:
-            logger.error("Anthropic API HTTP error", status_code=e.response.status_code, error=e.response.text)
+            logger.error("Anthropic API HTTP error: status_code=%s, response=%s", e.response.status_code, e.response.text)
             raise
         except httpx.RequestError as e:
-            logger.error("Anthropic API request error", error=str(e))
+            logger.error("Anthropic API request error: %s", str(e))
             raise
         except Exception as e:
-            logger.error("Unexpected error calling Anthropic API", error=str(e))
+            logger.error("Unexpected error calling Anthropic API: %s", str(e))
             raise
 
     def apply_state_update(

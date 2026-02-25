@@ -249,16 +249,16 @@
 
 ### Реализация User Story 6
 
-- [ ] T123 [US6] Создать Retrofit API для profile в ios/lib/features/profile/data/profile_api.dart
-- [ ] T124 [US6] Реализовать ProfileRepository в ios/lib/features/profile/data/profile_repository.dart
-- [ ] T125 [US6] Создать ProfileEvent в ios/lib/features/profile/bloc/profile_event.dart
-- [ ] T126 [US6] Создать ProfileState в ios/lib/features/profile/bloc/profile_state.dart
-- [ ] T127 [US6] Реализовать ProfileBloc в ios/lib/features/profile/bloc/profile_bloc.dart
-- [ ] T128 [US6] Создать ProfilePage с вкладками в ios/lib/features/profile/ui/profile_page.dart
-- [ ] T129 [US6] Создать SettingsPage в ios/lib/features/profile/ui/settings_page.dart
-- [ ] T130 [P] [US6] Создать виджет GameHistoryCard в ios/lib/features/profile/ui/widgets/game_history_card.dart
-- [ ] T131 [US6] Добавить маршруты profile в app_router.dart
-- [ ] T132 [US6] Запустить build_runner для генерации profile-моделей
+- [X] T123 [US6] Создать Retrofit API для profile в ios/lib/features/profile/data/profile_api.dart
+- [X] T124 [US6] Реализовать ProfileRepository в ios/lib/features/profile/data/profile_repository.dart
+- [X] T125 [US6] Создать ProfileEvent в ios/lib/features/profile/bloc/profile_event.dart
+- [X] T126 [US6] Создать ProfileState в ios/lib/features/profile/bloc/profile_state.dart
+- [X] T127 [US6] Реализовать ProfileBloc в ios/lib/features/profile/bloc/profile_bloc.dart
+- [X] T128 [US6] Создать ProfilePage с вкладками в ios/lib/features/profile/ui/profile_page.dart
+- [X] T129 [US6] Создать SettingsPage в ios/lib/features/profile/ui/settings_page.dart
+- [X] T130 [P] [US6] Создать виджет GameHistoryCard в ios/lib/features/profile/ui/widgets/game_history_card.dart
+- [X] T131 [US6] Добавить маршруты profile в app_router.dart
+- [X] T132 [US6] Запустить build_runner для генерации profile-моделей
 
 **Checkpoint**: Профиль работает с историей игр
 
