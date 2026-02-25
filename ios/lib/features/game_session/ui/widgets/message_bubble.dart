@@ -110,7 +110,8 @@ class MessageBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isCurrentUser ? AppColors.primaryDark : const Color(0xFF1A1A2E),
+          color:
+              isCurrentUser ? AppColors.primaryDark : const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -634,17 +635,10 @@ class StreamingBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF2D2418),
-              Color(0xFF352A1C),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.secondary.withValues(alpha: 0.3),
+            color: const Color(0xFF2A2A4E),
           ),
         ),
         child: Column(
