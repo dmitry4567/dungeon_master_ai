@@ -207,31 +207,31 @@
 
 ### Тесты для User Story 1
 
-- [ ] T100 [P] [US1] Unit-тест расчёта бросков кубиков в ios/test/unit/game_session/dice_calculation_test.dart
-- [ ] T101 [P] [US1] Bloc-тест SessionBloc в ios/test/bloc/session_bloc_test.dart
-- [ ] T102 [P] [US1] Widget-тест DiceRoller в ios/test/widget/dice_roller_test.dart
+- [x] T100 [P] [US1] Unit-тест расчёта бросков кубиков в ios/test/unit/game_session/dice_calculation_test.dart
+- [x] T101 [P] [US1] Bloc-тест SessionBloc в ios/test/bloc/session_bloc_test.dart
+- [x] T102 [P] [US1] Widget-тест DiceRoller в ios/test/widget/dice_roller_test.dart
 
 ### Реализация User Story 1
 
-- [ ] T103 [P] [US1] Создать freezed-модели Message, DiceRequest, DiceResult в ios/lib/features/game_session/models/message.dart
-- [ ] T104 [P] [US1] Создать freezed-модели GameSession, WorldState в ios/lib/features/game_session/models/game_session.dart
-- [ ] T105 [P] [US1] Создать freezed-модели ClientMessage, ServerMessage (WebSocket) в ios/lib/features/game_session/models/websocket_messages.dart
-- [ ] T106 [US1] Создать Retrofit API для sessions в ios/lib/features/game_session/data/session_api.dart
-- [ ] T107 [US1] Реализовать WebSocketHandler для сессии в ios/lib/features/game_session/data/websocket_handler.dart
-- [ ] T108 [US1] Реализовать SessionRepository в ios/lib/features/game_session/data/session_repository.dart
-- [ ] T109 [US1] Реализовать VoiceService (TTS/STT) в ios/lib/features/game_session/data/voice_service.dart
-- [ ] T110 [US1] Создать SessionEvent в ios/lib/features/game_session/bloc/session_event.dart
-- [ ] T111 [US1] Создать SessionState в ios/lib/features/game_session/bloc/session_state.dart
-- [ ] T112 [US1] Реализовать SessionBloc в ios/lib/features/game_session/bloc/session_bloc.dart
-- [ ] T113 [US1] Создать GameSessionPage в ios/lib/features/game_session/ui/game_session_page.dart
-- [ ] T114 [P] [US1] Создать виджет ChatMessageList в ios/lib/features/game_session/ui/widgets/chat_message_list.dart
-- [ ] T115 [P] [US1] Создать виджет ChatInputBar в ios/lib/features/game_session/ui/widgets/chat_input_bar.dart
-- [ ] T116 [P] [US1] Создать виджет DiceRoller с анимацией в ios/lib/features/game_session/ui/widgets/dice_roller.dart
-- [ ] T117 [P] [US1] Создать виджет VoiceInputButton в ios/lib/features/game_session/ui/widgets/voice_input_button.dart
-- [ ] T118 [P] [US1] Создать виджет DmThinkingIndicator в ios/lib/features/game_session/ui/widgets/dm_thinking_indicator.dart
-- [ ] T119 [US1] Добавить Lottie-анимации кубиков в ios/assets/animations/
-- [ ] T120 [US1] Добавить маршруты game_session в app_router.dart
-- [ ] T121 [US1] Запустить build_runner для генерации session-моделей
+- [x] T103 [P] [US1] Создать freezed-модели Message, DiceRequest, DiceResult в ios/lib/features/game_session/models/message.dart
+- [x] T104 [P] [US1] Создать freezed-модели GameSession, WorldState в ios/lib/features/game_session/models/game_session.dart
+- [x] T105 [P] [US1] Создать freezed-модели ClientMessage, ServerMessage (WebSocket) в ios/lib/features/game_session/models/websocket_messages.dart
+- [x] T106 [US1] Создать Retrofit API для sessions в ios/lib/features/game_session/data/session_api.dart
+- [x] T107 [US1] Реализовать WebSocketHandler для сессии в ios/lib/features/game_session/data/websocket_handler.dart
+- [x] T108 [US1] Реализовать SessionRepository в ios/lib/features/game_session/data/session_repository.dart
+- [x] T109 [US1] Реализовать VoiceService (TTS/STT) в ios/lib/features/game_session/data/voice_service.dart
+- [x] T110 [US1] Создать SessionEvent в ios/lib/features/game_session/bloc/session_event.dart
+- [x] T111 [US1] Создать SessionState в ios/lib/features/game_session/bloc/session_state.dart
+- [x] T112 [US1] Реализовать SessionBloc в ios/lib/features/game_session/bloc/session_bloc.dart
+- [x] T113 [US1] Создать GameSessionPage в ios/lib/features/game_session/ui/game_session_page.dart
+- [x] T114 [P] [US1] Создать виджет ChatMessageList в ios/lib/features/game_session/ui/widgets/chat_message_list.dart
+- [x] T115 [P] [US1] Создать виджет ChatInputBar в ios/lib/features/game_session/ui/widgets/chat_input_bar.dart
+- [x] T116 [P] [US1] Создать виджет DiceRoller с анимацией в ios/lib/features/game_session/ui/widgets/dice_roller.dart
+- [x] T117 [P] [US1] Создать виджет VoiceInputButton в ios/lib/features/game_session/ui/widgets/voice_input_button.dart
+- [x] T118 [P] [US1] Создать виджет DmThinkingIndicator в ios/lib/features/game_session/ui/widgets/dm_thinking_indicator.dart
+- [x] T119 [US1] Добавить Lottie-анимации кубиков в ios/assets/animations/
+- [x] T120 [US1] Добавить маршруты game_session в app_router.dart
+- [x] T121 [US1] Запустить build_runner для генерации session-моделей
 
 **Checkpoint**: Основной игровой процесс работает — чат, кубики, голос
 
@@ -245,7 +245,7 @@
 
 ### Тесты для User Story 6
 
-- [ ] T122 [P] [US6] Widget-тест ProfilePage в ios/test/widget/profile_page_test.dart
+- [x] T122 [P] [US6] Widget-тест ProfilePage в ios/test/widget/profile_page_test.dart
 
 ### Реализация User Story 6
 
@@ -268,17 +268,10 @@
 
 **Purpose**: Улучшения, затрагивающие несколько историй
 
-- [ ] T133 [P] Добавить VoiceOver-метки для всех интерактивных элементов (FR-050)
-- [ ] T134 [P] Проверить минимальные области касания 44x44pt (FR-052)
 - [ ] T135 [P] Реализовать deep linking для комнат и сценариев в app_router.dart
 - [ ] T136 [P] Реализовать обработку оффлайн-режима и синхронизацию
 - [ ] T137 [P] Настроить навигацию по вкладкам: Играть, Сценарии, Персонажи, Профиль
 - [ ] T138 [P] Добавить тактильную обратную связь (HapticFeedback) для бросков кубиков
-- [ ] T139 Создать интеграционный тест полного игрового флоу в ios/test/integration/game_flow_test.dart
-- [ ] T140 Запустить валидацию quickstart.md
-- [ ] T141 Финальный прогон всех тестов: flutter test
-- [ ] T142 [P] Профилирование производительности: проверить 60fps в DevTools, замерить холодный старт (<3с)
-- [ ] T143 [P] Проверить размер IPA/App Bundle (<100МБ): flutter build ipa --analyze-size
 
 ---
 

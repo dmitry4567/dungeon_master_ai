@@ -42,20 +42,23 @@ class _LobbyPageState extends State<LobbyPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: const Text('Игровое лобби'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadRooms,
+        appBar: AppBar(
+          title: const Text(
+            'Игровое лобби',
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
-        ],
-      ),
-      body: BlocConsumer<LobbyBloc, LobbyState>(
-        listener: (context, state) {
-          // Handle state changes if needed
-        },
-        builder: (context, state) => state.when(
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadRooms,
+            ),
+          ],
+        ),
+        body: BlocConsumer<LobbyBloc, LobbyState>(
+          listener: (context, state) {
+            // Handle state changes if needed
+          },
+          builder: (context, state) => state.when(
             initial: () => const Center(
               child: Text('Создайте или присоединитесь к комнате'),
             ),
@@ -73,13 +76,18 @@ class _LobbyPageState extends State<LobbyPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.meeting_room_outlined,
-                          size: 64, color: Colors.grey,),
+                      Icon(
+                        Icons.meeting_room_outlined,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'Нет активных комнат',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500,),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       SizedBox(height: 8),
                       Text(
@@ -129,11 +137,11 @@ class _LobbyPageState extends State<LobbyPage> {
               onRetry: _loadRooms,
             ),
           ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(Routes.roomCreate),
-        icon: const Icon(Icons.add),
-        label: const Text('Создать'),
-      ),
-    );
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => context.push(Routes.roomCreate),
+          icon: const Icon(Icons.add),
+          label: const Text('Создать'),
+        ),
+      );
 }

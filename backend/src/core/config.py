@@ -37,17 +37,17 @@ class Settings(BaseSettings):
     
     # Model selection for different request types
     model_dm_response: str = Field(
-        default="claude-haiku-4-5-20251001",
+        default="claude-sonnet-4-5-20250929",
         alias="MODEL_DM_RESPONSE",
         description="Model for DM responses during gameplay",
     )
     model_scenario_generation: str = Field(
-        default="claude-haiku-4-5-20251001",
+        default="claude-sonnet-4-5-20250929",
         alias="MODEL_SCENARIO_GENERATION",
         description="Model for generating new scenarios",
     )
     model_scenario_refinement: str = Field(
-        default="claude-haiku-4-5-20251001",
+        default="claude-sonnet-4-5-20250929",
         alias="MODEL_SCENARIO_REFINEMENT",
         description="Model for refining existing scenarios",
     )
@@ -55,6 +55,28 @@ class Settings(BaseSettings):
         default="claude-haiku-4-5-20251001",
         alias="MODEL_STATE_EXTRACTION",
         description="Model for extracting game state from conversations",
+    )
+
+    # Max tokens per model type
+    max_tokens_dm_response: int = Field(
+        default=2048,
+        alias="MAX_TOKENS_DM_RESPONSE",
+        description="Max output tokens for DM responses during gameplay",
+    )
+    max_tokens_scenario_generation: int = Field(
+        default=8000,
+        alias="MAX_TOKENS_SCENARIO_GENERATION",
+        description="Max output tokens for scenario generation",
+    )
+    max_tokens_scenario_refinement: int = Field(
+        default=8000,
+        alias="MAX_TOKENS_SCENARIO_REFINEMENT",
+        description="Max output tokens for scenario refinement",
+    )
+    max_tokens_state_extraction: int = Field(
+        default=1000,
+        alias="MAX_TOKENS_STATE_EXTRACTION",
+        description="Max output tokens for state extraction",
     )
 
     # JWT Authentication

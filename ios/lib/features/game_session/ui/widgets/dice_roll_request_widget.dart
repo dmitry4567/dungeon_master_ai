@@ -160,7 +160,7 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
             child: AnimatedBuilder(
               animation: _pulseAnimation,
-              builder: (context, child) => Container(
+              builder: (context, child) => DecoratedBox(
                 decoration: BoxDecoration(
                   color: AppColors.primaryDark,
                   borderRadius: BorderRadius.circular(12),

@@ -114,13 +114,11 @@ class _GameSessionPageState extends State<GameSessionPage> {
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.auto_stories, color: AppColors.secondary, size: 20),
-          const SizedBox(width: 8),
           Flexible(
             child: Text(
               widget.title,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           if (connectionIndicator != null) ...[
@@ -275,7 +273,7 @@ class _GameSessionPageState extends State<GameSessionPage> {
         // Сообщения: сдвигаем индекс на 1 из-за стриминг-пузыря внизу
         final messageIndex = hasStreaming ? index - 1 : index;
         return MessageBubble(
-            message: messages[messages.length - 1 - messageIndex]);
+            message: messages[messages.length - 1 - messageIndex],);
       },
     );
   }

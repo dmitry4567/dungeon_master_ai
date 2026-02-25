@@ -20,16 +20,16 @@ import '../../features/lobby/bloc/lobby_event.dart';
 import '../../features/lobby/ui/lobby_page.dart';
 import '../../features/lobby/ui/room_create_page.dart';
 import '../../features/lobby/ui/waiting_room_page.dart';
-import '../../features/scenario/bloc/scenario_bloc.dart';
-import '../../features/scenario/bloc/scenario_event.dart';
-import '../../features/scenario/ui/scenario_builder_page.dart';
-import '../../features/scenario/ui/scenario_list_page.dart';
-import '../../features/scenario/ui/scenario_preview_page.dart';
 import '../../features/profile/bloc/profile_bloc.dart';
 import '../../features/profile/bloc/profile_event.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/ui/profile_page.dart';
 import '../../features/profile/ui/settings_page.dart';
+import '../../features/scenario/bloc/scenario_bloc.dart';
+import '../../features/scenario/bloc/scenario_event.dart';
+import '../../features/scenario/ui/scenario_builder_page.dart';
+import '../../features/scenario/ui/scenario_list_page.dart';
+import '../../features/scenario/ui/scenario_preview_page.dart';
 import '../di/injection.dart';
 import 'routes.dart';
 
@@ -283,34 +283,14 @@ class _MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
+    final selectedIndex = _calculateSelectedIndex(location);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0D0D1A),
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _calculateSelectedIndex(location),
-        onDestinationSelected: (index) => _onItemTapped(index, context),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.play_arrow_outlined),
-            selectedIcon: Icon(Icons.play_arrow),
-            label: 'Играть',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.auto_stories_outlined),
-            selectedIcon: Icon(Icons.auto_stories),
-            label: 'Сценарии',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Персонажи',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_circle_outlined),
-            selectedIcon: Icon(Icons.account_circle),
-            label: 'Профиль',
-          ),
-        ],
+      bottomNavigationBar: _DungeonNavBar(
+        selectedIndex: selectedIndex,
+        onItemTapped: (index) => _onItemTapped(index, context),
       ),
     );
   }
@@ -335,6 +315,124 @@ class _MainShell extends StatelessWidget {
         context.go(Routes.profile);
     }
   }
+}
+
+class _DungeonNavBar extends StatelessWidget {
+  const _DungeonNavBar({
+    required this.selectedIndex,
+    required this.onItemTapped,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onItemTapped;
+
+  static const _items = [
+    _NavItem(icon: Icons.sports_esports_outlined, activeIcon: Icons.sports_esports, label: 'Играть'),
+    _NavItem(icon: Icons.auto_stories_outlined, activeIcon: Icons.auto_stories, label: 'Сценарии'),
+    _NavItem(icon: Icons.shield_outlined, activeIcon: Icons.shield, label: 'Персонажи'),
+    _NavItem(icon: Icons.account_circle_outlined, activeIcon: Icons.account_circle, label: 'Профиль'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF0D0D1A),
+        border: Border(
+          top: BorderSide(color: Color(0xFF2A2A4E), width: 0.5),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: 8,
+          bottom: bottomPadding > 0 ? bottomPadding : 12,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: List.generate(
+            _items.length,
+            (index) => _NavBarItem(
+              item: _items[index],
+              isSelected: selectedIndex == index,
+              onTap: () => onItemTapped(index),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+}
+
+class _NavBarItem extends StatelessWidget {
+  const _NavBarItem({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final _NavItem item;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFD4AF37).withOpacity(0.12)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            border: isSelected
+                ? Border.all(
+                    color: const Color(0xFFD4AF37).withOpacity(0.25),
+                    width: 1,
+                  )
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isSelected ? item.activeIcon : item.icon,
+                size: 24,
+                color: isSelected
+                    ? const Color(0xFFD4AF37)
+                    : const Color(0xFF5A5A7E),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                item.label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected
+                      ? const Color(0xFFD4AF37)
+                      : const Color(0xFF5A5A7E),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
 }
 
 /// Placeholder page for routes not yet implemented

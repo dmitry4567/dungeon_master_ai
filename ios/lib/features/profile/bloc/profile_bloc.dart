@@ -20,26 +20,29 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     LoadProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(const ProfileState.loading());
+    final currentState = state;
+    if (currentState is! ProfileLoaded) {
+      emit(const ProfileState.loading());
+    }
 
     try {
       final user = await _profileRepository.getProfile();
-      final currentState = state;
-      if (currentState is ProfileLoaded) {
-        emit(currentState.copyWith(user: user));
+      final stateAfterLoad = state;
+      if (stateAfterLoad is ProfileLoaded) {
+        emit(stateAfterLoad.copyWith(user: user));
       } else {
         emit(ProfileState.loaded(
           user: user,
           history: [],
           isHistoryLoading: false,
           isUpdating: false,
-        ));
+        ),);
       }
     } catch (e) {
       emit(ProfileState.error(
         message: e.toString(),
         previousState: state,
-      ));
+      ),);
     }
   }
 
@@ -59,7 +62,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         emit(newState.copyWith(
           history: history,
           isHistoryLoading: false,
-        ));
+        ),);
       }
     } catch (e) {
       final newState = state;
@@ -85,13 +88,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         emit(newState.copyWith(
           user: updatedUser,
           isUpdating: false,
-        ));
+        ),);
       }
     } catch (e) {
       emit(ProfileState.error(
         message: e.toString(),
         previousState: state,
-      ));
+      ),);
     }
   }
 
@@ -111,13 +114,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         emit(newState.copyWith(
           user: updatedUser,
           isUpdating: false,
-        ));
+        ),);
       }
     } catch (e) {
       emit(ProfileState.error(
         message: e.toString(),
         previousState: state,
-      ));
+      ),);
     }
   }
 

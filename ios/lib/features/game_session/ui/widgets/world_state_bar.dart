@@ -22,18 +22,25 @@ class WorldStateBar extends StatefulWidget {
 class _WorldStateBarState extends State<WorldStateBar> {
   bool _expanded = false;
 
-  String _getFlagName(String flagId) {
-    // Ищем в predefined flags сценария
+  String _getFlagLabel(String flagId, dynamic flagData) {
+    // Сначала ищем в predefined flags сценария
     for (final flag in widget.scenarioContent.flags) {
       if (flag.id == flagId) {
         return flag.name;
       }
     }
-    
-    // Если не найдено, показываем ID
-    // AI создаёт флаги на языке пользователя, поэтому новые флаги
-    // будут сразу с нормальными названиями (например, "dver_otkryta")
+    // Новый формат: {"value": bool, "label": "Human readable"}
+    if (flagData is Map && flagData['label'] != null) {
+      return flagData['label'] as String;
+    }
+    // Fallback: ID (не должно случаться с новым форматом)
     return flagId;
+  }
+
+  bool _getFlagValue(dynamic flagData) {
+    if (flagData is Map) return flagData['value'] as bool? ?? false;
+    if (flagData is bool) return flagData;
+    return false;
   }
 
   @override
@@ -115,7 +122,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Icons.flash_on,
-                                    color: AppColors.error, size: 12),
+                                    color: AppColors.error, size: 12,),
                                 SizedBox(width: 2),
                                 Text(
                                   'БОЙ',
@@ -209,8 +216,8 @@ class _WorldStateBarState extends State<WorldStateBar> {
                         children: widget.worldState.flags.entries
                             .map(
                               (e) => _MiniChip(
-                                label: _getFlagName(e.key),
-                                active: e.value,
+                                label: _getFlagLabel(e.key, e.value),
+                                active: _getFlagValue(e.value),
                               ),
                             )
                             .toList(),

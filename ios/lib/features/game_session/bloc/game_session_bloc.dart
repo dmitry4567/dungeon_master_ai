@@ -52,8 +52,8 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         _secureStorage.getUserId(),
       ]);
 
-      final messages = results[0] as List<Message>;
-      final scenarioContent = results[1] as ScenarioContent;
+      final messages = results[0]! as List<Message>;
+      final scenarioContent = results[1]! as ScenarioContent;
       _currentUserId = results[2] as String?;
 
       final isHost = _currentUserId != null; // Упрощённо, TODO: проверить через room
@@ -389,7 +389,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
 
     emit(currentState.copyWith(
       rolledMessageIds: {...currentState.rolledMessageIds, event.messageId},
-    ));
+    ),);
   }
 
   Future<void> _onConnectionStateChanged(

@@ -28,7 +28,7 @@ class StateUpdate:
     events_occurred: list[str]
     location_changed: str | None
     scene_completed: str | None
-    flags_changed: dict[str, bool]
+    flags_changed: dict[str, dict[str, Any]]  # {id: {"value": bool, "label": str}}
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -56,8 +56,9 @@ class StateExtractor:
 
 CRITICAL RULES:
 1. You MUST respond with ONLY valid JSON. No explanations, no markdown, no additional text.
-2. For flags_changed: use ONLY flag IDs from the "Available Flags" list in the context.
-3. If a new game state needs a flag that doesn't exist, create it using the SAME LANGUAGE as the DM's response (e.g., if DM writes in Russian, use "dver_otkryta" for "Дверь открыта").
+2. For flags_changed: PREFER flag IDs from the "Available Flags" list in the context.
+3. Each flag in flags_changed must have: {"value": bool, "label": "Human readable name in DM's language"}
+4. For NEW flags: use a simple snake_case ID, and a human-readable label in the SAME LANGUAGE as the DM's response.
 
 Return this exact JSON structure:
 {
@@ -71,17 +72,18 @@ Guidelines:
 - events_occurred: Array of key plot events as strings (e.g., ["npc_rescued", "combat_started"])
 - location_changed: String location_id if moved to new location, otherwise null
 - scene_completed: String scene_id if scene definitively ended, otherwise null
-- flags_changed: Object with flag IDs as keys and boolean values. PREFER flags from the scenario. For NEW flags, use transliterated IDs in the SAME LANGUAGE as the DM's response.
+- flags_changed: Object where each key is a flag ID and value is {"value": bool, "label": "readable name"}
 
 Examples (Russian):
 DM says "Вы входите в таверну": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
-DM says "Бой начинается!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": true}}
-DM says "Дверь со скрипом открывается": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"dver_otkryta": true}}
+DM says "Бой начинается!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": {"value": true, "label": "Бой активен"}}}
+DM says "Дверь со скрипом открывается": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"door_open": {"value": true, "label": "Дверь открыта"}}}
+DM says "Вы нашли ключ": {"events_occurred": ["key_found"], "location_changed": null, "scene_completed": null, "flags_changed": {"key_found": {"value": true, "label": "Ключ найден"}}}
 
 Examples (English):
 DM says "You enter the tavern": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
-DM says "Combat begins!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": true}}
-DM says "The door creaks open": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"door_open": true}}
+DM says "Combat begins!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": {"value": true, "label": "Combat Active"}}}
+DM says "The door creaks open": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"door_open": {"value": true, "label": "Door Open"}}}
 
 If unsure or no clear changes, return empty structure. Always return valid JSON."""
 
@@ -90,9 +92,8 @@ If unsure or no clear changes, return empty structure. Always return valid JSON.
         settings = get_settings()
         self.api_key = settings.ANTHROPIC_API_KEY
         self.base_url = "https://api.anthropic.com/v1/messages"
-        # Use Claude Haiku for fast, lightweight state extraction
         self.model = settings.model_state_extraction
-        self.max_tokens = 500
+        self.max_tokens = settings.max_tokens_state_extraction
 
         # Warn if API key is not set
         if not self.api_key:
@@ -222,11 +223,18 @@ Extract any state changes from this response."""
         flags = scenario_content.get("flags", [])
         flags_info = [f"- {f.get('id')}: {f.get('name')}" for f in flags] if flags else ["No flags defined"]
 
+        # Format active flags for display
+        active_flags = world_state.get("flags", {})
+        active_flags_display = {
+            fid: fdata.get("value") if isinstance(fdata, dict) else fdata
+            for fid, fdata in active_flags.items()
+        }
+
         return f"""Current World State:
 - Current Act: {world_state.get("current_act")}
 - Current Location: {world_state.get("current_location")}
 - Completed Scenes: {world_state.get("completed_scenes", [])}
-- Active Flags: {world_state.get("flags", {})}
+- Active Flags: {active_flags_display}
 
 Available Locations: {locations}
 Available Scenes: {scenes}
@@ -301,10 +309,16 @@ Available Flags:
                 completed.append(update.scene_completed)
             new_state["completed_scenes"] = completed
 
-        # Update flags
+        # Update flags - merge new flags with existing ones
         if update.flags_changed:
             flags = new_state.get("flags", {})
-            flags.update(update.flags_changed)
+            for flag_id, flag_data in update.flags_changed.items():
+                if isinstance(flag_data, dict):
+                    # New format: {"value": bool, "label": str}
+                    flags[flag_id] = flag_data
+                else:
+                    # Legacy format: plain bool - wrap it
+                    flags[flag_id] = {"value": bool(flag_data), "label": flag_id}
             new_state["flags"] = flags
 
         return new_state

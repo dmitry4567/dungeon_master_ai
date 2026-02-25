@@ -1,3 +1,4 @@
+import 'package:ai_dungeon_master/core/theme/colors.dart';
 import 'package:ai_dungeon_master/features/auth/bloc/auth_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +24,12 @@ class App extends StatelessWidget {
       child: MaterialApp.router(
         title: 'AI Dungeon Master',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
+        theme: AppTheme.dark.copyWith(
+          appBarTheme: const AppBarTheme(
+            scrolledUnderElevation: 0,
+            backgroundColor: AppColors.background,
+          ),
+        ),
         routerConfig: appRouter.router,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(

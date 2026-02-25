@@ -51,7 +51,7 @@ class _MessageInputState extends State<MessageInput> {
         top: 8,
         bottom: MediaQuery.of(context).padding.bottom + 12,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         // color: AppColors.surface,
         // border: Border(
         //   top: BorderSide(

@@ -90,9 +90,7 @@ class GameSessionRepository {
   }
 
   /// Получить контент сценария
-  Future<ScenarioContent> getScenarioContent(String sessionId) async {
-    return _api.getScenarioContent(sessionId);
-  }
+  Future<ScenarioContent> getScenarioContent(String sessionId) async => _api.getScenarioContent(sessionId);
 
   /// Завершить сессию
   Future<void> endSession(String sessionId) async {

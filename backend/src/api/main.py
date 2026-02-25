@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from src.api.middleware import MetricsMiddleware, metrics_collector, setup_middleware
 from src.api.routes import auth, characters, rooms, scenarios, sessions, users, voice, websocket
 from src.core.config import get_settings
 from src.core.database import close_db, init_db
@@ -44,6 +45,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Setup correlation ID, request logging, and metrics middleware
+setup_middleware(app)
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1")
@@ -87,6 +91,27 @@ async def readiness_check():
     status = "ok" if all(v == "connected" for v in checks.values()) else "degraded"
 
     return {"status": status, **checks}
+
+
+@app.get("/metrics", tags=["Monitoring"], include_in_schema=False)
+async def prometheus_metrics():
+    """Prometheus-compatible metrics endpoint.
+
+    Returns metrics in Prometheus text exposition format.
+    Also available as JSON via Accept: application/json.
+    """
+    from fastapi.responses import PlainTextResponse
+
+    return PlainTextResponse(
+        content=metrics_collector.to_prometheus(),
+        media_type="text/plain; version=0.0.4",
+    )
+
+
+@app.get("/metrics/json", tags=["Monitoring"])
+async def json_metrics():
+    """Metrics in JSON format for easy consumption."""
+    return metrics_collector.to_dict()
 
 
 @app.exception_handler(Exception)

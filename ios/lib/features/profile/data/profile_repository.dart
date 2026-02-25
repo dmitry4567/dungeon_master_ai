@@ -1,7 +1,7 @@
 import 'package:injectable/injectable.dart';
 
-import '../models/game_history.dart';
 import '../../auth/models/user.dart';
+import '../models/game_history.dart';
 import 'profile_api.dart';
 
 /// Репозиторий профиля
@@ -32,6 +32,6 @@ class ProfileRepository {
   /// Получить историю игр
   Future<List<GameHistory>> getGameHistory() async {
     final historyData = await _profileApi.getGameHistory();
-    return historyData.map((data) => GameHistory.fromJson(data)).toList();
+    return historyData.map(GameHistory.fromJson).toList();
   }
 }

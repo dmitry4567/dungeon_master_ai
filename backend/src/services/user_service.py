@@ -60,9 +60,9 @@ class UserService:
         await self.db.refresh(user)
 
         logger.info(
-            "User profile updated",
-            user_id=str(user_id),
-            fields=list(update_data.keys()),
+            "User profile updated: user_id=%s, fields=%s",
+            str(user_id),
+            list(update_data.keys()),
         )
 
         return user

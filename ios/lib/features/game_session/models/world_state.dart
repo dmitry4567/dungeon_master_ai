@@ -13,7 +13,7 @@ class WorldState with _$WorldState {
     @JsonKey(name: 'completed_scenes')
     @Default([])
     List<String> completedScenes,
-    @Default({}) Map<String, bool> flags,
+    @Default({}) Map<String, dynamic> flags,
     @JsonKey(name: 'combat_active') @Default(false) bool combatActive,
   }) = _WorldState;
 

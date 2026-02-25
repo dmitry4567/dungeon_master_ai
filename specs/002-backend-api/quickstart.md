@@ -86,7 +86,7 @@ curl http://localhost:8000/health
 ### Регистрация пользователя
 
 ```bash
-curl -X POST http://localhost:8000/v1/auth/register \
+curl -X POST http://localhost:8000/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "testpass123", "name": "Тестовый пользователь"}'
 ```
@@ -96,7 +96,7 @@ curl -X POST http://localhost:8000/v1/auth/register \
 ```bash
 TOKEN="<access_token из ответа регистрации>"
 
-curl -X POST http://localhost:8000/v1/characters \
+curl -X POST http://localhost:8000/api/v1/characters \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -118,7 +118,7 @@ curl -X POST http://localhost:8000/v1/characters \
 ### Генерация сценария
 
 ```bash
-curl -X POST http://localhost:8000/v1/scenarios \
+curl -X POST http://localhost:8000/api/v1/scenarios \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"description": "Заброшенная шахта гномов, где пробудилось древнее зло. Партия должна найти артефакт и остановить нежить."}'
@@ -128,19 +128,19 @@ curl -X POST http://localhost:8000/v1/scenarios \
 
 ```bash
 # Создание комнаты
-curl -X POST http://localhost:8000/v1/rooms \
+curl -X POST http://localhost:8000/api/v1/rooms \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"name": "Тестовая комната", "scenario_version_id": "<version_id>", "max_players": 4}'
 
 # Отметка готовности (с персонажем)
-curl -X POST http://localhost:8000/v1/rooms/<room_id>/ready \
+curl -X POST http://localhost:8000/api/v1/rooms/<room_id>/ready \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"character_id": "<character_id>", "ready": true}'
 
 # Старт игры (только хост)
-curl -X POST http://localhost:8000/v1/rooms/<room_id>/start \
+curl -X POST http://localhost:8000/api/v1/rooms/<room_id>/start \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -152,7 +152,7 @@ import websockets
 import json
 
 async def play():
-    uri = f"ws://localhost:8000/v1/ws/sessions/<session_id>?token={TOKEN}"
+    uri = f"ws://localhost:8000/api/v1/ws/session/<room_id>?token={TOKEN}"
     async with websockets.connect(uri) as ws:
         # Отправка действия
         await ws.send(json.dumps({

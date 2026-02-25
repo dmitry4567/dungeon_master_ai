@@ -20,12 +20,10 @@ class RoomCreatePage extends StatelessWidget {
   const RoomCreatePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
+  Widget build(BuildContext context) => BlocProvider(
       create: (context) => getIt<CharacterBloc>(),
       child: const _RoomCreateView(),
     );
-  }
 }
 
 class _RoomCreateView extends StatefulWidget {
@@ -207,8 +205,7 @@ class _RoomCreateViewState extends State<_RoomCreateView> {
         ),
       );
 
-  Widget _buildCharacterSelector() {
-    return BlocBuilder<CharacterBloc, CharacterState>(
+  Widget _buildCharacterSelector() => BlocBuilder<CharacterBloc, CharacterState>(
       builder: (context, state) => state.when(
         initial: () => const Text('Загрузка персонажей...'),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -262,10 +259,8 @@ class _RoomCreateViewState extends State<_RoomCreateView> {
         detail: (_) => const SizedBox.shrink(),
       ),
     );
-  }
 
-  Widget _buildScenarioSelector() {
-    return BlocBuilder<ScenarioBloc, ScenarioState>(
+  Widget _buildScenarioSelector() => BlocBuilder<ScenarioBloc, ScenarioState>(
       builder: (context, state) => state.when(
         initial: () => const Text('Загрузка сценариев...'),
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -315,10 +310,8 @@ class _RoomCreateViewState extends State<_RoomCreateView> {
         error: (message) => Text('Ошибка: $message'),
       ),
     );
-  }
 
-  Widget _buildCreateButton() {
-    return BlocBuilder<LobbyBloc, LobbyState>(
+  Widget _buildCreateButton() => BlocBuilder<LobbyBloc, LobbyState>(
       builder: (context, state) {
         final isCreating = state.whenOrNull(creating: () => true) ?? false;
         final isStarting =
@@ -354,5 +347,4 @@ class _RoomCreateViewState extends State<_RoomCreateView> {
         );
       },
     );
-  }
 }

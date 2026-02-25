@@ -227,17 +227,17 @@
 
 **Purpose**: Улучшения, затрагивающие несколько историй
 
-- [ ] T089a [P] Создать Pydantic-схему ModerationEvent для логирования в backend/src/schemas/moderation.py
-- [ ] T090 [P] Реализовать фильтры модерации контента в backend/src/services/moderation_service.py
-- [ ] T091 [P] Добавить метрики latency и error rate в backend/src/api/middleware.py
-- [ ] T092 [P] Реализовать обработку граничных случаев: недоступность AI-провайдера (503 + retry-after)
-- [ ] T093 [P] Реализовать обработку переподключения WebSocket (синхронизация пропущенных сообщений)
-- [ ] T094 [P] Реализовать очередь действий с метками времени для параллельных действий игроков
-- [ ] T095 Создать Dockerfile для production в backend/Dockerfile
-- [ ] T096 Запустить валидацию quickstart.md
-- [ ] T097 Финальный прогон всех тестов и проверка покрытия
-- [ ] T098 [P] Создать тест эндпоинта /metrics (Prometheus-формат) в backend/tests/contract/test_metrics_contract.py
-- [ ] T099 [P] Создать нагрузочный тест 100 одновременных WebSocket-соединений в backend/tests/load/test_websocket_load.py
+- [x] T089a [P] Создать Pydantic-схему ModerationEvent для логирования в backend/src/schemas/moderation.py
+- [x] T090 [P] Реализовать фильтры модерации контента в backend/src/services/moderation_service.py
+- [x] T091 [P] Добавить метрики latency и error rate в backend/src/api/middleware.py
+- [x] T092 [P] Реализовать обработку граничных случаев: недоступность AI-провайдера (503 + retry-after)
+- [x] T093 [P] Реализовать обработку переподключения WebSocket (синхронизация пропущенных сообщений)
+- [x] T094 [P] Реализовать очередь действий с метками времени для параллельных действий игроков
+- [x] T095 Создать Dockerfile для production в backend/Dockerfile
+- [x] T096 Запустить валидацию quickstart.md
+- [x] T097 Финальный прогон всех тестов и проверка покрытия
+- [x] T098 [P] Создать тест эндпоинта /metrics (Prometheus-формат) в backend/tests/contract/test_metrics_contract.py
+- [x] T099 [P] Создать нагрузочный тест 100 одновременных WebSocket-соединений в backend/tests/load/test_websocket_load.py
 
 ---
 

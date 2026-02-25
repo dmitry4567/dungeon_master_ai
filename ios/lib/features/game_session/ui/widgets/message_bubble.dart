@@ -57,7 +57,8 @@ class ParsedDiceRequest {
     final dc = dcMatch != null ? int.tryParse(dcMatch.group(1)!) : null;
 
     // Парсим Reason
-    final reasonRegex = RegExp(r'Reason:\s*(.+?)(?:\s*$)', caseSensitive: false);
+    final reasonRegex =
+        RegExp(r'Reason:\s*(.+?)(?:\s*$)', caseSensitive: false);
     final reasonMatch = reasonRegex.firstMatch(innerContent);
     final reason = reasonMatch?.group(1)?.trim();
 
@@ -205,8 +206,9 @@ class _DmBubbleState extends State<_DmBubble>
     _diceRequest = ParsedDiceRequest.tryParse(widget.message.content);
     if (_diceRequest != null) {
       // Убираем DICE-тег из отображаемого контента
-      _displayContent =
-          widget.message.content.replaceAll(_diceRequest!.originalText, '').trim();
+      _displayContent = widget.message.content
+          .replaceAll(_diceRequest!.originalText, '')
+          .trim();
       _pulseController.repeat(reverse: true);
     } else {
       _displayContent = widget.message.content;
@@ -259,7 +261,8 @@ class _DmBubbleState extends State<_DmBubble>
     // Отправляем результат через bloc
     // Формируем сообщение с результатом
     final total = roll + _diceRequest!.modifier;
-    final success = _diceRequest!.dc != null ? total >= _diceRequest!.dc! : null;
+    final success =
+        _diceRequest!.dc != null ? total >= _diceRequest!.dc! : null;
 
     // Сначала отмечаем сообщение как обработанное, потом отправляем результат
     final resultText = _formatRollResult(roll, total, success);
@@ -294,8 +297,7 @@ class _DmBubbleState extends State<_DmBubble>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<GameSessionBloc, GameSessionState>(
+  Widget build(BuildContext context) => BlocBuilder<GameSessionBloc, GameSessionState>(
       buildWhen: (previous, current) {
         // Перестраиваем только когда изменяется rolledMessageIds
         if (previous is GameSessionActive && current is GameSessionActive) {
@@ -316,11 +318,8 @@ class _DmBubbleState extends State<_DmBubble>
         return _buildContent(context, hasDiceRequest);
       },
     );
-  }
 
-  Widget _buildContent(BuildContext context, bool hasDiceRequest) {
-
-    return Container(
+  Widget _buildContent(BuildContext context, bool hasDiceRequest) => Container(
       constraints: BoxConstraints(
         maxWidth: MediaQuery.of(context).size.width * 0.85,
       ),
@@ -406,7 +405,6 @@ class _DmBubbleState extends State<_DmBubble>
         ],
       ),
     );
-  }
 
   Widget _buildDiceRollButton() {
     final req = _diceRequest!;
@@ -484,7 +482,8 @@ class _DmBubbleState extends State<_DmBubble>
                                         ? ' +${req.modifier}'
                                         : ' ${req.modifier}',
                                     style: TextStyle(
-                                      color: AppColors.onSurface.withValues(alpha: 0.7),
+                                      color: AppColors.onSurface
+                                          .withValues(alpha: 0.7),
                                       fontSize: 18,
                                     ),
                                   ),
@@ -499,7 +498,8 @@ class _DmBubbleState extends State<_DmBubble>
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.secondary.withValues(alpha: 0.2),
+                                    color: AppColors.secondary
+                                        .withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -570,6 +570,13 @@ class _DmBubbleState extends State<_DmBubble>
           color: AppColors.onSurface,
           fontSize: 15,
           height: 1.4,
+        ),
+        horizontalRuleDecoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: AppColors.onSurface.withValues(alpha: 0.3),
+            ),
+          ),
         ),
         strong: const TextStyle(
           color: AppColors.onSurface,
@@ -689,55 +696,62 @@ class StreamingBubble extends StatelessWidget {
               MarkdownBody(
                 data: content,
                 styleSheet: MarkdownStyleSheet(
-                p: const TextStyle(
-                  color: AppColors.onSurface,
-                  fontSize: 15,
-                  height: 1.4,
-                ),
-                strong: const TextStyle(
-                  color: AppColors.onSurface,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-                em: const TextStyle(
-                  color: AppColors.onSurface,
-                  fontSize: 15,
-                  fontStyle: FontStyle.normal,
-                ),
-                h1: const TextStyle(
-                  color: AppColors.secondary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                h2: const TextStyle(
-                  color: AppColors.secondary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                h3: const TextStyle(
-                  color: AppColors.secondary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                listBullet: const TextStyle(
-                  color: AppColors.onSurface,
-                  fontSize: 15,
-                ),
-                code: TextStyle(
-                  color: AppColors.onSurface,
-                  backgroundColor: AppColors.surface.withValues(alpha: 0.5),
-                  fontSize: 15,
-                ),
-                blockquoteDecoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: 1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                codeblockDecoration: BoxDecoration(
-                  color: AppColors.surface.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
+                  p: const TextStyle(
+                    color: AppColors.onSurface,
+                    fontSize: 15,
+                    height: 1.4,
+                  ),
+                  horizontalRuleDecoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: AppColors.onSurface.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                  strong: const TextStyle(
+                    color: AppColors.onSurface,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  em: const TextStyle(
+                    color: AppColors.onSurface,
+                    fontSize: 15,
+                    fontStyle: FontStyle.normal,
+                  ),
+                  h1: const TextStyle(
+                    color: AppColors.secondary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  h2: const TextStyle(
+                    color: AppColors.secondary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  h3: const TextStyle(
+                    color: AppColors.secondary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  listBullet: const TextStyle(
+                    color: AppColors.onSurface,
+                    fontSize: 15,
+                  ),
+                  code: TextStyle(
+                    color: AppColors.onSurface,
+                    backgroundColor: AppColors.surface.withValues(alpha: 0.5),
+                    fontSize: 15,
+                  ),
+                  blockquoteDecoration: BoxDecoration(
+                    color: AppColors.surface.withValues(alpha: 1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  codeblockDecoration: BoxDecoration(
+                    color: AppColors.surface.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       );
