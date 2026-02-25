@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
@@ -28,6 +29,9 @@ Future<void> main() async {
           systemNavigationBarIconBrightness: Brightness.light,
         ),
       );
+
+      // Request permissions
+      await _requestPermissions();
 
       // Initialize dependencies
       await configureDependencies();
@@ -58,4 +62,18 @@ Future<void> main() async {
       }
     },
   );
+}
+
+Future<void> _requestPermissions() async {
+  // Request microphone permission for voice input
+  final microphoneStatus = await Permission.microphone.status;
+  if (microphoneStatus.isDenied) {
+    await Permission.microphone.request();
+  }
+
+  // Request speech recognition permission
+  final speechStatus = await Permission.speech.status;
+  if (speechStatus.isDenied) {
+    await Permission.speech.request();
+  }
 }
