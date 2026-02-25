@@ -258,7 +258,7 @@ class CharacterListPage extends StatelessWidget {
                             ],
                           ),
                           child: const Icon(
-                            Icons.shield_outlined,
+                            Icons.shield,
                             color: Color(0xFFD4AF37),
                             size: 36,
                           ),

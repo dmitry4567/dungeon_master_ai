@@ -110,8 +110,7 @@ class MessageBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color:
-              isCurrentUser ? AppColors.primaryDark : AppColors.surfaceVariant,
+          color: isCurrentUser ? AppColors.primaryDark : const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -297,114 +296,111 @@ class _DmBubbleState extends State<_DmBubble>
   }
 
   @override
-  Widget build(BuildContext context) => BlocBuilder<GameSessionBloc, GameSessionState>(
-      buildWhen: (previous, current) {
-        // Перестраиваем только когда изменяется rolledMessageIds
-        if (previous is GameSessionActive && current is GameSessionActive) {
-          return previous.rolledMessageIds != current.rolledMessageIds;
-        }
-        return true;
-      },
-      builder: (context, state) {
-        final hasRolled = state is GameSessionActive &&
-            state.rolledMessageIds.contains(widget.message.id);
-        final hasDiceRequest = _diceRequest != null && !hasRolled;
+  Widget build(BuildContext context) =>
+      BlocBuilder<GameSessionBloc, GameSessionState>(
+        buildWhen: (previous, current) {
+          // Перестраиваем только когда изменяется rolledMessageIds
+          if (previous is GameSessionActive && current is GameSessionActive) {
+            return previous.rolledMessageIds != current.rolledMessageIds;
+          }
+          return true;
+        },
+        builder: (context, state) {
+          final hasRolled = state is GameSessionActive &&
+              state.rolledMessageIds.contains(widget.message.id);
+          final hasDiceRequest = _diceRequest != null && !hasRolled;
 
-        // Останавливаем анимацию если бросок уже выполнен
-        if (hasRolled && _pulseController.isAnimating) {
-          _pulseController.stop();
-        }
+          // Останавливаем анимацию если бросок уже выполнен
+          if (hasRolled && _pulseController.isAnimating) {
+            _pulseController.stop();
+          }
 
-        return _buildContent(context, hasDiceRequest);
-      },
-    );
+          return _buildContent(context, hasDiceRequest);
+        },
+      );
 
   Widget _buildContent(BuildContext context, bool hasDiceRequest) => Container(
-      constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 0.85,
-      ),
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2D2418), Color(0xFF352A1C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.85,
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.secondary.withValues(alpha: 0.3),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF2A2A4E),
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Заголовок DM
-          Row(
-            children: [
-              const Icon(
-                Icons.auto_stories,
-                color: AppColors.secondary,
-                size: 16,
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                'Dungeon Master',
-                style: TextStyle(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Заголовок DM
+            Row(
+              children: [
+                const Icon(
+                  Icons.auto_stories,
                   color: AppColors.secondary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  size: 16,
                 ),
-              ),
-              if (hasDiceRequest) ...[
-                const Spacer(),
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) => Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary
-                          .withValues(alpha: _pulseAnimation.value),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Ваш ход',
-                      style: TextStyle(
-                        color: AppColors.onSecondary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+                const SizedBox(width: 6),
+                const Text(
+                  'Dungeon Master',
+                  style: TextStyle(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+                if (hasDiceRequest) ...[
+                  const Spacer(),
+                  AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (context, child) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary
+                            .withValues(alpha: _pulseAnimation.value),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Ваш ход',
+                        style: TextStyle(
+                          color: AppColors.onSecondary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Содержимое с поддержкой Markdown
-          if (_displayContent.isNotEmpty)
-            MarkdownBody(
-              data: _displayContent,
-              selectable: true,
-              styleSheet: _markdownStyle,
             ),
-
-          // Inline кнопка броска кубика
-          if (hasDiceRequest) ...[
-            const SizedBox(height: 12),
-            _buildDiceRollButton(),
-          ],
-
-          // Результат броска (если уже есть в сообщении)
-          if (widget.message.diceResult != null) ...[
             const SizedBox(height: 8),
-            DiceResultWidget(result: widget.message.diceResult!),
+
+            // Содержимое с поддержкой Markdown
+            if (_displayContent.isNotEmpty)
+              MarkdownBody(
+                data: _displayContent,
+                selectable: true,
+                styleSheet: _markdownStyle,
+              ),
+
+            // Inline кнопка броска кубика
+            if (hasDiceRequest) ...[
+              const SizedBox(height: 12),
+              _buildDiceRollButton(),
+            ],
+
+            // Результат броска (если уже есть в сообщении)
+            if (widget.message.diceResult != null) ...[
+              const SizedBox(height: 8),
+              DiceResultWidget(result: widget.message.diceResult!),
+            ],
           ],
-        ],
-      ),
-    );
+        ),
+      );
 
   Widget _buildDiceRollButton() {
     final req = _diceRequest!;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/theme/colors.dart';
 import '../../data/dnd_reference_data.dart';
 import '../../models/ability_scores.dart';
 import '../../models/dnd_data.dart';
@@ -9,7 +8,9 @@ import '../../models/dnd_data.dart';
 /// Виджет редактирования характеристик персонажа
 class AbilityScoresEditor extends StatelessWidget {
   const AbilityScoresEditor({
-    required this.abilityScores, required this.onChanged, super.key,
+    required this.abilityScores,
+    required this.onChanged,
+    super.key,
     this.selectedRace,
     this.highlightedAbilities = const [],
   });
@@ -61,26 +62,35 @@ class AbilityScoresEditor extends StatelessWidget {
 
           // Подсказка
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.outline),
+              color: const Color(0xFF1A1A2E),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF2A2A4E)),
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.info_outline,
-                  color: AppColors.secondary,
-                  size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4AF37).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    color: Color(0xFFD4AF37),
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
+                const Expanded(
                   child: Text(
                     'Распределите характеристики от ${DndReferenceData.minAbilityScore} до ${DndReferenceData.maxAbilityScore}. Сумма должна быть от ${DndReferenceData.minTotalAbilityScore} до ${DndReferenceData.maxTotalAbilityScore}.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: 0.7),
-                        ),
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
@@ -106,47 +116,71 @@ class _TotalIndicator extends StatelessWidget {
   final bool isValid;
 
   @override
-  Widget build(BuildContext context) {
-    final indicatorColor = isValid ? AppColors.success : AppColors.error;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: indicatorColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: indicatorColor.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Сумма характеристик',
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: 0.7),
-                    ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$total / $minTotal-$maxTotal',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: indicatorColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              (isValid ? const Color(0xFF52B788) : const Color(0xFFE76F51))
+                  .withOpacity(0.1),
+              (isValid ? const Color(0xFF52B788) : const Color(0xFFE76F51))
+                  .withOpacity(0.02),
             ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          Icon(
-            isValid ? Icons.check_circle : Icons.warning,
-            color: indicatorColor,
-            size: 32,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: (isValid ? const Color(0xFF52B788) : const Color(0xFFE76F51))
+                .withOpacity(0.3),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Сумма характеристик',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$total / $minTotal-$maxTotal',
+                  style: TextStyle(
+                    color: isValid
+                        ? const Color(0xFF52B788)
+                        : const Color(0xFFE76F51),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: (isValid
+                        ? const Color(0xFF52B788)
+                        : const Color(0xFFE76F51))
+                    .withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                isValid ? Icons.check_circle : Icons.warning,
+                color:
+                    isValid ? const Color(0xFF52B788) : const Color(0xFFE76F51),
+                size: 24,
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
 class _AbilityEditor extends StatelessWidget {
@@ -180,11 +214,12 @@ class _AbilityEditor extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? AppColors.secondary.withValues(alpha: 0.1)
-            : AppColors.surface,
+            ? const Color(0xFF52B788).withOpacity(0.1)
+            : const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isHighlighted ? AppColors.secondary : AppColors.outline,
+          color:
+              isHighlighted ? const Color(0xFF52B788) : const Color(0xFF2A2A4E),
           width: isHighlighted ? 2 : 1,
         ),
       ),
@@ -195,35 +230,23 @@ class _AbilityEditor extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Название характеристики
-              Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isHighlighted
-                          ? AppColors.secondary
-                          : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      shortName,
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: isHighlighted
-                                ? AppColors.onSecondary
-                                : AppColors.onSurface,
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isHighlighted
+                      ? const Color(0xFF52B788)
+                      : const Color(0xFF2A2A4A),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  displayName.toUpperCase(),
+                  style: TextStyle(
+                    color:
+                        isHighlighted ? const Color(0xFF0D0D1A) : Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(width: 12),
-                  Text(
-                    displayName,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.onSurface,
-                        ),
-                  ),
-                ],
+                ),
               ),
 
               // Значение и модификатор
@@ -232,19 +255,21 @@ class _AbilityEditor extends StatelessWidget {
                   // Базовое значение
                   Text(
                     '$value',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: AppColors.onSurface,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   // Расовый бонус
                   if (racialBonus > 0) ...[
                     Text(
                       '+$racialBonus',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.tertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: const TextStyle(
+                        color: Color(0xFFF4A261),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                   const SizedBox(width: 12),
@@ -254,54 +279,62 @@ class _AbilityEditor extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: _modifier >= 0
-                          ? AppColors.success.withValues(alpha: 0.2)
-                          : AppColors.error.withValues(alpha: 0.2),
+                          ? const Color(0xFF52B788).withOpacity(0.2)
+                          : const Color(0xFFE76F51).withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _modifier >= 0
+                            ? const Color(0xFF52B788).withOpacity(0.4)
+                            : const Color(0xFFE76F51).withOpacity(0.4),
+                      ),
                     ),
                     child: Text(
                       _modifierText,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: _modifier >= 0
-                                ? AppColors.success
-                                : AppColors.error,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: TextStyle(
+                        color: _modifier >= 0
+                            ? const Color(0xFF52B788)
+                            : const Color(0xFFE76F51),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           // Слайдер
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: isHighlighted
-                  ? AppColors.secondary
-                  : AppColors.primary,
-              inactiveTrackColor: AppColors.surfaceVariant,
+                  ? const Color(0xFF52B788)
+                  : const Color(0xFFD4AF37),
+              inactiveTrackColor: const Color(0xFF2A2A4E),
               thumbColor: isHighlighted
-                  ? AppColors.secondary
-                  : AppColors.primary,
+                  ? const Color(0xFF52B788)
+                  : const Color(0xFFD4AF37),
               overlayColor: (isHighlighted
-                      ? AppColors.secondary
-                      : AppColors.primary)
-                  .withValues(alpha: 0.2),
+                      ? const Color(0xFF52B788)
+                      : const Color(0xFFD4AF37))
+                  .withOpacity(0.2),
+              trackHeight: 6,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
             ),
             child: Slider(
               value: value.toDouble(),
               min: DndReferenceData.minAbilityScore.toDouble(),
               max: DndReferenceData.maxAbilityScore.toDouble(),
-              divisions:
-                  DndReferenceData.maxAbilityScore - DndReferenceData.minAbilityScore,
+              divisions: DndReferenceData.maxAbilityScore -
+                  DndReferenceData.minAbilityScore,
               onChanged: (newValue) => onChanged(newValue.round()),
             ),
           ),
 
           // Кнопки +/-
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _AdjustButton(
                 icon: Icons.remove,
@@ -309,7 +342,7 @@ class _AbilityEditor extends StatelessWidget {
                     ? () => onChanged(value - 1)
                     : null,
               ),
-              const SizedBox(width: 24),
+              // const SizedBox(width: 50),
               _AdjustButton(
                 icon: Icons.add,
                 onPressed: value < DndReferenceData.maxAbilityScore
@@ -334,28 +367,30 @@ class _AdjustButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => Material(
-      color: onPressed != null ? AppColors.surfaceVariant : Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
+  Widget build(BuildContext context) => InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          width: 44,
-          height: 44,
+          width: 100,
+          height: 46,
           decoration: BoxDecoration(
+            color: onPressed != null
+                ? const Color(0xFF2A2A4A)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: onPressed != null ? AppColors.outline : AppColors.outline.withValues(alpha: 0.3),
+              color: onPressed != null
+                  ? const Color(0xFF3A3A5E)
+                  : const Color(0xFF2A2A4E),
             ),
           ),
           child: Icon(
             icon,
             color: onPressed != null
-                ? AppColors.onSurface
-                : AppColors.onSurface.withValues(alpha: 0.3),
+                ? const Color(0xFFD4AF37)
+                : const Color(0xFF3A3A5E),
+            size: 20,
           ),
         ),
-      ),
-    );
+      );
 }

@@ -83,12 +83,12 @@ class _WorldStateBarState extends State<WorldStateBar> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: const Color(0xFF0D0D1A),
           border: Border(
             bottom: BorderSide(
               color: widget.worldState.combatActive
                   ? AppColors.error
-                  : AppColors.outline.withValues(alpha: 0.3),
+                  : const Color(0xFF2A2A4E),
             ),
           ),
         ),
@@ -121,8 +121,11 @@ class _WorldStateBarState extends State<WorldStateBar> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.flash_on,
-                                    color: AppColors.error, size: 12,),
+                                Icon(
+                                  Icons.flash_on,
+                                  color: AppColors.error,
+                                  size: 12,
+                                ),
                                 SizedBox(width: 2),
                                 Text(
                                   'БОЙ',
@@ -179,7 +182,7 @@ class _WorldStateBarState extends State<WorldStateBar> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Divider(color: AppColors.outline, height: 1),
+                    const Divider(color: Color(0xFF2A2A4E), height: 1),
                     const SizedBox(height: 8),
                     // Пройденные сцены
                     if (completedSceneNames.isNotEmpty) ...[
@@ -202,10 +205,10 @@ class _WorldStateBarState extends State<WorldStateBar> {
                     ],
                     // Флаги
                     if (widget.worldState.flags.isNotEmpty) ...[
-                      Text(
+                      const Text(
                         'Флаги мира:',
                         style: TextStyle(
-                          color: AppColors.onSurface.withValues(alpha: 0.6),
+                          color: Colors.white54,
                           fontSize: 11,
                         ),
                       ),
@@ -253,14 +256,14 @@ class _InfoChip extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.secondaryLight, size: 14),
+          Icon(icon, color: Color(0xFF2A2A4E), size: 14),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: AppColors.onSurface.withValues(alpha: 0.8),
+              style: const TextStyle(
+                color: Colors.white70,
                 fontSize: 12,
               ),
             ),
