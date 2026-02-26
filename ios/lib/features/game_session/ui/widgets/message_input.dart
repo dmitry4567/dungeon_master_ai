@@ -72,8 +72,8 @@ class _MessageInputState extends State<MessageInput> {
                 minLines: 1,
                 textCapitalization: TextCapitalization.sentences,
                 style: const TextStyle(
-                  color: AppColors.onSurface,
                   fontSize: 15,
+                  color: Colors.white,
                 ),
                 decoration: InputDecoration(
                   hintText: widget.isStreaming
@@ -83,7 +83,7 @@ class _MessageInputState extends State<MessageInput> {
                     color: AppColors.onSurface.withValues(alpha: 0.4),
                   ),
                   filled: true,
-                  fillColor: Color(0xFF0D0D1A),
+                  fillColor: const Color(0xFF0D0D1A),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,

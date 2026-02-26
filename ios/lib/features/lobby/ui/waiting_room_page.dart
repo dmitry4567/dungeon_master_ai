@@ -144,7 +144,16 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
       );
 
   Widget _buildScaffold({required Widget body}) => Scaffold(
-        appBar: AppBar(title: const Text('Комната ожидания')),
+        backgroundColor: const Color(0xFF0D0D1A),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF0D0D1A),
+          surfaceTintColor: Colors.transparent,
+          title: const Text(
+            'Комната ожидания',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white70),
+        ),
         body: body,
       );
 
@@ -153,12 +162,22 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
         room.players.where((p) => p.status != 'declined').toList();
 
     return Scaffold(
+      backgroundColor: const Color(0xFF0D0D1A),
       appBar: AppBar(
-        title: Text(room.name),
+        backgroundColor: const Color(0xFF0D0D1A),
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          room.name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white70),
         actions: [
           IconButton(
             onPressed: _refreshRoom,
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh, color: Colors.white70),
             tooltip: 'Обновить',
           ),
         ],
@@ -168,23 +187,60 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
           // Room info header
           Container(
             width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             padding: const EdgeInsets.all(16),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A2E),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF2A2A4E)),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (room.scenario != null)
-                  Text(
-                    'Сценарий: ${room.scenario!.title}',
-                    style: Theme.of(context).textTheme.titleMedium,
+                if (room.scenario != null) ...[
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.auto_stories,
+                        size: 14,
+                        color: Color(0xFFD4AF37),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          room.scenario!.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                const SizedBox(height: 4),
-                Text(
-                  'Игроки: ${room.activePlayerCount}/${room.maxPlayers}',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  const SizedBox(height: 8),
+                ],
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.people_outline,
+                      size: 14,
+                      color: Colors.white38,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Игроки: ${room.activePlayerCount}/${room.maxPlayers}',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const Spacer(),
+                    _StatusBadge(status: room.status),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                _StatusBadge(status: room.status),
               ],
             ),
           ),
@@ -224,70 +280,46 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
 
     return SafeArea(
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0D0D1A),
+          border: Border(
+            top: BorderSide(color: Color(0xFF2A2A4E)),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (isHost && currentPlayer?.status != 'ready') ...[
-              // Host needs to select character first
-              ElevatedButton.icon(
+              _ActionBtn(
+                icon: Icons.person_add_outlined,
+                label: 'Выбрать персонажа',
                 onPressed: () => _showCharacterSelector(context),
-                icon: const Icon(Icons.person_add),
-                label: const Text('Выбрать персонажа'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(top: 8),
-                child: Text(
-                  'Выберите персонажа перед началом игры',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
+              const SizedBox(height: 8),
+              const Text(
+                'Выберите персонажа перед началом игры',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white38, fontSize: 12),
               ),
             ] else if (isHost && currentPlayer?.status == 'ready') ...[
-              // Host is ready: show start game button
-              ElevatedButton.icon(
+              _ActionBtn(
+                icon: Icons.play_arrow,
+                label: 'Начать игру',
+                isPrimary: true,
                 onPressed: room.allPlayersReady && room.activePlayerCount >= 2
                     ? _startGame
                     : null,
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Начать игру'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                ),
               ),
               const SizedBox(height: 8),
-              // Change character button for host
-              OutlinedButton.icon(
-                onPressed: () {
-                  // First unready, then show selector
-                  context.read<LobbyBloc>().add(
-                        LobbyEvent.toggleReady(
-                          roomId: widget.roomId,
-                          ready: false,
-                        ),
-                      );
-                },
-                icon: const Icon(Icons.swap_horiz),
-                label: const Text('Сменить персонажа'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(12),
-                ),
+              _ActionBtn(
+                icon: Icons.swap_horiz,
+                label: 'Сменить персонажа',
+                onPressed: () => context.read<LobbyBloc>().add(
+                      LobbyEvent.toggleReady(
+                          roomId: widget.roomId, ready: false,),
+                    ),
               ),
               if (!room.allPlayersReady)
                 const Padding(
@@ -295,7 +327,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                   child: Text(
                     'Все игроки должны быть готовы',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                    style: TextStyle(color: Colors.white38, fontSize: 12),
                   ),
                 ),
               if (room.activePlayerCount < 2)
@@ -304,59 +336,68 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                   child: Text(
                     'Нужно минимум 2 игрока',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                    style: TextStyle(color: Colors.white38, fontSize: 12),
                   ),
                 ),
             ] else if (currentPlayer != null &&
                 currentPlayer.status == 'approved') ...[
-              // Approved player: ready/character selection
-              ElevatedButton.icon(
+              _ActionBtn(
+                icon: Icons.check_circle_outline,
+                label: 'Выбрать персонажа и готов',
                 onPressed: () => _showCharacterSelector(context),
-                icon: const Icon(Icons.check_circle_outline),
-                label: const Text('Выбрать персонажа и готов'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                ),
               ),
             ] else if (currentPlayer != null &&
                 currentPlayer.status == 'ready') ...[
-              // Ready player: unready
-              OutlinedButton.icon(
-                onPressed: () {
-                  context.read<LobbyBloc>().add(
-                        LobbyEvent.toggleReady(
-                          roomId: widget.roomId,
-                          ready: false,
-                        ),
-                      );
-                },
-                icon: const Icon(Icons.cancel_outlined),
-                label: const Text('Отменить готовность'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                ),
+              _ActionBtn(
+                icon: Icons.cancel_outlined,
+                label: 'Отменить готовность',
+                onPressed: () => context.read<LobbyBloc>().add(
+                      LobbyEvent.toggleReady(
+                          roomId: widget.roomId, ready: false,),
+                    ),
               ),
             ] else if (currentPlayer != null &&
                 currentPlayer.status == 'pending') ...[
-              const Center(
-                child: Text(
-                  'Ожидание одобрения хоста...',
-                  style: TextStyle(color: Colors.orange, fontSize: 16),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4A261).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: const Color(0xFFF4A261).withValues(alpha: 0.3),),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFF4A261),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Ожидание одобрения хоста...',
+                      style: TextStyle(
+                        color: Color(0xFFF4A261),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ] else ...[
-              // Not in room: join
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.read<LobbyBloc>().add(
-                        LobbyEvent.joinRoom(roomId: widget.roomId),
-                      );
-                },
-                icon: const Icon(Icons.login),
-                label: const Text('Присоединиться'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                ),
+              _ActionBtn(
+                icon: Icons.login,
+                label: 'Присоединиться',
+                isPrimary: true,
+                onPressed: () => context.read<LobbyBloc>().add(
+                      LobbyEvent.joinRoom(roomId: widget.roomId),
+                    ),
               ),
             ],
           ],
@@ -410,26 +451,69 @@ class _CharacterSelectorSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Выберите персонажа',
-              style: Theme.of(context).textTheme.titleLarge,
+            // Handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3A3A5E),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Container(
+                  width: 3,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4AF37),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Выберите персонажа',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Flexible(
               child: BlocBuilder<CharacterBloc, CharacterState>(
                 builder: (context, state) => state.when(
-                  initial: () => const Center(child: Text('Загрузка...')),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  initial: () => const Center(
+                    child: Text(
+                      'Загрузка...',
+                      style: TextStyle(color: Colors.white54),
+                    ),
+                  ),
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                        color: Color(0xFFD4AF37),),
+                  ),
                   loaded: (characters) {
                     if (characters.isEmpty) {
                       return const Center(
-                        child: Text('Нет персонажей. Создайте персонажа.'),
+                        child: Text(
+                          'Нет персонажей. Создайте персонажа.',
+                          style: TextStyle(color: Colors.white54),
+                        ),
                       );
                     }
                     return ListView.builder(
@@ -437,15 +521,73 @@ class _CharacterSelectorSheet extends StatelessWidget {
                       itemCount: characters.length,
                       itemBuilder: (context, index) {
                         final character = characters[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            child: Text(character.name[0].toUpperCase()),
-                          ),
-                          title: Text(character.name),
-                          subtitle: Text(
-                            '${character.characterClass} • ${character.race} • Ур. ${character.level}',
-                          ),
+                        return InkWell(
                           onTap: () => onSelected(character),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0D0D1A),
+                              borderRadius: BorderRadius.circular(12),
+                              border:
+                                  Border.all(color: const Color(0xFF2A2A4E)),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF2A2A4A),
+                                    border: Border.all(
+                                        color: const Color(0xFFD4AF37),
+                                        width: 1.5,),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      character.name[0].toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Color(0xFFD4AF37),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        character.name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${character.characterClass} · ${character.race} · Ур. ${character.level}',
+                                        style: const TextStyle(
+                                          color: Colors.white38,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Color(0xFF3A3A5E),
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ),
                         );
                       },
                     );
@@ -455,14 +597,81 @@ class _CharacterSelectorSheet extends StatelessWidget {
                   created: (_) => const SizedBox.shrink(),
                   deleted: (_) => const SizedBox.shrink(),
                   detail: (_) => const SizedBox.shrink(),
-                  error: (message, _) =>
-                      Center(child: Text('Ошибка: $message')),
+                  error: (message, _) => Center(
+                    child: Text(
+                      'Ошибка: $message',
+                      style: const TextStyle(color: Colors.white54),
+                    ),
+                  ),
                 ),
               ),
             ),
           ],
         ),
       );
+}
+
+/// Кнопка действия в стиле AppColors
+class _ActionBtn extends StatelessWidget {
+  const _ActionBtn({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isPrimary;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: isPrimary
+              ? (enabled
+                  ? const Color(0xFFD4AF37)
+                  : const Color(0xFFD4AF37).withValues(alpha: 0.3))
+              : const Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isPrimary
+                ? Colors.transparent
+                : const Color(0xFF2A2A4E),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isPrimary
+                  ? (enabled ? Colors.black : Colors.black45)
+                  : const Color(0xFFD4AF37),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: isPrimary
+                    ? (enabled ? Colors.black : Colors.black45)
+                    : Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Countdown dialog (3-2-1-Поехали!)

@@ -110,8 +110,9 @@ class MessageBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color:
-              isCurrentUser ? AppColors.primaryDark : const Color(0xFF1A1A2E),
+          color: isCurrentUser
+              ? const Color(0xFF2A2A4E)
+              : const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -128,7 +129,7 @@ class MessageBubble extends StatelessWidget {
                 child: Text(
                   message.authorName!,
                   style: const TextStyle(
-                    color: AppColors.secondaryLight,
+                    color: Color(0xFFD4AF37),
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -137,7 +138,7 @@ class MessageBubble extends StatelessWidget {
             Text(
               message.content,
               style: const TextStyle(
-                color: AppColors.onSurface,
+                color: Colors.white,
                 fontSize: 15,
               ),
             ),
@@ -152,16 +153,17 @@ class MessageBubble extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 24),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.8),
+            color: const Color(0xFF1A1A2E).withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF2A2A4E)),
           ),
           child: message.diceResult != null
               ? DiceResultWidget(result: message.diceResult!)
               : Text(
                   message.content,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.onSurface.withValues(alpha: 0.6),
+                  style: const TextStyle(
+                    color: Colors.white54,
                     fontSize: 13,
                   ),
                 ),
@@ -411,10 +413,10 @@ class _DmBubbleState extends State<_DmBubble>
       animation: _pulseAnimation,
       builder: (context, child) => DecoratedBox(
         decoration: BoxDecoration(
-          color: AppColors.primaryDark,
+          color: const Color(0xFF0D0D1A),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: AppColors.secondary.withValues(alpha: _pulseAnimation.value),
+            color: const Color(0xFFD4AF37).withValues(alpha: _pulseAnimation.value),
             width: 2,
           ),
         ),
@@ -478,9 +480,8 @@ class _DmBubbleState extends State<_DmBubble>
                                     req.modifier > 0
                                         ? ' +${req.modifier}'
                                         : ' ${req.modifier}',
-                                    style: TextStyle(
-                                      color: AppColors.onSurface
-                                          .withValues(alpha: 0.7),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
                                       fontSize: 18,
                                     ),
                                   ),
@@ -521,7 +522,7 @@ class _DmBubbleState extends State<_DmBubble>
                     Text(
                       req.reason!,
                       style: TextStyle(
-                        color: AppColors.onSurface.withValues(alpha: 0.8),
+                        color: Colors.white70,
                         fontSize: 14,
                         height: 1.3,
                       ),
@@ -564,24 +565,24 @@ class _DmBubbleState extends State<_DmBubble>
 
   MarkdownStyleSheet get _markdownStyle => MarkdownStyleSheet(
         p: const TextStyle(
-          color: AppColors.onSurface,
+          color: Colors.white,
           fontSize: 15,
           height: 1.4,
         ),
         horizontalRuleDecoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: AppColors.onSurface.withValues(alpha: 0.3),
+              color: Colors.white24,
             ),
           ),
         ),
         strong: const TextStyle(
-          color: AppColors.onSurface,
+          color: Colors.white,
           fontSize: 15,
           fontWeight: FontWeight.bold,
         ),
         em: const TextStyle(
-          color: AppColors.onSurface,
+          color: Colors.white,
           fontSize: 15,
           fontStyle: FontStyle.normal,
         ),
@@ -601,21 +602,21 @@ class _DmBubbleState extends State<_DmBubble>
           fontWeight: FontWeight.bold,
         ),
         listBullet: const TextStyle(
-          color: AppColors.onSurface,
+          color: Colors.white,
           fontSize: 15,
         ),
         code: TextStyle(
-          color: AppColors.onSurface,
+          color: Colors.white,
           backgroundColor: AppColors.surface.withValues(alpha: 0.5),
           fontSize: 15,
           fontWeight: FontWeight.bold,
         ),
         blockquoteDecoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 1),
+          color: const Color(0xFF0D0D1A),
           borderRadius: BorderRadius.circular(8),
         ),
         codeblockDecoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: 0.5),
+          color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(8),
         ),
       );
@@ -677,7 +678,7 @@ class StreamingBubble extends StatelessWidget {
               Text(
                 'думает...',
                 style: TextStyle(
-                  color: AppColors.onSurface.withValues(alpha: 0.6),
+                  color: Colors.white54,
                   fontSize: 14,
                   fontStyle: FontStyle.italic,
                 ),
@@ -687,24 +688,24 @@ class StreamingBubble extends StatelessWidget {
                 data: content,
                 styleSheet: MarkdownStyleSheet(
                   p: const TextStyle(
-                    color: AppColors.onSurface,
+                    color: Colors.white,
                     fontSize: 15,
                     height: 1.4,
                   ),
                   horizontalRuleDecoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: AppColors.onSurface.withValues(alpha: 0.3),
+                        color: Colors.white24,
                       ),
                     ),
                   ),
                   strong: const TextStyle(
-                    color: AppColors.onSurface,
+                    color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                   em: const TextStyle(
-                    color: AppColors.onSurface,
+                    color: Colors.white,
                     fontSize: 15,
                     fontStyle: FontStyle.normal,
                   ),
@@ -724,20 +725,20 @@ class StreamingBubble extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                   listBullet: const TextStyle(
-                    color: AppColors.onSurface,
+                    color: Colors.white,
                     fontSize: 15,
                   ),
                   code: TextStyle(
-                    color: AppColors.onSurface,
+                    color: Colors.white,
                     backgroundColor: AppColors.surface.withValues(alpha: 0.5),
                     fontSize: 15,
                   ),
                   blockquoteDecoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: 1),
+                    color: const Color(0xFF0D0D1A),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   codeblockDecoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: 0.5),
+                    color: const Color(0xFF1A1A2E),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
