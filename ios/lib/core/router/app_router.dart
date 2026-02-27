@@ -348,7 +348,7 @@ class _DungeonNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Container(
+    return DecoratedBox(
       decoration: const BoxDecoration(
         color: Color(0xFF0D0D1A),
         border: Border(
@@ -414,7 +414,6 @@ class _NavBarItem extends StatelessWidget {
             border: isSelected
                 ? Border.all(
                     color: const Color(0xFFD4AF37).withOpacity(0.25),
-                    width: 1,
                   )
                 : null,
           ),

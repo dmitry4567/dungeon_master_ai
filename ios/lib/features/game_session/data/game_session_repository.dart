@@ -99,9 +99,7 @@ class GameSessionRepository {
   }
 
   /// Получить токен для голосового канала
-  Future<VoiceToken> getVoiceToken(String roomId) async {
-    return _api.getVoiceToken(roomId);
-  }
+  Future<VoiceToken> getVoiceToken(String roomId) async => _api.getVoiceToken(roomId);
 
   /// Кэшировать сообщения в SQLite
   Future<void> _cacheMessages(

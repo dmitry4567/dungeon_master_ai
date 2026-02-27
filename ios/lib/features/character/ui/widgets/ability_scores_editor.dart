@@ -320,7 +320,7 @@ class _AbilityEditor extends StatelessWidget {
                       : const Color(0xFFD4AF37))
                   .withOpacity(0.2),
               trackHeight: 6,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+              thumbShape: const RoundSliderThumbShape(),
             ),
             child: Slider(
               value: value.toDouble(),

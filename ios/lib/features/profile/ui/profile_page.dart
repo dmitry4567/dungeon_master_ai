@@ -142,7 +142,6 @@ class ProfilePage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // Avatar
                         Container(
@@ -326,7 +325,7 @@ class ProfilePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.person_outline,
-                size: 64, color: Color(0xFF3A3A5E)),
+                size: 64, color: Color(0xFF3A3A5E),),
             const SizedBox(height: 16),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -358,7 +357,7 @@ class ProfilePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error_outline,
-                  size: 56, color: Color(0xFF8B3333)),
+                  size: 56, color: Color(0xFF8B3333),),
               const SizedBox(height: 16),
               Text(
                 message,
@@ -435,7 +434,7 @@ class ProfilePage extends StatelessWidget {
               backgroundColor: const Color(0xFFD4AF37),
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),),
             ),
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
@@ -445,7 +444,7 @@ class ProfilePage extends StatelessWidget {
               }
             },
             child: const Text('Сохранить',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+                style: TextStyle(fontWeight: FontWeight.bold),),
           ),
         ],
       ),

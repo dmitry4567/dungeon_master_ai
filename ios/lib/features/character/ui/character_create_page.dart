@@ -47,7 +47,7 @@ class CharacterCreatePage extends StatelessWidget {
               return const Scaffold(
                 backgroundColor: Color(0xFF0D0D1A),
                 body: Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
               );
             }
         
@@ -624,7 +624,7 @@ class _NavigationButtons extends StatelessWidget {
       );
 
   void _showValidationError(BuildContext context, CharacterCreationForm form) {
-    String error = '';
+    var error = '';
     switch (form.currentStep) {
       case 0:
         error = 'Выберите класс персонажа';

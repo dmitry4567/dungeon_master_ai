@@ -481,7 +481,7 @@ class _GameSessionPageState extends State<GameSessionPage>
                   color: Color(0xFF52B788),
                   size: 40,
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Text(
                   'Сессия завершена',
                   style: TextStyle(
@@ -511,10 +511,10 @@ class _GameSessionPageState extends State<GameSessionPage>
               top: 16,
               bottom: MediaQuery.of(context).padding.bottom + 16,
             ),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A2E),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1A1A2E),
               border: Border(
-                top: BorderSide(color: const Color(0xFF2A2A4E), width: 1.5),
+                top: BorderSide(color: Color(0xFF2A2A4E), width: 1.5),
               ),
             ),
             child: SafeArea(

@@ -46,7 +46,7 @@ class VoiceCubit extends Cubit<VoiceState> {
       connectionStatus: VoiceConnectionStatus.connecting,
       errorMessage: null,
       roomId: roomId,
-    ));
+    ),);
 
     try {
       // Request microphone permission
@@ -58,7 +58,7 @@ class VoiceCubit extends Cubit<VoiceState> {
           errorMessage: isPermanentlyDenied
               ? 'Доступ к микрофону запрещён. Откройте настройки, чтобы разрешить доступ.'
               : 'Для голосового чата необходим доступ к микрофону',
-        ));
+        ),);
         return;
       }
 
@@ -71,7 +71,7 @@ class VoiceCubit extends Cubit<VoiceState> {
       await _engine!.initialize(RtcEngineContext(
         appId: token.appId,
         channelProfile: ChannelProfileType.channelProfileLiveBroadcasting,
-      ));
+      ),);
 
       _isEngineInitialized = true;
 
@@ -99,7 +99,7 @@ class VoiceCubit extends Cubit<VoiceState> {
         onConnectionStateChanged: _onConnectionStateChanged,
         onTokenPrivilegeWillExpire: _onTokenPrivilegeWillExpire,
         onError: _onError,
-      ));
+      ),);
 
       // Join channel
       await _engine!.joinChannel(
@@ -115,7 +115,7 @@ class VoiceCubit extends Cubit<VoiceState> {
       emit(state.copyWith(
         connectionStatus: VoiceConnectionStatus.error,
         errorMessage: e.toString(),
-      ));
+      ),);
     }
   }
 
@@ -159,7 +159,7 @@ class VoiceCubit extends Cubit<VoiceState> {
     emit(state.copyWith(
       connectionStatus: VoiceConnectionStatus.disconnected,
       participants: {},
-    ));
+    ),);
   }
 
   void _onUserJoined(RtcConnection connection, int remoteUid, int elapsed) {
@@ -190,7 +190,7 @@ class VoiceCubit extends Cubit<VoiceState> {
     int totalVolume,
   ) {
     final participants = Map<int, VoiceParticipant>.from(state.participants);
-    bool hasChanges = false;
+    var hasChanges = false;
 
     // Reset all speaking states first
     for (final entry in participants.entries) {
@@ -240,17 +240,13 @@ class VoiceCubit extends Cubit<VoiceState> {
     switch (state_) {
       case ConnectionStateType.connectionStateConnecting:
         emit(state.copyWith(connectionStatus: VoiceConnectionStatus.connecting));
-        break;
       case ConnectionStateType.connectionStateConnected:
         emit(state.copyWith(connectionStatus: VoiceConnectionStatus.connected));
-        break;
       case ConnectionStateType.connectionStateReconnecting:
         emit(state.copyWith(connectionStatus: VoiceConnectionStatus.reconnecting));
-        break;
       case ConnectionStateType.connectionStateDisconnected:
       case ConnectionStateType.connectionStateFailed:
         emit(state.copyWith(connectionStatus: VoiceConnectionStatus.disconnected));
-        break;
     }
   }
 
@@ -268,7 +264,7 @@ class VoiceCubit extends Cubit<VoiceState> {
         // Token renewal failed, connection will drop
         emit(state.copyWith(
           errorMessage: 'Failed to renew voice token: $e',
-        ));
+        ),);
       }
     }
   }
@@ -277,7 +273,7 @@ class VoiceCubit extends Cubit<VoiceState> {
     emit(state.copyWith(
       connectionStatus: VoiceConnectionStatus.error,
       errorMessage: 'Agora error: $msg (code: ${err.name})',
-    ));
+    ),);
   }
 
   @override

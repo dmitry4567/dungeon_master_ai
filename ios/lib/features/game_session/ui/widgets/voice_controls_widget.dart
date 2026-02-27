@@ -8,19 +8,15 @@ import 'voice_participant_indicator.dart';
 /// Widget for voice channel controls
 class VoiceControlsWidget extends StatelessWidget {
   const VoiceControlsWidget({
-    super.key,
-    required this.roomId,
-    required this.isRoomActive,
+    required this.roomId, required this.isRoomActive, super.key,
   });
 
   final String roomId;
   final bool isRoomActive;
 
   @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<VoiceCubit, VoiceState>(
-      builder: (context, state) {
-        return Container(
+  Widget build(BuildContext context) => BlocBuilder<VoiceCubit, VoiceState>(
+      builder: (context, state) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A2E),
@@ -47,10 +43,8 @@ class VoiceControlsWidget extends StatelessWidget {
               ],
             ],
           ),
-        );
-      },
+        ),
     );
-  }
 
   Widget _buildParticipantsList(BuildContext context, VoiceState state) {
     final participants = state.participants.values.toList();
@@ -73,8 +67,7 @@ class VoiceControlsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildParticipantChip(BuildContext context, VoiceParticipant participant) {
-    return Container(
+  Widget _buildParticipantChip(BuildContext context, VoiceParticipant participant) => Container(
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -111,7 +104,6 @@ class VoiceControlsWidget extends StatelessWidget {
         ],
       ),
     );
-  }
 
   Widget _buildConnectionButton(BuildContext context, VoiceState state) {
     final cubit = context.read<VoiceCubit>();
@@ -142,7 +134,7 @@ class VoiceControlsWidget extends StatelessWidget {
 
       case VoiceConnectionStatus.connected:
         return _VoiceButton(
-          onPressed: () => cubit.disconnect(),
+          onPressed: cubit.disconnect,
           icon: Icons.headset,
           label: 'Leave Voice',
           color: Theme.of(context).colorScheme.tertiary,
@@ -151,15 +143,15 @@ class VoiceControlsWidget extends StatelessWidget {
 
       case VoiceConnectionStatus.error:
         // Check if error is about microphone permission
-        final isPermissionError = state.errorMessage?.contains('настройки') == true ||
-            state.errorMessage?.contains('микрофону') == true;
+        final isPermissionError = (state.errorMessage?.contains('настройки') ?? false) ||
+            (state.errorMessage?.contains('микрофону') ?? false);
 
         if (isPermissionError) {
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               _VoiceButton(
-                onPressed: () => cubit.openSettings(),
+                onPressed: cubit.openSettings,
                 icon: Icons.settings,
                 label: 'Настройки',
                 color: Theme.of(context).colorScheme.error,
@@ -191,7 +183,7 @@ class VoiceControlsWidget extends StatelessWidget {
     final cubit = context.read<VoiceCubit>();
 
     return IconButton(
-      onPressed: () => cubit.toggleMute(),
+      onPressed: cubit.toggleMute,
       icon: Icon(
         state.isMuted ? Icons.mic_off : Icons.mic,
         color: state.isMuted
@@ -207,8 +199,7 @@ class VoiceControlsWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorIndicator(BuildContext context, VoiceState state) {
-    return Tooltip(
+  Widget _buildErrorIndicator(BuildContext context, VoiceState state) => Tooltip(
       message: state.errorMessage ?? 'Unknown error',
       child: Icon(
         Icons.warning_amber_rounded,
@@ -216,7 +207,6 @@ class VoiceControlsWidget extends StatelessWidget {
         size: 20,
       ),
     );
-  }
 }
 
 class _VoiceButton extends StatelessWidget {
@@ -258,7 +248,7 @@ class _VoiceButton extends StatelessWidget {
 
     if (tooltip != null) {
       return Tooltip(
-        message: tooltip!,
+        message: tooltip,
         child: button,
       );
     }

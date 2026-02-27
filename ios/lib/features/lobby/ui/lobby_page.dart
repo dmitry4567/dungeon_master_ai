@@ -69,13 +69,13 @@ class _LobbyPageState extends State<LobbyPage>
             // Handle state changes if needed
           },
           builder: (context, state) => state.when(
-            initial: () => _buildInitialState(),
-            loading: () => _buildLoadingView(),
-            loaded: (rooms) => _buildLoadedView(rooms),
-            creating: () => _buildCreatingView(),
+            initial: _buildInitialState,
+            loading: _buildLoadingView,
+            loaded: _buildLoadedView,
+            creating: _buildCreatingView,
             roomDetail: (_, __) => const SizedBox.shrink(),
             gameStarting: (_, __) => const SizedBox.shrink(),
-            error: (message) => _buildErrorView(message),
+            error: _buildErrorView,
           ),
         ),
       );
@@ -169,12 +169,12 @@ class _LobbyPageState extends State<LobbyPage>
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                            horizontal: 10, vertical: 4,),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD4AF37).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                              color: const Color(0xFFD4AF37).withOpacity(0.3),),
                         ),
                         child: Text(
                           '${rooms.length}',
@@ -207,7 +207,7 @@ class _LobbyPageState extends State<LobbyPage>
                                   room.isCurrentUserPlayer) {
                                 context.push(
                                   Routes.gameSessionPath(room.id,
-                                      title: room.name),
+                                      title: room.name,),
                                 );
                               } else {
                                 context.push(Routes.waitingRoomPath(room.id));
@@ -247,12 +247,12 @@ class _LobbyPageState extends State<LobbyPage>
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 56,
                     height: 56,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: const Color(0xFFD4AF37),
+                      color: Color(0xFFD4AF37),
                       backgroundColor: Colors.transparent,
                     ),
                   ),
@@ -304,12 +304,13 @@ class _LobbyPageState extends State<LobbyPage>
               },
               borderRadius: BorderRadius.circular(10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD4AF37).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                      color: const Color(0xFFD4AF37).withOpacity(0.3),),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -353,7 +354,6 @@ class _LobbyPageState extends State<LobbyPage>
                     padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 80,

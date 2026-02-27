@@ -122,7 +122,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
               if (state is! ScenarioDetail) {
                 return const Center(
                   child: Text('Сценарий не найден',
-                      style: TextStyle(color: Colors.white54)),
+                      style: TextStyle(color: Colors.white54),),
                 );
               }
 
@@ -132,7 +132,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
               if (content == null) {
                 return const Center(
                   child: Text('Контент сценария недоступен',
-                      style: TextStyle(color: Colors.white54)),
+                      style: TextStyle(color: Colors.white54),),
                 );
               }
 
@@ -173,7 +173,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
       );
 
   Widget _buildContent(
-          BuildContext context, Scenario scenario, ScenarioContent content) =>
+          BuildContext context, Scenario scenario, ScenarioContent content,) =>
       CustomScrollView(
         slivers: [
           _buildSliverAppBar(context, scenario),
@@ -242,7 +242,6 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
                     padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 80,
@@ -337,7 +336,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
                     Text('Опубликовать', style: TextStyle(color: Colors.white)),
                   ],
                 ),
-              ));
+              ),);
             }
 
             items.addAll(<PopupMenuItem<String>>[
@@ -358,7 +357,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
                     Icon(Icons.history, color: Color(0xFF64B5F6), size: 20),
                     SizedBox(width: 12),
                     Text('История версий',
-                        style: TextStyle(color: Colors.white)),
+                        style: TextStyle(color: Colors.white),),
                   ],
                 ),
               ),
@@ -379,7 +378,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
       );
 
   Widget _buildStatusBar(
-          BuildContext context, Scenario scenario, ScenarioContent content) =>
+          BuildContext context, Scenario scenario, ScenarioContent content,) =>
       Container(
         margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(16),
@@ -514,7 +513,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
       );
 
   Widget _buildWorldLoreSection(
-          BuildContext context, ScenarioContent content) =>
+          BuildContext context, ScenarioContent content,) =>
       Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
@@ -598,10 +597,12 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
               ],
             ),
           ),
-          ...content.acts.map<Widget>((act) => Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: ActExpansionTile(act: act),
-              )),
+          ...content.acts.map<Widget>(
+            (act) => Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: ActExpansionTile(act: act),
+            ),
+          ),
         ],
       );
 
@@ -638,15 +639,17 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
               ],
             ),
           ),
-          ...content.npcs.map<Widget>((npc) => Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: NpcCard(npc: npc),
-              )),
+          ...content.npcs.map<Widget>(
+            (npc) => Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: NpcCard(npc: npc),
+            ),
+          ),
         ],
       );
 
   Widget _buildLocationsSection(
-          BuildContext context, ScenarioContent content) =>
+          BuildContext context, ScenarioContent content,) =>
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -682,7 +685,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
           ...content.locations.map<Widget>((location) => Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: _buildLocationCard(location),
-              )),
+              ),),
         ],
       );
 

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/colors.dart';
-import '../../../shared/widgets/fantasy_button.dart';
 import '../bloc/scenario_bloc.dart';
 import '../bloc/scenario_event.dart';
 import '../bloc/scenario_state.dart';
@@ -165,7 +163,6 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
                     padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 72,
@@ -425,12 +422,12 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 56,
                     height: 56,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: const Color(0xFFD4AF37),
+                      color: Color(0xFFD4AF37),
                       backgroundColor: Colors.transparent,
                     ),
                   ),

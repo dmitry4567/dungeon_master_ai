@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -65,15 +67,18 @@ Future<void> main() async {
 }
 
 Future<void> _requestPermissions() async {
-  // Request microphone permission for voice input
-  final microphoneStatus = await Permission.microphone.status;
-  if (microphoneStatus.isDenied) {
-    await Permission.microphone.request();
-  }
+  // permission_handler doesn't support macOS
+  if (!kIsWeb && Platform.isIOS) {
+    // Request microphone permission for voice input
+    final microphoneStatus = await Permission.microphone.status;
+    if (microphoneStatus.isDenied) {
+      await Permission.microphone.request();
+    }
 
-  // Request speech recognition permission
-  final speechStatus = await Permission.speech.status;
-  if (speechStatus.isDenied) {
-    await Permission.speech.request();
+    // Request speech recognition permission
+    final speechStatus = await Permission.speech.status;
+    if (speechStatus.isDenied) {
+      await Permission.speech.request();
+    }
   }
 }

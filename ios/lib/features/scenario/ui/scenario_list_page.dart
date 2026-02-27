@@ -37,7 +37,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
         body: BlocBuilder<ScenarioBloc, ScenarioState>(
           builder: (context, state) => state.when(
             initial: () => _buildScrollView(context,
-                child: const SliverFillRemaining(child: _EmptyView())),
+                child: const SliverFillRemaining(child: _EmptyView()),),
             loading: () => _buildScrollView(context, isLoading: true),
             loaded: (scenarios) => RefreshIndicator(
               color: const Color(0xFFD4AF37),
@@ -71,7 +71,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
             error: (message) => _buildScrollView(
               context,
               child: SliverFillRemaining(
-                  child: _ErrorView(message: message, onRetry: _loadScenarios)),
+                  child: _ErrorView(message: message, onRetry: _loadScenarios),),
             ),
           ),
         ),
@@ -107,7 +107,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
                 child: Row(
                   children: [
                     const Icon(Icons.auto_stories,
-                        color: Color(0xFFD4AF37), size: 20),
+                        color: Color(0xFFD4AF37), size: 20,),
                     const SizedBox(width: 8),
                     Text(
                       'Мои сценарии',
@@ -120,12 +120,12 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                          horizontal: 10, vertical: 4,),
                       decoration: BoxDecoration(
                         color: const Color(0xFFD4AF37).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                            color: const Color(0xFFD4AF37).withOpacity(0.3),),
                       ),
                       child: Text(
                         '${scenarios.length}',
@@ -181,7 +181,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
                   color: const Color(0xFFD4AF37).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                      color: const Color(0xFFD4AF37).withOpacity(0.3),),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -214,14 +214,13 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
             child: Stack(
               children: [
                 Positioned.fill(
-                    child: CustomPaint(painter: _StarFieldPainter())),
+                    child: CustomPaint(painter: _StarFieldPainter()),),
                 SizedBox(
                   width: double.infinity,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 80,
@@ -230,7 +229,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
                             shape: BoxShape.circle,
                             color: const Color(0xFF2A2A4A),
                             border: Border.all(
-                                color: const Color(0xFFD4AF37), width: 2.5),
+                                color: const Color(0xFFD4AF37), width: 2.5,),
                             boxShadow: [
                               BoxShadow(
                                 color: const Color(0xFFD4AF37).withOpacity(0.3),
@@ -334,7 +333,7 @@ class _EmptyView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.book_outlined,
-                  size: 56, color: Color(0xFF3A3A5E)),
+                  size: 56, color: Color(0xFF3A3A5E),),
               const SizedBox(height: 16),
               const Text(
                 'Нет сценариев',
@@ -348,7 +347,7 @@ class _EmptyView extends StatelessWidget {
               Text(
                 'Создайте свой первый сценарий\nдля незабываемого приключения',
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.35), fontSize: 13),
+                    color: Colors.white.withOpacity(0.35), fontSize: 13,),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -371,7 +370,7 @@ class _ErrorView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.error_outline,
-                  size: 56, color: Color(0xFF8B3333)),
+                  size: 56, color: Color(0xFF8B3333),),
               const SizedBox(height: 16),
               Text(
                 message,
@@ -384,7 +383,7 @@ class _ErrorView extends StatelessWidget {
                   backgroundColor: const Color(0xFFD4AF37),
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(10),),
                 ),
                 onPressed: onRetry,
                 child: const Text('Повторить'),

@@ -216,7 +216,6 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
                     padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 96,
@@ -240,7 +239,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
                             child: Text(
                               character != null
                                   ? (DndReferenceData.findClassById(
-                                              character.characterClass)
+                                              character.characterClass,)
                                           ?.iconEmoji ??
                                       '⚔️')
                                   : '⚔️',
@@ -335,7 +334,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
       );
 
   Widget _buildHeaderCard(
-          Character character, DndClass? dndClass, dynamic dndRace) =>
+          Character character, DndClass? dndClass, dynamic dndRace,) =>
       Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(20),

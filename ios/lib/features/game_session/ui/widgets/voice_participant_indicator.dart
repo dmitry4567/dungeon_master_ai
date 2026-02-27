@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 /// Animated indicator showing when a participant is speaking
 class VoiceParticipantIndicator extends StatefulWidget {
   const VoiceParticipantIndicator({
-    super.key,
-    required this.isSpeaking,
+    required this.isSpeaking, super.key,
     this.size = 24.0,
   });
 
@@ -30,11 +29,11 @@ class _VoiceParticipantIndicatorState extends State<VoiceParticipantIndicator>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+    _scaleAnimation = Tween<double>(begin: 1, end: 1.3).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.5).animate(
+    _opacityAnimation = Tween<double>(begin: 1, end: 0.5).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
@@ -100,9 +99,7 @@ class _VoiceParticipantIndicatorState extends State<VoiceParticipantIndicator>
 /// Speaking border indicator that wraps around an avatar or name
 class SpeakingBorderIndicator extends StatefulWidget {
   const SpeakingBorderIndicator({
-    super.key,
-    required this.isSpeaking,
-    required this.child,
+    required this.isSpeaking, required this.child, super.key,
     this.borderRadius = 8.0,
   });
 
@@ -128,7 +125,7 @@ class _SpeakingBorderIndicatorState extends State<SpeakingBorderIndicator>
       vsync: this,
     );
 
-    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _pulseAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
 
@@ -157,10 +154,9 @@ class _SpeakingBorderIndicatorState extends State<SpeakingBorderIndicator>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
+  Widget build(BuildContext context) => AnimatedBuilder(
       animation: _controller,
-      builder: (context, child) => Container(
+      builder: (context, child) => DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.borderRadius),
           border: widget.isSpeaking
@@ -187,7 +183,6 @@ class _SpeakingBorderIndicatorState extends State<SpeakingBorderIndicator>
         child: widget.child,
       ),
     );
-  }
 }
 
 /// Muted indicator icon
@@ -200,8 +195,7 @@ class MutedIndicator extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: const Color(0xFFE76F51).withValues(alpha: 0.2),
@@ -213,5 +207,4 @@ class MutedIndicator extends StatelessWidget {
         color: const Color(0xFFE76F51),
       ),
     );
-  }
 }

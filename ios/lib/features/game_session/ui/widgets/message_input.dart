@@ -91,7 +91,7 @@ class _MessageInputState extends State<MessageInput> {
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide:  BorderSide(
-                      color: Color(0xFF2A2A4E).withValues(alpha: 0.4),
+                      color: const Color(0xFF2A2A4E).withValues(alpha: 0.4),
                       width: 1.5,
                     ),
                   ),

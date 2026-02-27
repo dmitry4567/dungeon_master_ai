@@ -216,7 +216,6 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 72,
@@ -339,7 +338,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     focusedBorder: InputBorder.none,
                     errorBorder: InputBorder.none,
                     focusedErrorBorder: InputBorder.none,
-                    fillColor: Colors.transparent),
+                    fillColor: Colors.transparent,),
                 maxLength: 100,
                 validator: (value) {
                   if (value == null || value.trim().length < 3) {
@@ -474,7 +473,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     color: const Color(0xFF52B788).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: const Color(0xFF52B788).withOpacity(0.4)),
+                        color: const Color(0xFF52B788).withOpacity(0.4),),
                   ),
                   child: Text(
                     '$_maxPlayers',
@@ -556,9 +555,9 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             BlocBuilder<CharacterBloc, CharacterState>(
               builder: (context, state) => state.when(
                 initial: () => const Text('Загрузка...',
-                    style: TextStyle(color: Colors.white54)),
+                    style: TextStyle(color: Colors.white54),),
                 loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
                 loaded: (characters) {
                   if (characters.isEmpty) {
                     return Container(
@@ -571,13 +570,13 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                       child: const Row(
                         children: [
                           Icon(Icons.info_outline,
-                              color: Color(0xFFF4A261), size: 20),
+                              color: Color(0xFFF4A261), size: 20,),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Нет персонажей. Создайте персонажа в разделе "Персонажи".',
                               style: TextStyle(
-                                  color: Colors.white70, fontSize: 13),
+                                  color: Colors.white70, fontSize: 13,),
                             ),
                           ),
                         ],
@@ -602,7 +601,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                   );
                 },
                 error: (message, _) => Text('Ошибка: $message',
-                    style: const TextStyle(color: Color(0xFFE76F51))),
+                    style: const TextStyle(color: Color(0xFFE76F51)),),
                 creating: (_) => const SizedBox.shrink(),
                 submitting: (_) => const SizedBox.shrink(),
                 created: (_) => const SizedBox.shrink(),
@@ -654,9 +653,9 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             BlocBuilder<ScenarioBloc, ScenarioState>(
               builder: (context, state) => state.when(
                 initial: () => const Text('Загрузка...',
-                    style: TextStyle(color: Colors.white54)),
+                    style: TextStyle(color: Colors.white54),),
                 loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
                 loaded: (scenarios) {
                   if (scenarios.isEmpty) {
                     return Container(
@@ -669,13 +668,13 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                       child: const Row(
                         children: [
                           Icon(Icons.info_outline,
-                              color: Color(0xFFF4A261), size: 20),
+                              color: Color(0xFFF4A261), size: 20,),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Нет сценариев. Создайте сценарий в разделе "Сценарии".',
                               style: TextStyle(
-                                  color: Colors.white70, fontSize: 13),
+                                  color: Colors.white70, fontSize: 13,),
                             ),
                           ),
                         ],
@@ -700,11 +699,11 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                   );
                 },
                 generating: (_) => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
                 scenarioDetail: (_) => const SizedBox.shrink(),
                 versionHistory: (_, __) => const SizedBox.shrink(),
                 error: (message) => Text('Ошибка: $message',
-                    style: const TextStyle(color: Color(0xFFE76F51))),
+                    style: const TextStyle(color: Color(0xFFE76F51)),),
               ),
             ),
           ],
@@ -780,7 +779,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             ),
           ),
         );
-      });
+      },);
 }
 
 class _GameModeOption extends StatelessWidget {
@@ -880,10 +879,10 @@ class _CharacterOption extends StatelessWidget {
                       color: isSelected
                           ? const Color(0xFFD4AF37)
                           : const Color(0xFF3A3A5E),
-                      width: isSelected ? 2 : 1),
+                      width: isSelected ? 2 : 1,),
                 ),
                 child: const Icon(Icons.shield,
-                    color: Color(0xFFD4AF37), size: 22),
+                    color: Color(0xFFD4AF37), size: 22,),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -911,7 +910,7 @@ class _CharacterOption extends StatelessWidget {
               ),
               if (isSelected)
                 const Icon(Icons.check_circle,
-                    color: Color(0xFFD4AF37), size: 22)
+                    color: Color(0xFFD4AF37), size: 22,)
               else
                 Container(
                   width: 22,
@@ -968,10 +967,10 @@ class _ScenarioOption extends StatelessWidget {
                       color: isSelected
                           ? const Color(0xFFD4AF37)
                           : const Color(0xFF3A3A5E),
-                      width: isSelected ? 2 : 1),
+                      width: isSelected ? 2 : 1,),
                 ),
                 child: const Icon(Icons.auto_stories,
-                    color: Color(0xFFD4AF37), size: 22),
+                    color: Color(0xFFD4AF37), size: 22,),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -991,12 +990,12 @@ class _ScenarioOption extends StatelessWidget {
                     const SizedBox(height: 2),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                          horizontal: 8, vertical: 2,),
                       decoration: BoxDecoration(
                         color: const Color(0xFF52B788).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                            color: const Color(0xFF52B788).withOpacity(0.4)),
+                            color: const Color(0xFF52B788).withOpacity(0.4),),
                       ),
                       child: Text(
                         scenario.status == 'published'
@@ -1014,7 +1013,7 @@ class _ScenarioOption extends StatelessWidget {
               ),
               if (isSelected)
                 const Icon(Icons.check_circle,
-                    color: Color(0xFFD4AF37), size: 22)
+                    color: Color(0xFFD4AF37), size: 22,)
               else
                 Container(
                   width: 22,

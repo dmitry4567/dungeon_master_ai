@@ -10,7 +10,7 @@ class ActExpansionTile extends StatelessWidget {
   final Act act;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(12),
@@ -43,6 +43,9 @@ class ActExpansionTile extends StatelessWidget {
             '${act.scenes.length} сцен',
             style: const TextStyle(color: Colors.white54, fontSize: 12),
           ),
+          shape: const Border(),
+          collapsedShape: const Border(),
+          splashColor: Colors.transparent,
           children: [
             // Entry condition
             _InfoRow(
@@ -256,7 +259,7 @@ class _SceneCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )),
+                  ),),
             ],
             if (scene.possibleOutcomes.isNotEmpty) ...[
               const SizedBox(height: 12),
@@ -305,7 +308,7 @@ class _SceneCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )),
+                  ),),
             ],
           ],
         ),

@@ -10,7 +10,7 @@ class NpcCard extends StatelessWidget {
   final Npc npc;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => DecoratedBox(
         decoration: BoxDecoration(
           color: const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(12),
@@ -38,6 +38,7 @@ class NpcCard extends StatelessWidget {
           ),
           shape: const Border(),
           collapsedShape: const Border(),
+          splashColor: Colors.transparent,
           children: [
             // Personality
             _InfoSection(
@@ -113,7 +114,7 @@ class NpcCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  )),
+                  ),),
             ],
           ],
         ),

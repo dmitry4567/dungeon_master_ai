@@ -361,7 +361,7 @@ class _DmBubbleState extends State<_DmBubble>
                     animation: _pulseAnimation,
                     builder: (context, child) => Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                          horizontal: 8, vertical: 2,),
                       decoration: BoxDecoration(
                         color: AppColors.secondary
                             .withValues(alpha: _pulseAnimation.value),
@@ -521,7 +521,7 @@ class _DmBubbleState extends State<_DmBubble>
                     const SizedBox(height: 12),
                     Text(
                       req.reason!,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                         height: 1.3,
@@ -569,7 +569,7 @@ class _DmBubbleState extends State<_DmBubble>
           fontSize: 15,
           height: 1.4,
         ),
-        horizontalRuleDecoration: BoxDecoration(
+        horizontalRuleDecoration: const BoxDecoration(
           border: Border(
             top: BorderSide(
               color: Colors.white24,
@@ -675,7 +675,7 @@ class StreamingBubble extends StatelessWidget {
             const SizedBox(height: 8),
             // Показываем "думает..." если контент еще пустой или очень короткий
             if (content.trim().isEmpty)
-              Text(
+              const Text(
                 'думает...',
                 style: TextStyle(
                   color: Colors.white54,
@@ -692,7 +692,7 @@ class StreamingBubble extends StatelessWidget {
                     fontSize: 15,
                     height: 1.4,
                   ),
-                  horizontalRuleDecoration: BoxDecoration(
+                  horizontalRuleDecoration: const BoxDecoration(
                     border: Border(
                       top: BorderSide(
                         color: Colors.white24,

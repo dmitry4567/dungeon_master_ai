@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../data/dnd_reference_data.dart';
-import '../../models/character.dart';
 import '../../models/ability_scores.dart';
+import '../../models/character.dart';
 
 /// Карточка персонажа для отображения в списке
 class CharacterCard extends StatelessWidget {

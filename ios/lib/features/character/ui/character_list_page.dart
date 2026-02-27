@@ -147,7 +147,7 @@ class CharacterListPage extends StatelessWidget {
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                            horizontal: 10, vertical: 4,),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD4AF37).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
@@ -208,7 +208,7 @@ class CharacterListPage extends StatelessWidget {
                     if (result == true && context.mounted) {
                       context.read<CharacterBloc>().add(
                             const CharacterEvent.loadCharacters(
-                                forceRefresh: true),
+                                forceRefresh: true,),
                           );
                     }
                   },
@@ -237,7 +237,6 @@ class CharacterListPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 80,
@@ -315,7 +314,7 @@ class CharacterListPage extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.visibility,
-                    color: Color(0xFFD4AF37)),
+                    color: Color(0xFFD4AF37),),
                 title: const Text(
                   'Просмотреть',
                   style: TextStyle(color: Colors.white),
@@ -327,7 +326,7 @@ class CharacterListPage extends StatelessWidget {
               ),
               ListTile(
                 leading: const Icon(Icons.delete,
-                    color: Color(0xFFE57373)),
+                    color: Color(0xFFE57373),),
                 title: const Text(
                   'Удалить',
                   style: TextStyle(color: Color(0xFFE57373)),
