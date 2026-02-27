@@ -141,6 +141,8 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         _handleSystemMessage(currentState, event.data, emit);
       case 'dice_request':
         _handleDiceRequest(currentState, event.data, emit);
+      case 'voice_channel_closed':
+        _handleVoiceChannelClosed(currentState, emit);
     }
   }
 
@@ -330,6 +332,14 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     emit(currentState.copyWith(
       messages: [...currentState.messages, systemMessage],
     ),);
+  }
+
+  void _handleVoiceChannelClosed(
+    GameSessionActive currentState,
+    Emitter<GameSessionState> emit,
+  ) {
+    // Устанавливаем флаг, чтобы UI-слой мог отреагировать и отключить голосовой канал
+    emit(currentState.copyWith(voiceChannelClosed: true));
   }
 
   void _handleDiceRequest(

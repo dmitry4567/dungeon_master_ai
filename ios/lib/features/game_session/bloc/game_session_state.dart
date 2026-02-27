@@ -30,6 +30,8 @@ class GameSessionState with _$GameSessionState {
     DiceRequest? pendingDiceRequest,
     /// ID сообщений DM, для которых уже был выполнен бросок кубика
     @Default({}) Set<String> rolledMessageIds,
+    /// Флаг, сигнализирующий о закрытии голосового канала (для auto-disconnect)
+    @Default(false) bool voiceChannelClosed,
   }) = GameSessionActive;
 
   /// Сессия завершена

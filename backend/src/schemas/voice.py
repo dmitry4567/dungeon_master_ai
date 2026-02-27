@@ -1,7 +1,8 @@
-"""Voice schemas for TTS operations."""
+"""Voice schemas for TTS and Agora voice chat operations."""
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -42,3 +43,16 @@ class VoiceSession(BaseSchema):
     audio_url: str = Field(..., description="Audio file URL")
     direction: str = Field(..., description="Direction: 'tts'")
     created_at: str = Field(..., description="Creation timestamp")
+
+
+# Agora Voice Chat Schemas
+
+
+class VoiceTokenResponse(BaseSchema):
+    """Response schema for Agora voice token."""
+
+    token: str = Field(..., description="Agora RTC token for joining the voice channel")
+    channel_name: str = Field(..., description="Agora channel name (equals room_id)")
+    uid: int = Field(..., description="Numeric uid for this user in the Agora channel")
+    app_id: str = Field(..., description="Agora App ID needed by client SDK initialization")
+    expires_at: datetime = Field(..., description="UTC datetime when the token expires")

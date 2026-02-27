@@ -14,6 +14,8 @@ import '../../features/character/ui/character_detail_page.dart';
 import '../../features/character/ui/character_list_page.dart';
 import '../../features/game_session/bloc/game_session_bloc.dart';
 import '../../features/game_session/bloc/game_session_event.dart';
+import '../../features/game_session/bloc/voice_cubit.dart';
+import '../../features/game_session/data/game_session_repository.dart';
 import '../../features/game_session/ui/game_session_page.dart';
 import '../../features/lobby/bloc/lobby_bloc.dart';
 import '../../features/lobby/bloc/lobby_event.dart';
@@ -230,9 +232,18 @@ class AppRouter {
           final roomId = state.pathParameters['roomId']!;
           final title = state.uri.queryParameters['title'] ?? 'Игровая сессия';
 
-          return BlocProvider(
-            create: (_) => getIt<GameSessionBloc>()
-              ..add(GameSessionEvent.connectToSession(roomId: roomId)),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (_) => getIt<GameSessionBloc>()
+                  ..add(GameSessionEvent.connectToSession(roomId: roomId)),
+              ),
+              BlocProvider(
+                create: (_) => VoiceCubit(
+                  repository: getIt<GameSessionRepository>(),
+                ),
+              ),
+            ],
             child: GameSessionPage(
               roomId: roomId,
               title: title,

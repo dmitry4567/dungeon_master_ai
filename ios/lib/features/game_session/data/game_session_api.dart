@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../../../core/network/api_client.dart';
 import '../../scenario/models/scenario_content.dart';
 import '../models/message.dart';
+import '../models/voice_models.dart';
 import '../models/world_state.dart';
 
 /// API для работы с игровыми сессиями
@@ -50,5 +51,13 @@ class GameSessionApi {
   /// Завершить сессию (хост)
   Future<void> endSession(String sessionId) async {
     await _dio.post<Map<String, dynamic>>('/sessions/$sessionId/end');
+  }
+
+  /// Получить токен для голосового канала
+  Future<VoiceToken> getVoiceToken(String roomId) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/rooms/$roomId/voice-token',
+    );
+    return VoiceToken.fromJson(response.data!);
   }
 }

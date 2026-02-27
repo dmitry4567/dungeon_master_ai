@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../bloc/game_session_bloc.dart';
 import '../bloc/game_session_event.dart';
 import '../bloc/game_session_state.dart';
+import '../bloc/voice_cubit.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/message_input.dart';
+import 'widgets/voice_controls_widget.dart';
 import 'widgets/world_state_bar.dart';
 
 /// Основная страница игровой сессии
@@ -94,8 +95,15 @@ class _GameSessionPageState extends State<GameSessionPage>
             } else {
               _scrollToBottom();
             }
+
+            // Автоотключение голосового канала при закрытии сессии
+            if (state.voiceChannelClosed) {
+              context.read<VoiceCubit>().disconnect();
+            }
           }
           if (state is GameSessionEnded) {
+            // Отключаем голосовой канал при завершении сессии
+            context.read<VoiceCubit>().disconnect();
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Сессия завершена'),
@@ -255,6 +263,14 @@ class _GameSessionPageState extends State<GameSessionPage>
           WorldStateBar(
             worldState: state.worldState,
             scenarioContent: state.scenarioContent,
+          ),
+          // Панель голосового чата
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: VoiceControlsWidget(
+              roomId: widget.roomId,
+              isRoomActive: true,
+            ),
           ),
           // Список сообщений
           Expanded(

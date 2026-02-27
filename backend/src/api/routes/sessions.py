@@ -11,6 +11,7 @@ from src.schemas.session import (
     SessionMessageResponse,
     WorldStateResponse,
 )
+from src.schemas.websocket import WSMessageType, WSVoiceChannelClosed
 from src.services.session_service import SessionService
 
 router = APIRouter(prefix="/sessions", tags=["Sessions"])
@@ -244,6 +245,15 @@ async def end_session(
         )
 
     session = await service.end_session(session_id)
+
+    # Broadcast VOICE_CHANNEL_CLOSED to all room members
+    from src.api.routes.websocket import manager
+
+    voice_closed_msg = WSVoiceChannelClosed()
+    await manager.broadcast_to_room(
+        str(session.room_id),
+        voice_closed_msg.model_dump(mode="json"),
+    )
 
     return {"message": "Session ended", "ended_at": session.ended_at.isoformat()}
 

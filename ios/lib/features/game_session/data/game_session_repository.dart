@@ -8,6 +8,7 @@ import '../../../core/network/websocket_client.dart';
 import '../../../core/storage/local_database.dart';
 import '../../scenario/models/scenario_content.dart';
 import '../models/message.dart';
+import '../models/voice_models.dart';
 import '../models/world_state.dart';
 import 'game_session_api.dart';
 
@@ -95,6 +96,11 @@ class GameSessionRepository {
   /// Завершить сессию
   Future<void> endSession(String sessionId) async {
     await _api.endSession(sessionId);
+  }
+
+  /// Получить токен для голосового канала
+  Future<VoiceToken> getVoiceToken(String roomId) async {
+    return _api.getVoiceToken(roomId);
   }
 
   /// Кэшировать сообщения в SQLite

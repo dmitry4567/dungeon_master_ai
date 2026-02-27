@@ -39,6 +39,7 @@ dependencies = [
     "slowapi>=0.1.9",
     "structlog>=24.1.0",
     "rich>=13.7.0",
+    "agora-token-builder>=1.0.0",
 ]
 
 [project.optional-dependencies]

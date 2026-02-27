@@ -28,6 +28,9 @@ class WSMessageType(StrEnum):
     DICE_RESULT = "dice_result"  # Broadcast roll result to all
     ERROR = "error"
 
+    # Voice Chat
+    VOICE_CHANNEL_CLOSED = "voice_channel_closed"  # Session ended, clients must leave voice channel
+
 
 class WSBaseMessage(BaseModel):
     """Base WebSocket message."""
@@ -158,3 +161,9 @@ class WSPlayerLeave(WSBaseMessage):
     type: WSMessageType = WSMessageType.PLAYER_LEAVE
     player_id: UUID
     player_name: str
+
+
+class WSVoiceChannelClosed(WSBaseMessage):
+    """Voice channel closed notification (session ended)."""
+
+    type: WSMessageType = WSMessageType.VOICE_CHANNEL_CLOSED

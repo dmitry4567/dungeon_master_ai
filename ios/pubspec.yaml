@@ -34,6 +34,7 @@ dependencies:
   # Voice
   flutter_tts: ^4.2.0
   speech_to_text: ^7.0.0
+  agora_rtc_engine: ^6.3.0
 
   # Local Storage
   flutter_secure_storage: ^9.2.4

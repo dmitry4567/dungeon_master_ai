@@ -111,6 +111,11 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     log_format: str = Field(default="console", alias="LOG_FORMAT")  # console, json, or dungeon
 
+    # Agora Voice Chat
+    agora_app_id: str = Field(default="", alias="AGORA_APP_ID")
+    agora_app_certificate: str = Field(default="", alias="AGORA_APP_CERTIFICATE")
+    agora_token_expire_seconds: int = Field(default=14400, alias="AGORA_TOKEN_EXPIRE_SECONDS")
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Any) -> list[str]:

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.database import get_db
 from src.core.security import verify_token_type
 from src.models.user import User
+from src.services.voice_service import VoiceService
 
 security = HTTPBearer()
 
