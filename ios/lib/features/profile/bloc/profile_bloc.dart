@@ -6,7 +6,7 @@ import 'profile_state.dart';
 
 /// BLoC профиля пользователя
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc(this._profileRepository) : super(const ProfileState.initial()) {
+  ProfileBloc(this._profileRepository) : super(const ProfileState.loading()) {
     on<LoadProfileEvent>(_onLoadProfile);
     on<LoadHistoryEvent>(_onLoadHistory);
     on<UpdateNameEvent>(_onUpdateName);

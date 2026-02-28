@@ -1,6 +1,8 @@
+import 'package:ai_dungeon_master/features/game_session/bloc/tts_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../core/di/injection.dart';
 import '../../../core/network/interceptors/error_interceptor.dart';
 import '../data/auth_repository.dart';
 import 'auth_event.dart';
@@ -99,9 +101,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       await _authRepository.logout();
+      getIt<TTSCubit>().clearState();
       emit(const AuthState.unauthenticated());
     } catch (e) {
       // Всё равно выходим
+      getIt<TTSCubit>().clearState();
       emit(const AuthState.unauthenticated());
     }
   }

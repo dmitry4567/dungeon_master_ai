@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -189,7 +191,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
       );
 
   Widget _buildSliverAppBar() => SliverAppBar(
-        expandedHeight: 180,
+        expandedHeight: Platform.isMacOS ? 215 : 180,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
@@ -325,20 +327,21 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                   fontSize: 14,
                 ),
                 decoration: const InputDecoration(
-                    hintText: 'Введите название комнаты...',
-                    hintStyle: TextStyle(
-                      color: Colors.white38,
-                      fontSize: 13,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(12),
-                    counterText: '',
-                    disabledBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    focusedErrorBorder: InputBorder.none,
-                    fillColor: Colors.transparent,),
+                  hintText: 'Введите название комнаты...',
+                  hintStyle: TextStyle(
+                    color: Colors.white38,
+                    fontSize: 13,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(12),
+                  counterText: '',
+                  disabledBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  fillColor: Colors.transparent,
+                ),
                 maxLength: 100,
                 validator: (value) {
                   if (value == null || value.trim().length < 3) {
@@ -473,7 +476,8 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     color: const Color(0xFF52B788).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: const Color(0xFF52B788).withOpacity(0.4),),
+                      color: const Color(0xFF52B788).withOpacity(0.4),
+                    ),
                   ),
                   child: Text(
                     '$_maxPlayers',
@@ -554,10 +558,13 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             const SizedBox(height: 16),
             BlocBuilder<CharacterBloc, CharacterState>(
               builder: (context, state) => state.when(
-                initial: () => const Text('Загрузка...',
-                    style: TextStyle(color: Colors.white54),),
+                initial: () => const Text(
+                  'Загрузка...',
+                  style: TextStyle(color: Colors.white54),
+                ),
                 loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                ),
                 loaded: (characters) {
                   if (characters.isEmpty) {
                     return Container(
@@ -569,14 +576,19 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.info_outline,
-                              color: Color(0xFFF4A261), size: 20,),
+                          Icon(
+                            Icons.info_outline,
+                            color: Color(0xFFF4A261),
+                            size: 20,
+                          ),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Нет персонажей. Создайте персонажа в разделе "Персонажи".',
                               style: TextStyle(
-                                  color: Colors.white70, fontSize: 13,),
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -600,8 +612,10 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     }).toList(),
                   );
                 },
-                error: (message, _) => Text('Ошибка: $message',
-                    style: const TextStyle(color: Color(0xFFE76F51)),),
+                error: (message, _) => Text(
+                  'Ошибка: $message',
+                  style: const TextStyle(color: Color(0xFFE76F51)),
+                ),
                 creating: (_) => const SizedBox.shrink(),
                 submitting: (_) => const SizedBox.shrink(),
                 created: (_) => const SizedBox.shrink(),
@@ -652,10 +666,13 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             const SizedBox(height: 16),
             BlocBuilder<ScenarioBloc, ScenarioState>(
               builder: (context, state) => state.when(
-                initial: () => const Text('Загрузка...',
-                    style: TextStyle(color: Colors.white54),),
+                initial: () => const Text(
+                  'Загрузка...',
+                  style: TextStyle(color: Colors.white54),
+                ),
                 loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                ),
                 loaded: (scenarios) {
                   if (scenarios.isEmpty) {
                     return Container(
@@ -667,14 +684,19 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.info_outline,
-                              color: Color(0xFFF4A261), size: 20,),
+                          Icon(
+                            Icons.info_outline,
+                            color: Color(0xFFF4A261),
+                            size: 20,
+                          ),
                           SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Нет сценариев. Создайте сценарий в разделе "Сценарии".',
                               style: TextStyle(
-                                  color: Colors.white70, fontSize: 13,),
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -699,87 +721,91 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                   );
                 },
                 generating: (_) => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                ),
                 scenarioDetail: (_) => const SizedBox.shrink(),
                 versionHistory: (_, __) => const SizedBox.shrink(),
-                error: (message) => Text('Ошибка: $message',
-                    style: const TextStyle(color: Color(0xFFE76F51)),),
+                error: (message) => Text(
+                  'Ошибка: $message',
+                  style: const TextStyle(color: Color(0xFFE76F51)),
+                ),
               ),
             ),
           ],
         ),
       );
 
-  Widget _buildCreateButton() =>
-      BlocBuilder<LobbyBloc, LobbyState>(builder: (context, state) {
-        final isCreating = state.whenOrNull(creating: () => true) ?? false;
-        final isStarting =
-            state.whenOrNull(gameStarting: (_, __) => true) ?? false;
-        final isLoading = isCreating || isStarting;
+  Widget _buildCreateButton() => BlocBuilder<LobbyBloc, LobbyState>(
+        builder: (context, state) {
+          final isCreating = state.whenOrNull(creating: () => true) ?? false;
+          final isStarting =
+              state.whenOrNull(gameStarting: (_, __) => true) ?? false;
+          final isLoading = isCreating || isStarting;
 
-        String buttonText;
-        IconData buttonIcon;
-        if (isStarting) {
-          buttonText = 'Запуск...';
-          buttonIcon = Icons.rocket_launch;
-        } else if (isCreating) {
-          buttonText = 'Создание...';
-          buttonIcon = Icons.hourglass_empty;
-        } else if (_isSinglePlayer) {
-          buttonText = 'Начать игру';
-          buttonIcon = Icons.play_arrow;
-        } else {
-          buttonText = 'Создать комнату';
-          buttonIcon = Icons.add;
-        }
+          String buttonText;
+          IconData buttonIcon;
+          if (isStarting) {
+            buttonText = 'Запуск...';
+            buttonIcon = Icons.rocket_launch;
+          } else if (isCreating) {
+            buttonText = 'Создание...';
+            buttonIcon = Icons.hourglass_empty;
+          } else if (_isSinglePlayer) {
+            buttonText = 'Начать игру';
+            buttonIcon = Icons.play_arrow;
+          } else {
+            buttonText = 'Создать комнату';
+            buttonIcon = Icons.add;
+          }
 
-        return InkWell(
-          onTap: isLoading ? null : _createRoom,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: const Color(0xFFD4AF37).withOpacity(0.15),
-              border: Border.all(
-                color: const Color(0xFFD4AF37).withOpacity(0.3),
+          return InkWell(
+            onTap: isLoading ? null : _createRoom,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFFD4AF37).withOpacity(0.15),
+                border: Border.all(
+                  color: const Color(0xFFD4AF37).withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFFD4AF37)),
+                      ),
+                    )
+                  else
+                    Icon(
+                      buttonIcon,
+                      size: 24,
+                      color: const Color(0xFFD4AF37),
+                    ),
+                  if (!isLoading) const SizedBox(width: 6),
+                  if (!isLoading)
+                    Text(
+                      buttonText,
+                      style: const TextStyle(
+                        color: Color(0xFFD4AF37),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                ],
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isLoading)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFFD4AF37)),
-                    ),
-                  )
-                else
-                  Icon(
-                    buttonIcon,
-                    size: 24,
-                    color: const Color(0xFFD4AF37),
-                  ),
-                if (!isLoading) const SizedBox(width: 6),
-                if (!isLoading)
-                  Text(
-                    buttonText,
-                    style: const TextStyle(
-                      color: Color(0xFFD4AF37),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },);
+          );
+        },
+      );
 }
 
 class _GameModeOption extends StatelessWidget {
@@ -876,13 +902,17 @@ class _CharacterOption extends StatelessWidget {
                   color: const Color(0xFF2A2A4A),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFFD4AF37)
-                          : const Color(0xFF3A3A5E),
-                      width: isSelected ? 2 : 1,),
+                    color: isSelected
+                        ? const Color(0xFFD4AF37)
+                        : const Color(0xFF3A3A5E),
+                    width: isSelected ? 2 : 1,
+                  ),
                 ),
-                child: const Icon(Icons.shield,
-                    color: Color(0xFFD4AF37), size: 22,),
+                child: const Icon(
+                  Icons.shield,
+                  color: Color(0xFFD4AF37),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -909,8 +939,11 @@ class _CharacterOption extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle,
-                    color: Color(0xFFD4AF37), size: 22,)
+                const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFFD4AF37),
+                  size: 22,
+                )
               else
                 Container(
                   width: 22,
@@ -964,13 +997,17 @@ class _ScenarioOption extends StatelessWidget {
                   color: const Color(0xFF2A2A4A),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFFD4AF37)
-                          : const Color(0xFF3A3A5E),
-                      width: isSelected ? 2 : 1,),
+                    color: isSelected
+                        ? const Color(0xFFD4AF37)
+                        : const Color(0xFF3A3A5E),
+                    width: isSelected ? 2 : 1,
+                  ),
                 ),
-                child: const Icon(Icons.auto_stories,
-                    color: Color(0xFFD4AF37), size: 22,),
+                child: const Icon(
+                  Icons.auto_stories,
+                  color: Color(0xFFD4AF37),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -990,12 +1027,15 @@ class _ScenarioOption extends StatelessWidget {
                     const SizedBox(height: 2),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2,),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF52B788).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                            color: const Color(0xFF52B788).withOpacity(0.4),),
+                          color: const Color(0xFF52B788).withOpacity(0.4),
+                        ),
                       ),
                       child: Text(
                         scenario.status == 'published'
@@ -1012,8 +1052,11 @@ class _ScenarioOption extends StatelessWidget {
                 ),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle,
-                    color: Color(0xFFD4AF37), size: 22,)
+                const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFFD4AF37),
+                  size: 22,
+                )
               else
                 Container(
                   width: 22,

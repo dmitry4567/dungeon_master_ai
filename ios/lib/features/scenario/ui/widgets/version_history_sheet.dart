@@ -121,7 +121,18 @@ class _VersionHistorySheetState extends State<VersionHistorySheet> {
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A2E),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Color(0xFFD4AF37),
+                          size: 18,
+                        ),
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                     ),
                   ],
@@ -213,7 +224,18 @@ class _VersionHistorySheetState extends State<VersionHistorySheet> {
                             ),
                             trailing: !isLatest
                                 ? IconButton(
-                                    icon: const Icon(Icons.restore),
+                                    icon: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1A1A2E),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.restore,
+                                        color: Color(0xFFD4AF37),
+                                        size: 18,
+                                      ),
+                                    ),
                                     tooltip: 'Восстановить',
                                     onPressed: () => _restoreVersion(version.id),
                                   )

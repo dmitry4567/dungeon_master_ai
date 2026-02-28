@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/widgets/themed_icon_button.dart';
 import '../../models/room.dart';
 
 /// Аватар игрока в комнате ожидания
@@ -112,17 +113,19 @@ class PlayerAvatar extends StatelessWidget {
             ),
             // Action buttons for pending players (host only)
             if (player.status == 'pending' && onApprove != null) ...[
-              IconButton(
+              ThemedIconButton(
+                icon: Icons.check_circle_outline,
                 onPressed: onApprove,
-                icon: const Icon(Icons.check_circle_outline),
-                color: Colors.green,
                 tooltip: 'Одобрить',
+                iconColor: Colors.green,
+                backgroundColor: Colors.green.withOpacity(0.1),
               ),
-              IconButton(
+              ThemedIconButton(
+                icon: Icons.cancel_outlined,
                 onPressed: onDecline,
-                icon: const Icon(Icons.cancel_outlined),
-                color: Colors.red,
                 tooltip: 'Отклонить',
+                iconColor: Colors.red,
+                backgroundColor: Colors.red.withOpacity(0.1),
               ),
             ],
           ],

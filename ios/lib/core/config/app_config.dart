@@ -3,8 +3,8 @@
 enum AppConfig {
   /// Конфигурация для разработки
   development._(
-    apiBaseUrl: 'http://192.168.0.139:8000/api/v1',
-    wsBaseUrl: 'ws://192.168.0.139:8000/api/v1/ws',
+    apiBaseUrl: 'http://192.168.0.128:8000/api/v1',
+    wsBaseUrl: 'ws://192.168.0.128:8000/api/v1/ws',
     environment: Environment.development,
     enableCrashlytics: false,
     enableAnalytics: false,

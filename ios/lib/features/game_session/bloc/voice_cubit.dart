@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -49,17 +51,19 @@ class VoiceCubit extends Cubit<VoiceState> {
     ),);
 
     try {
-      // Request microphone permission
-      final micPermission = await Permission.microphone.request();
-      if (!micPermission.isGranted) {
-        final isPermanentlyDenied = micPermission.isPermanentlyDenied;
-        emit(state.copyWith(
-          connectionStatus: VoiceConnectionStatus.error,
-          errorMessage: isPermanentlyDenied
-              ? 'Доступ к микрофону запрещён. Откройте настройки, чтобы разрешить доступ.'
-              : 'Для голосового чата необходим доступ к микрофону',
-        ),);
-        return;
+      // Request microphone permission (not supported on macOS)
+      if (!kIsWeb && (Platform.isIOS || Platform.isAndroid)) {
+        final micPermission = await Permission.microphone.request();
+        if (!micPermission.isGranted) {
+          final isPermanentlyDenied = micPermission.isPermanentlyDenied;
+          emit(state.copyWith(
+            connectionStatus: VoiceConnectionStatus.error,
+            errorMessage: isPermanentlyDenied
+                ? 'Доступ к микрофону запрещён. Откройте настройки, чтобы разрешить доступ.'
+                : 'Для голосового чата необходим доступ к микрофону',
+          ),);
+          return;
+        }
       }
 
       // Get voice token from backend

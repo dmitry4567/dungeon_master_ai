@@ -74,6 +74,7 @@ uvicorn src.api.main:app --reload  # Запуск сервера разрабо�
 ## Active Technologies
 - Python 3.11+ (backend), Dart 3.x / Flutter 3.x (iOS client) + FastAPI + `agora-token>=2.0.0` (backend); `agora_rtc_engine ^6.3.0` + flutter_bloc (Flutter) (003-agora-voice-chat)
 - PostgreSQL (существующий, без новых таблиц) + Agora инфраструктура (медиа) (003-agora-voice-chat)
+- N/A (no persistent storage, runtime state only) (004-elevenlabs-tts-streaming)
 
 ## Recent Changes
 - 003-agora-voice-chat: Added Python 3.11+ (backend), Dart 3.x / Flutter 3.x (iOS client) + FastAPI + `agora-token>=2.0.0` (backend); `agora_rtc_engine ^6.3.0` + flutter_bloc (Flutter)

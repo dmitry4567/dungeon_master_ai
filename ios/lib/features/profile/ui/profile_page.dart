@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:ai_dungeon_master/features/game_session/ui/widgets/theme_button.dart';
+import 'package:ai_dungeon_master/shared/widgets/loading_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +24,7 @@ class ProfilePage extends StatelessWidget {
         body: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) => state.when(
             initial: () => _buildInitialState(context),
-            loading: _buildLoadingState,
+            loading: () => _buildLoadingState(context),
             loaded: (user, history, isHistoryLoading, isUpdating) =>
                 RefreshIndicator(
               color: const Color(0xFFD4AF37),
@@ -105,14 +109,16 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildSliverAppBar(BuildContext context, User user, bool isUpdating) =>
       SliverAppBar(
-        expandedHeight: 280,
+        expandedHeight: Platform.isMacOS ? 340 : 280,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white70),
-            onPressed: () => context.pushNamed('settings'),
+          ThemeButton(
+            onTap: () {
+              context.pushNamed('settings');
+            },
+            icon: Icons.settings,
           ),
         ],
         flexibleSpace: FlexibleSpaceBar(
@@ -155,7 +161,7 @@ class ProfilePage extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFD4AF37).withOpacity(0.3),
+                                color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 spreadRadius: 2,
                               ),
@@ -311,7 +317,7 @@ class ProfilePage extends StatelessWidget {
             Text(
               'Начните своё первое путешествие в мире D&D',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.35),
+                color: Colors.white.withValues(alpha: 0.35),
                 fontSize: 13,
               ),
               textAlign: TextAlign.center,
@@ -320,34 +326,226 @@ class ProfilePage extends StatelessWidget {
         ),
       );
 
-  Widget _buildInitialState(BuildContext context) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.person_outline,
-                size: 64, color: Color(0xFF3A3A5E),),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4AF37),
-                foregroundColor: Colors.black,
-              ),
-              onPressed: () {
-                context
-                    .read<ProfileBloc>()
-                    .add(const ProfileEvent.loadProfile());
-                context
-                    .read<ProfileBloc>()
-                    .add(const ProfileEvent.loadHistory());
-              },
-              child: const Text('Загрузить профиль'),
-            ),
-          ],
-        ),
-      );
+  Widget _buildInitialState(BuildContext context) => _buildLoadingState(context);
 
-  Widget _buildLoadingState() => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+  Widget _buildLoadingState(BuildContext context) => CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: Platform.isMacOS ? 340 : 280,
+            pinned: true,
+            backgroundColor: const Color(0xFF0D0D1A),
+            surfaceTintColor: Colors.transparent,
+            actions: [
+              ThemeButton(
+                onTap: () {},
+                icon: Icons.settings,
+              ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: DecoratedBox(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF1A1A3E),
+                      Color(0xFF0D0D1A),
+                    ],
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _StarFieldPainter(),
+                      ),
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Avatar - точно как в реальном виджете
+                            Container(
+                              width: 112,
+                              height: 112,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD4AF37),
+                                  width: 2.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: const CircleAvatar(
+                                radius: 52,
+                                backgroundColor: Color(0xFF2A2A4A),
+                                child: SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFFD4AF37),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // Name
+                            const SizedBox(
+                              height: 22,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFFD4AF37),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            // Email
+                            const SizedBox(
+                              height: 13,
+                            ),
+                            const SizedBox(height: 20),
+                            // Buttons - показываем реальные кнопки но disabled
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _ActionButton(
+                                    icon: Icons.edit_outlined,
+                                    label: 'Изменить имя',
+                                    onPressed: () {},
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Opacity(
+                                  opacity: 0.5,
+                                  child: _ActionButton(
+                                    icon: Icons.logout_outlined,
+                                    label: 'Выйти',
+                                    isDestructive: true,
+                                    onPressed: () {},
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Stats skeleton
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A2E),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF2A2A4E)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const _StatSkeleton(),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: const Color(0xFF2A2A4E),
+                  ),
+                  const _StatSkeleton(),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: const Color(0xFF2A2A4E),
+                  ),
+                  const _StatSkeleton(),
+                ],
+              ),
+            ),
+          ),
+          // History header skeleton
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            sliver: SliverToBoxAdapter(
+              child: Builder(
+                builder: (context) => Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_stories,
+                      color: Color(0xFFD4AF37),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'История приключений',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Empty history placeholder
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A2E),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF2A2A4E)),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(
+                      Icons.map_outlined,
+                      size: 56,
+                      color: Color(0xFF3A3A5E),
+                    ),
+                    SizedBox(height: 16),
+                    LoadingSkeleton(
+                      width: 180,
+                      height: 16,
+                      borderRadius: 4,
+                    ),
+                    SizedBox(height: 8),
+                    LoadingSkeleton(
+                      width: 240,
+                      height: 14,
+                      borderRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       );
 
   Widget _buildErrorState(BuildContext context, String message) => Center(
@@ -356,8 +554,11 @@ class ProfilePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline,
-                  size: 56, color: Color(0xFF8B3333),),
+              const Icon(
+                Icons.error_outline,
+                size: 56,
+                color: Color(0xFF8B3333),
+              ),
               const SizedBox(height: 16),
               Text(
                 message,
@@ -434,7 +635,8 @@ class ProfilePage extends StatelessWidget {
               backgroundColor: const Color(0xFFD4AF37),
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
@@ -443,8 +645,10 @@ class ProfilePage extends StatelessWidget {
                 Navigator.pop(dialogContext);
               }
             },
-            child: const Text('Сохранить',
-                style: TextStyle(fontWeight: FontWeight.bold),),
+            child: const Text(
+              'Сохранить',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -473,13 +677,13 @@ class _ActionButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
             color: isDestructive
-                ? const Color(0xFF8B3333).withOpacity(0.2)
-                : const Color(0xFFD4AF37).withOpacity(0.1),
+                ? const Color(0xFF8B3333).withValues(alpha: 0.2)
+                : const Color(0xFFD4AF37).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isDestructive
-                  ? const Color(0xFF8B3333).withOpacity(0.5)
-                  : const Color(0xFFD4AF37).withOpacity(0.3),
+                  ? const Color(0xFF8B3333).withValues(alpha: 0.5)
+                  : const Color(0xFFD4AF37).withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -545,11 +749,36 @@ class _StatItem extends StatelessWidget {
       );
 }
 
+class _StatSkeleton extends StatelessWidget {
+  const _StatSkeleton();
+
+  @override
+  Widget build(BuildContext context) => const Column(
+        children: [
+          Icon(
+            Icons.sports_esports_outlined,
+            color: Color(0xFFD4AF37),
+            size: 20,
+          ),
+          SizedBox(height: 6),
+          LoadingSkeleton(
+            width: 40,
+            height: 20,
+          ),
+          SizedBox(height: 2),
+          LoadingSkeleton(
+            width: 60,
+            height: 11,
+          ),
+        ],
+      );
+}
+
 class _StarFieldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
+      ..color = Colors.white.withValues(alpha: 0.08)
       ..strokeWidth = 1;
 
     // Simple decorative dots pattern

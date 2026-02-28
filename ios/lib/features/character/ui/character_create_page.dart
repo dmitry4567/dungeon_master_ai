@@ -118,13 +118,13 @@ class CharacterCreatePage extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD4AF37).withOpacity(0.1),
+                       color: const Color(0xFFD4AF37).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
                       Icons.close,
                       color: Color(0xFFD4AF37),
-                      size: 20,
+                      size: 18,
                     ),
                   ),
                 ),

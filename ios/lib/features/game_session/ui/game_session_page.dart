@@ -1,3 +1,4 @@
+import 'package:ai_dungeon_master/features/game_session/bloc/tts_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +34,7 @@ class _GameSessionPageState extends State<GameSessionPage>
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  TTSCubit? _ttsCubit;
 
   @override
   void initState() {
@@ -50,7 +52,17 @@ class _GameSessionPageState extends State<GameSessionPage>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Сохраняем ссылку на TTSCubit для использования в dispose()
+    _ttsCubit ??= context.read<TTSCubit>();
+    _ttsCubit?.checkTtsStatus();
+  }
+
+  @override
   void dispose() {
+    _ttsCubit?.stopPlayback();
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -83,7 +95,8 @@ class _GameSessionPageState extends State<GameSessionPage>
   }
 
   @override
-  Widget build(BuildContext context) => BlocConsumer<GameSessionBloc, GameSessionState>(
+  Widget build(BuildContext context) =>
+      BlocConsumer<GameSessionBloc, GameSessionState>(
         listener: (context, state) {
           if (state is GameSessionActive) {
             final isStreaming = state.streamingContent != null;
@@ -132,6 +145,7 @@ class _GameSessionPageState extends State<GameSessionPage>
       backgroundColor: const Color(0xFF0D0D1A),
       elevation: 0,
       leading: IconButton(
+        onPressed: () => _showLeaveDialog(context),
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -144,7 +158,6 @@ class _GameSessionPageState extends State<GameSessionPage>
             size: 18,
           ),
         ),
-        onPressed: () => _showLeaveDialog(context),
       ),
       title: Row(
         children: [
@@ -244,12 +257,14 @@ class _GameSessionPageState extends State<GameSessionPage>
     );
   }
 
-  Widget _buildBody(BuildContext context, GameSessionState state) => switch (state) {
+  Widget _buildBody(BuildContext context, GameSessionState state) =>
+      switch (state) {
         GameSessionInitial() || GameSessionConnecting() => _buildLoadingView(),
         GameSessionActive() => _buildActiveSession(context, state),
         GameSessionEnded() => _buildEndedSession(context, state),
         GameSessionError() => _buildErrorView(state),
-        _ => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+        _ => const Center(
+            child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
       };
 
   Widget _buildActiveSession(BuildContext context, GameSessionActive state) {
@@ -376,7 +391,8 @@ class _GameSessionPageState extends State<GameSessionPage>
               onTap: () => context.pop(),
               borderRadius: BorderRadius.circular(10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD4AF37).withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
@@ -448,12 +464,14 @@ class _GameSessionPageState extends State<GameSessionPage>
           return StreamingBubble(content: state.streamingContent!);
         }
         final messageIndex = hasStreaming ? index - 1 : index;
-        return MessageBubble(message: messages[messages.length - 1 - messageIndex]);
+        return MessageBubble(
+            message: messages[messages.length - 1 - messageIndex]);
       },
     );
   }
 
-  Widget _buildEndedSession(BuildContext context, GameSessionEnded state) => Column(
+  Widget _buildEndedSession(BuildContext context, GameSessionEnded state) =>
+      Column(
         children: [
           Container(
             width: double.infinity,
@@ -585,7 +603,8 @@ class _GameSessionPageState extends State<GameSessionPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE76F51),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               Navigator.of(ctx).pop(true);
@@ -627,7 +646,8 @@ class _GameSessionPageState extends State<GameSessionPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE76F51),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             onPressed: () {
               Navigator.of(ctx).pop(true);
@@ -653,7 +673,10 @@ class _ConnectionIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon) = switch (state) {
       'connected' => (const Color(0xFF52B788), Icons.wifi),
-      'connecting' || 'reconnecting' => (const Color(0xFFF4A261), Icons.wifi_find),
+      'connecting' || 'reconnecting' => (
+          const Color(0xFFF4A261),
+          Icons.wifi_find
+        ),
       'disconnected' => (const Color(0xFFF4A261), Icons.wifi_off),
       'error' => (const Color(0xFFE76F51), Icons.wifi_off),
       _ => (const Color(0xFF3A3A5E), Icons.wifi_off),

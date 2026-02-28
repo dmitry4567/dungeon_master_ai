@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:ai_dungeon_master/features/game_session/ui/widgets/theme_button.dart';
 import 'package:ai_dungeon_master/features/lobby/models/room.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -64,6 +67,26 @@ class _LobbyPageState extends State<LobbyPage>
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: const Color(0xFF0D0D1A),
+        floatingActionButton: SizedBox(
+          width: 55,
+          height: 55,
+          child: IconButton(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              context.push(Routes.roomCreate);
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                const Color(0xFFD4AF37).withValues(alpha: 0.15),
+              ),
+            ),
+            icon: const Icon(
+              Icons.add_outlined,
+              size: 28,
+              color: Color(0xFFD4AF37),
+            ),
+          ),
+        ),
         body: BlocConsumer<LobbyBloc, LobbyState>(
           listener: (context, state) {
             // Handle state changes if needed
@@ -80,39 +103,22 @@ class _LobbyPageState extends State<LobbyPage>
         ),
       );
 
-  Widget _buildInitialState() => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A2E),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF2A2A4E)),
-              ),
-              child: const Icon(
-                Icons.meeting_room_outlined,
-                size: 64,
-                color: Color(0xFF3A3A5E),
+  Widget _buildInitialState() => CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(),
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: LoadingSkeleton(height: 140, borderRadius: 16),
+                ),
+                childCount: 4,
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Добро пожаловать в лобби',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Создайте или присоединитесь к комнате',
-              style: TextStyle(color: Colors.white54, fontSize: 14),
-            ),
-          ],
-        ),
+          ),
+        ],
       );
 
   Widget _buildLoadingView() => CustomScrollView(
@@ -169,12 +175,15 @@ class _LobbyPageState extends State<LobbyPage>
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4,),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37).withOpacity(0.15),
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: const Color(0xFFD4AF37).withOpacity(0.3),),
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+                          ),
                         ),
                         child: Text(
                           '${rooms.length}',
@@ -206,8 +215,10 @@ class _LobbyPageState extends State<LobbyPage>
                               if (room.status == 'active' &&
                                   room.isCurrentUserPlayer) {
                                 context.push(
-                                  Routes.gameSessionPath(room.id,
-                                      title: room.name,),
+                                  Routes.gameSessionPath(
+                                    room.id,
+                                    title: room.name,
+                                  ),
                                 );
                               } else {
                                 context.push(Routes.waitingRoomPath(room.id));
@@ -242,7 +253,7 @@ class _LobbyPageState extends State<LobbyPage>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFD4AF37).withOpacity(0.3),
+                        color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
                         width: 2,
                       ),
                     ),
@@ -290,46 +301,47 @@ class _LobbyPageState extends State<LobbyPage>
       );
 
   Widget _buildSliverAppBar() => SliverAppBar(
-        expandedHeight: 200,
+        expandedHeight: Platform.isMacOS ? 250 : 200,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                context.push(Routes.roomCreate);
-              },
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD4AF37).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: const Color(0xFFD4AF37).withOpacity(0.3),),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 16, color: Color(0xFFD4AF37)),
-                    SizedBox(width: 4),
-                    Text(
-                      'Создать',
-                      style: TextStyle(
-                        color: Color(0xFFD4AF37),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 8),
+          //   child: InkWell(
+          //     onTap: () {
+          // HapticFeedback.selectionClick();
+          // context.push(Routes.roomCreate);
+          //     },
+          //     borderRadius: BorderRadius.circular(10),
+          //     child: Container(
+          //       padding:
+          //           const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          //       decoration: BoxDecoration(
+          //         color: const Color(0xFFD4AF37).withOpacity(0.1),
+          //         borderRadius: BorderRadius.circular(10),
+          //         border: Border.all(
+          //           color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
+          //         ),
+          //       ),
+          //       child: const Row(
+          //         mainAxisSize: MainAxisSize.min,
+          //         children: [
+          //           Icon(Icons.add, size: 16, color: Color(0xFFD4AF37)),
+          //           SizedBox(width: 4),
+          //           Text(
+          //             'Создать',
+          //             style: TextStyle(
+          //               color: Color(0xFFD4AF37),
+          //               fontSize: 13,
+          //               fontWeight: FontWeight.w600,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
         flexibleSpace: FlexibleSpaceBar(
           background: DecoratedBox(
@@ -367,7 +379,7 @@ class _LobbyPageState extends State<LobbyPage>
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFD4AF37).withOpacity(0.3),
+                                color: const Color(0xFFD4AF37).withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 spreadRadius: 2,
                               ),
@@ -459,7 +471,7 @@ class _EmptyView extends StatelessWidget {
 class _StarFieldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.08);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.08);
 
     final positions = [
       Offset(size.width * 0.1, size.height * 0.2),

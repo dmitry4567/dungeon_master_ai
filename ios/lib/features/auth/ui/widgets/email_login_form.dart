@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/widgets/fantasy_button.dart';
+import '../../../../shared/widgets/themed_icon_button.dart';
 
 /// Форма входа/регистрации по email — фэнтези тёмный стиль
 class EmailLoginForm extends StatefulWidget {
@@ -240,17 +241,20 @@ class _EmailLoginFormState extends State<EmailLoginForm>
           hintText: '••••••••',
           prefixIcon:
               const Icon(Icons.lock_outline, size: 20, color: Colors.white38),
-          suffixIcon: IconButton(
-            icon: Icon(
-              _obscurePassword
+          suffixIcon: Padding(
+            padding: const EdgeInsets.all(8),
+            child: ThemedIconButton(
+              icon: _obscurePassword
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              size: 20,
-              color: Colors.white38,
+              onPressed: widget.isLoading
+                  ? null
+                  : () => setState(() => _obscurePassword = !_obscurePassword),
+              iconColor: Colors.white38,
+              backgroundColor: Colors.transparent,
+              padding: 4,
+              iconSize: 20,
             ),
-            onPressed: widget.isLoading
-                ? null
-                : () => setState(() => _obscurePassword = !_obscurePassword),
           ),
           labelStyle: const TextStyle(color: Colors.white38, fontSize: 14),
           hintStyle: const TextStyle(color: Colors.white24, fontSize: 14),

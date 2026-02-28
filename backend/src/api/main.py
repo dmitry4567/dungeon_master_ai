@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.middleware import MetricsMiddleware, metrics_collector, setup_middleware
-from src.api.routes import auth, characters, rooms, scenarios, sessions, users, voice, websocket
+from src.api.routes import auth, characters, rooms, scenarios, sessions, users, voice, websocket, tts
 from src.core.config import get_settings
 from src.core.database import close_db, init_db
 from src.core.logging import setup_logging
@@ -58,6 +58,7 @@ app.include_router(rooms.router, prefix="/api/v1")
 app.include_router(sessions.router, prefix="/api/v1")
 app.include_router(voice.router, prefix="/api/v1")
 app.include_router(websocket.router, prefix="/api/v1")
+app.include_router(tts.router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

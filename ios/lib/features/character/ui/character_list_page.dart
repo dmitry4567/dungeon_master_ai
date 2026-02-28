@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +18,33 @@ class CharacterListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: const Color(0xFF0D0D1A),
+        floatingActionButton: SizedBox(
+          width: 55,
+          height: 55,
+          child: IconButton(
+            onPressed: () async {
+              final result = await context.push(Routes.characterCreate);
+              
+              if (result == true && context.mounted) {
+                context.read<CharacterBloc>().add(
+                      const CharacterEvent.loadCharacters(
+                        forceRefresh: true,
+                      ),
+                    );
+              }
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                const Color(0xFFD4AF37).withOpacity(0.15),
+              ),
+            ),
+            icon: const Icon(
+              Icons.add_outlined,
+              size: 28,
+              color: Color(0xFFD4AF37),
+            ),
+          ),
+        ),
         body: BlocConsumer<CharacterBloc, CharacterState>(
           listener: (context, state) {
             if (state is CharacterDeleted) {
@@ -39,7 +68,8 @@ class CharacterListPage extends StatelessWidget {
           },
           builder: (context, state) => switch (state) {
             CharacterLoading() => _buildLoading(),
-            CharacterLoaded(:final characters) => _buildLoaded(context, characters),
+            CharacterLoaded(:final characters) =>
+              _buildLoaded(context, characters),
             CharacterError(:final message) => _buildError(context, message),
             _ => _buildLoading(),
           },
@@ -138,16 +168,19 @@ class CharacterListPage extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         'Мои персонажи',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
                       ),
                       const Spacer(),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4,),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD4AF37).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
@@ -195,25 +228,25 @@ class CharacterListPage extends StatelessWidget {
       );
 
   Widget _buildSliverAppBar(BuildContext? context) => SliverAppBar(
-        expandedHeight: 200,
+        expandedHeight: Platform.isMacOS ? 250 : 200,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
-        actions: context == null
-            ? null
-            : [
-                _CreateButton(
-                  onPressed: () async {
-                    final result = await context.push(Routes.characterCreate);
-                    if (result == true && context.mounted) {
-                      context.read<CharacterBloc>().add(
-                            const CharacterEvent.loadCharacters(
-                                forceRefresh: true,),
-                          );
-                    }
-                  },
-                ),
-              ],
+        // actions: context == null
+        //     ? null
+        //     : [
+        //         _CreateButton(
+        //           onPressed: () async {
+        //             final result = await context.push(Routes.characterCreate);
+        //             if (result == true && context.mounted) {
+        //               context.read<CharacterBloc>().add(
+        //                     const CharacterEvent.loadCharacters(
+        //                         forceRefresh: true,),
+        //                   );
+        //             }
+        //           },
+        //         ),
+        //       ],
         flexibleSpace: FlexibleSpaceBar(
           background: DecoratedBox(
             decoration: const BoxDecoration(
@@ -313,8 +346,10 @@ class CharacterListPage extends StatelessWidget {
                 ),
               ),
               ListTile(
-                leading: const Icon(Icons.visibility,
-                    color: Color(0xFFD4AF37),),
+                leading: const Icon(
+                  Icons.visibility,
+                  color: Color(0xFFD4AF37),
+                ),
                 title: const Text(
                   'Просмотреть',
                   style: TextStyle(color: Colors.white),
@@ -325,8 +360,10 @@ class CharacterListPage extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete,
-                    color: Color(0xFFE57373),),
+                leading: const Icon(
+                  Icons.delete,
+                  color: Color(0xFFE57373),
+                ),
                 title: const Text(
                   'Удалить',
                   style: TextStyle(color: Color(0xFFE57373)),

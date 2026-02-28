@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/network/interceptors/error_interceptor.dart';
 import '../../core/theme/colors.dart';
+import 'themed_icon_button.dart';
 
 /// Виджет отображения ошибки
 class ErrorView extends StatelessWidget {
@@ -113,18 +114,20 @@ class ErrorBanner extends StatelessWidget {
               ),
             ),
             if (onRetry != null)
-              IconButton(
+              ThemedIconButton(
+                icon: Icons.refresh,
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                color: AppColors.onErrorContainer,
                 tooltip: 'Повторить',
+                iconColor: AppColors.onErrorContainer,
+                backgroundColor: AppColors.error.withValues(alpha: 0.2),
               ),
             if (onDismiss != null)
-              IconButton(
+              ThemedIconButton(
+                icon: Icons.close,
                 onPressed: onDismiss,
-                icon: const Icon(Icons.close),
-                color: AppColors.onErrorContainer,
                 tooltip: 'Закрыть',
+                iconColor: AppColors.onErrorContainer,
+                backgroundColor: AppColors.error.withValues(alpha: 0.2),
               ),
           ],
         ),

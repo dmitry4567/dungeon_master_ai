@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:ai_dungeon_master/features/game_session/ui/widgets/theme_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -167,10 +170,13 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
   }
 
   Widget _buildSliverAppBar(Character? character) => SliverAppBar(
-        expandedHeight: 220,
+        expandedHeight: Platform.isMacOS ? 265 : 220,
         pinned: true,
-        backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
+        leading: ThemeButton(
+          onTap: () => context.pop(),
+          icon: Icons.arrow_back,
+        ),
         actions: [
           if (character != null)
             Padding(
@@ -239,8 +245,8 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
                             child: Text(
                               character != null
                                   ? (DndReferenceData.findClassById(
-                                              character.characterClass,)
-                                          ?.iconEmoji ??
+                                        character.characterClass,
+                                      )?.iconEmoji ??
                                       '⚔️')
                                   : '⚔️',
                               style: const TextStyle(fontSize: 48),
@@ -334,7 +340,10 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
       );
 
   Widget _buildHeaderCard(
-          Character character, DndClass? dndClass, dynamic dndRace,) =>
+    Character character,
+    DndClass? dndClass,
+    dynamic dndRace,
+  ) =>
       Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(20),

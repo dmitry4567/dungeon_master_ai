@@ -1,0 +1,206 @@
+openapi: 3.0.3
+info:
+  title: TTS Streaming API
+  description: ElevenLabs TTS streaming endpoint for AI Dungeon Master
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+paths:
+  /tts/stream:
+    post:
+      summary: Stream TTS audio
+      description: |
+        Streams MP3 audio generated from text using ElevenLabs API.
+        Response is chunked audio/mpeg stream.
+      operationId: streamTTS
+      tags:
+        - TTS
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TTSStreamRequest'
+            examples:
+              short_text:
+                summary: Short message
+                value:
+                  text: "Вы входите в тёмную пещеру..."
+                  message_id: "msg_abc123"
+              long_text:
+                summary: Long message (will be chunked)
+                value:
+                  text: "Древний дракон пробуждается от вечного сна. Его золотые глаза медленно открываются, и из ноздрей вырывается струя дыма..."
+                  message_id: "msg_def456"
+      responses:
+        '200':
+          description: Streaming audio response
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Transfer-Encoding:
+              schema:
+                type: string
+                example: chunked
+            Content-Disposition:
+              schema:
+                type: string
+                example: inline; filename=tts_audio.mp3
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TTSErrorResponse'
+              example:
+                error_code: validation_error
+                message: "Некорректный текст для озвучки"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TTSErrorResponse'
+              example:
+                error_code: rate_limit
+                message: "Превышен лимит прослушиваний, попробуйте позже (через минуту)"
+                retry_after: 60
+        '402':
+          description: Quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TTSErrorResponse'
+              example:
+                error_code: quota_exceeded
+                message: "Озвучка временно недоступна"
+        '502':
+          description: ElevenLabs API error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TTSErrorResponse'
+              example:
+                error_code: api_error
+                message: "Ошибка сервиса озвучки, попробуйте позже"
+
+  /tts/status:
+    get:
+      summary: Get TTS service status
+      description: |
+        Returns the current status of TTS service.
+        Used to check if TTS is available before showing UI.
+      operationId: getTTSStatus
+      tags:
+        - TTS
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: TTS service status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TTSStatusResponse'
+              examples:
+                available:
+                  summary: TTS available
+                  value:
+                    available: true
+                    message: null
+                unavailable:
+                  summary: TTS unavailable (quota exceeded)
+                  value:
+                    available: false
+                    message: "Озвучка временно недоступна"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TTSStreamRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: Text to convert to speech (Markdown will be stripped)
+          example: "Вы входите в тёмную пещеру..."
+        message_id:
+          type: string
+          nullable: true
+          description: Optional message ID for tracking
+          example: "msg_abc123"
+
+    TTSErrorResponse:
+      type: object
+      required:
+        - error_code
+        - message
+      properties:
+        error_code:
+          type: string
+          enum:
+            - rate_limit
+            - quota_exceeded
+            - api_error
+            - validation_error
+            - text_too_long
+          description: Error code for client handling
+        message:
+          type: string
+          description: User-friendly error message in Russian
+        retry_after:
+          type: integer
+          nullable: true
+          description: Seconds to wait before retry (for rate_limit)
+          example: 60
+
+    TTSStatusResponse:
+      type: object
+      required:
+        - available
+      properties:
+        available:
+          type: boolean
+          description: Whether TTS service is currently available
+        message:
+          type: string
+          nullable: true
+          description: Message explaining why TTS is unavailable
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          description: Error detail message

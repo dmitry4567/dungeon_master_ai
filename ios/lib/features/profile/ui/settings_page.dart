@@ -1,3 +1,5 @@
+import 'package:ai_dungeon_master/features/game_session/ui/widgets/theme_button.dart';
+import 'package:ai_dungeon_master/shared/widgets/themed_icon_button.dart';
 import 'package:flutter/material.dart';
 
 /// Страница настроек
@@ -19,6 +21,12 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           iconTheme: const IconThemeData(color: Colors.white70),
+          leading: ThemeButton(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            icon: Icons.arrow_back,
+          ),
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),

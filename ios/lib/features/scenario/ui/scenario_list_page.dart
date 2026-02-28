@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -34,10 +36,31 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: const Color(0xFF0D0D1A),
+        floatingActionButton: SizedBox(
+          width: 55,
+          height: 55,
+          child: IconButton(
+            onPressed: () {
+              context.push('/scenarios/builder');
+            },
+            style: ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                const Color(0xFFD4AF37).withOpacity(0.15),
+              ),
+            ),
+            icon: const Icon(
+              Icons.add_outlined,
+              size: 28,
+              color: Color(0xFFD4AF37),
+            ),
+          ),
+        ),
         body: BlocBuilder<ScenarioBloc, ScenarioState>(
           builder: (context, state) => state.when(
-            initial: () => _buildScrollView(context,
-                child: const SliverFillRemaining(child: _EmptyView()),),
+            initial: () => _buildScrollView(
+              context,
+              child: const SliverFillRemaining(child: _EmptyView()),
+            ),
             loading: () => _buildScrollView(context, isLoading: true),
             loaded: (scenarios) => RefreshIndicator(
               color: const Color(0xFFD4AF37),
@@ -71,7 +94,8 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
             error: (message) => _buildScrollView(
               context,
               child: SliverFillRemaining(
-                  child: _ErrorView(message: message, onRetry: _loadScenarios),),
+                child: _ErrorView(message: message, onRetry: _loadScenarios),
+              ),
             ),
           ),
         ),
@@ -106,8 +130,11 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
               sliver: SliverToBoxAdapter(
                 child: Row(
                   children: [
-                    const Icon(Icons.auto_stories,
-                        color: Color(0xFFD4AF37), size: 20,),
+                    const Icon(
+                      Icons.auto_stories,
+                      color: Color(0xFFD4AF37),
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Мои сценарии',
@@ -120,12 +147,15 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4,),
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFD4AF37).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: const Color(0xFFD4AF37).withOpacity(0.3),),
+                          color: const Color(0xFFD4AF37).withOpacity(0.3),
+                        ),
                       ),
                       child: Text(
                         '${scenarios.length}',
@@ -164,43 +194,44 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
       );
 
   Widget _buildSliverAppBar(BuildContext context) => SliverAppBar(
-        expandedHeight: 200,
+        expandedHeight: Platform.isMacOS ? 250 : 200,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              onTap: () => context.push('/scenarios/builder'),
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD4AF37).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: const Color(0xFFD4AF37).withOpacity(0.3),),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 16, color: Color(0xFFD4AF37)),
-                    SizedBox(width: 4),
-                    Text(
-                      'Создать',
-                      style: TextStyle(
-                        color: Color(0xFFD4AF37),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 8),
+          //   child: InkWell(
+          //     onTap: () => context.push('/scenarios/builder'),
+          //     borderRadius: BorderRadius.circular(10),
+          //     child: Container(
+          //       padding:
+          //           const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          //       decoration: BoxDecoration(
+          //         color: const Color(0xFFD4AF37).withOpacity(0.1),
+          //         borderRadius: BorderRadius.circular(10),
+          //         border: Border.all(
+          //           color: const Color(0xFFD4AF37).withOpacity(0.3),
+          //         ),
+          //       ),
+          //       child: const Row(
+          //         mainAxisSize: MainAxisSize.min,
+          //         children: [
+          //           Icon(Icons.add, size: 16, color: Color(0xFFD4AF37)),
+          //           SizedBox(width: 4),
+          //           Text(
+          //             'Создать',
+          //             style: TextStyle(
+          //               color: Color(0xFFD4AF37),
+          //               fontSize: 13,
+          //               fontWeight: FontWeight.w600,
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
         flexibleSpace: FlexibleSpaceBar(
           background: DecoratedBox(
@@ -214,7 +245,8 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
             child: Stack(
               children: [
                 Positioned.fill(
-                    child: CustomPaint(painter: _StarFieldPainter()),),
+                  child: CustomPaint(painter: _StarFieldPainter()),
+                ),
                 SizedBox(
                   width: double.infinity,
                   child: Padding(
@@ -229,7 +261,9 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
                             shape: BoxShape.circle,
                             color: const Color(0xFF2A2A4A),
                             border: Border.all(
-                                color: const Color(0xFFD4AF37), width: 2.5,),
+                              color: const Color(0xFFD4AF37),
+                              width: 2.5,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: const Color(0xFFD4AF37).withOpacity(0.3),
@@ -332,8 +366,11 @@ class _EmptyView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.book_outlined,
-                  size: 56, color: Color(0xFF3A3A5E),),
+              const Icon(
+                Icons.book_outlined,
+                size: 56,
+                color: Color(0xFF3A3A5E),
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Нет сценариев',
@@ -347,7 +384,9 @@ class _EmptyView extends StatelessWidget {
               Text(
                 'Создайте свой первый сценарий\nдля незабываемого приключения',
                 style: TextStyle(
-                    color: Colors.white.withOpacity(0.35), fontSize: 13,),
+                  color: Colors.white.withOpacity(0.35),
+                  fontSize: 13,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -369,8 +408,11 @@ class _ErrorView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline,
-                  size: 56, color: Color(0xFF8B3333),),
+              const Icon(
+                Icons.error_outline,
+                size: 56,
+                color: Color(0xFF8B3333),
+              ),
               const SizedBox(height: 16),
               Text(
                 message,
@@ -383,7 +425,8 @@ class _ErrorView extends StatelessWidget {
                   backgroundColor: const Color(0xFFD4AF37),
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 onPressed: onRetry,
                 child: const Text('Повторить'),

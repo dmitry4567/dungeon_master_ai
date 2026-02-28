@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/colors.dart';
+import '../../../../shared/widgets/themed_icon_button.dart';
 
 /// Поле ввода действий игрока
 class MessageInput extends StatefulWidget {
@@ -110,19 +111,16 @@ class _MessageInputState extends State<MessageInput> {
             const SizedBox(width: 8),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              child: IconButton(
+              child: ThemedIconButton(
+                icon: Icons.send_rounded,
                 onPressed: _canSend ? _handleSend : null,
-                icon: Icon(
-                  Icons.send_rounded,
-                  color: _canSend
-                      ? AppColors.secondary
-                      : AppColors.onSurface.withValues(alpha: 0.3),
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: _canSend
-                      ? AppColors.secondary.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                ),
+                iconColor: _canSend
+                    ? AppColors.secondary
+                    : AppColors.onSurface.withValues(alpha: 0.3),
+                backgroundColor: _canSend
+                    ? AppColors.secondary.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                enabled: _canSend,
               ),
             ),
           ],

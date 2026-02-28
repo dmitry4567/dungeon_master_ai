@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../shared/widgets/themed_icon_button.dart';
 import '../../bloc/voice_cubit.dart';
 import '../../models/voice_models.dart';
 import 'voice_participant_indicator.dart';
@@ -182,20 +183,16 @@ class VoiceControlsWidget extends StatelessWidget {
   Widget _buildMuteButton(BuildContext context, VoiceState state) {
     final cubit = context.read<VoiceCubit>();
 
-    return IconButton(
+    return ThemedIconButton(
       onPressed: cubit.toggleMute,
-      icon: Icon(
-        state.isMuted ? Icons.mic_off : Icons.mic,
-        color: state.isMuted
-            ? Theme.of(context).colorScheme.error
-            : Theme.of(context).colorScheme.primary,
-      ),
+      icon: state.isMuted ? Icons.mic_off : Icons.mic,
+      iconColor: state.isMuted
+          ? Theme.of(context).colorScheme.error
+          : Theme.of(context).colorScheme.primary,
+      backgroundColor: state.isMuted
+          ? Theme.of(context).colorScheme.errorContainer
+          : Theme.of(context).colorScheme.primaryContainer,
       tooltip: state.isMuted ? 'Unmute' : 'Mute',
-      style: IconButton.styleFrom(
-        backgroundColor: state.isMuted
-            ? Theme.of(context).colorScheme.errorContainer
-            : Theme.of(context).colorScheme.primaryContainer,
-      ),
     );
   }
 

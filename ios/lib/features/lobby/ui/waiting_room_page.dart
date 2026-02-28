@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ai_dungeon_master/features/game_session/ui/widgets/theme_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../../core/router/routes.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/loading_skeleton.dart';
+import '../../../shared/widgets/themed_icon_button.dart';
 import '../../character/bloc/character_bloc.dart';
 import '../../character/bloc/character_event.dart';
 import '../../character/bloc/character_state.dart';
@@ -174,10 +176,14 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white70),
+        leading: ThemeButton(
+          onTap: () => context.pop(),
+          icon: Icons.arrow_back,
+        ),
         actions: [
-          IconButton(
+          ThemedIconButton(
+            icon: Icons.refresh,
             onPressed: _refreshRoom,
-            icon: const Icon(Icons.refresh, color: Colors.white70),
             tooltip: 'Обновить',
           ),
         ],
@@ -318,7 +324,9 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                 label: 'Сменить персонажа',
                 onPressed: () => context.read<LobbyBloc>().add(
                       LobbyEvent.toggleReady(
-                          roomId: widget.roomId, ready: false,),
+                        roomId: widget.roomId,
+                        ready: false,
+                      ),
                     ),
               ),
               if (!room.allPlayersReady)
@@ -353,7 +361,9 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                 label: 'Отменить готовность',
                 onPressed: () => context.read<LobbyBloc>().add(
                       LobbyEvent.toggleReady(
-                          roomId: widget.roomId, ready: false,),
+                        roomId: widget.roomId,
+                        ready: false,
+                      ),
                     ),
               ),
             ] else if (currentPlayer != null &&
@@ -365,7 +375,8 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                   color: const Color(0xFFF4A261).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: const Color(0xFFF4A261).withValues(alpha: 0.3),),
+                    color: const Color(0xFFF4A261).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -505,7 +516,8 @@ class _CharacterSelectorSheet extends StatelessWidget {
                   ),
                   loading: () => const Center(
                     child: CircularProgressIndicator(
-                        color: Color(0xFFD4AF37),),
+                      color: Color(0xFFD4AF37),
+                    ),
                   ),
                   loaded: (characters) {
                     if (characters.isEmpty) {
@@ -542,8 +554,9 @@ class _CharacterSelectorSheet extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     color: const Color(0xFF2A2A4A),
                                     border: Border.all(
-                                        color: const Color(0xFFD4AF37),
-                                        width: 1.5,),
+                                      color: const Color(0xFFD4AF37),
+                                      width: 1.5,
+                                    ),
                                   ),
                                   child: Center(
                                     child: Text(
@@ -641,9 +654,7 @@ class _ActionBtn extends StatelessWidget {
               : const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isPrimary
-                ? Colors.transparent
-                : const Color(0xFF2A2A4E),
+            color: isPrimary ? Colors.transparent : const Color(0xFF2A2A4E),
           ),
         ),
         child: Row(

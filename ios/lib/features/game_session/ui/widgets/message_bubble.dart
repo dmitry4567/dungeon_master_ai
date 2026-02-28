@@ -12,6 +12,7 @@ import '../../bloc/game_session_event.dart';
 import '../../bloc/game_session_state.dart';
 import '../../models/message.dart';
 import 'dice_result_widget.dart';
+import 'tts_button.dart';
 
 /// Распарсенный запрос на бросок из текста сообщения
 class ParsedDiceRequest {
@@ -110,9 +111,8 @@ class MessageBubble extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isCurrentUser
-              ? const Color(0xFF2A2A4E)
-              : const Color(0xFF1A1A2E),
+          color:
+              isCurrentUser ? const Color(0xFF2A2A4E) : const Color(0xFF1A1A2E),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -361,7 +361,9 @@ class _DmBubbleState extends State<_DmBubble>
                     animation: _pulseAnimation,
                     builder: (context, child) => Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2,),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.secondary
                             .withValues(alpha: _pulseAnimation.value),
@@ -401,6 +403,18 @@ class _DmBubbleState extends State<_DmBubble>
               const SizedBox(height: 8),
               DiceResultWidget(result: widget.message.diceResult!),
             ],
+
+            const SizedBox(height: 6),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TTSButton(
+                  messageId: widget.message.id,
+                  text: widget.message.content,
+                ),
+              ],
+            ),
           ],
         ),
       );
@@ -416,7 +430,8 @@ class _DmBubbleState extends State<_DmBubble>
           color: const Color(0xFF0D0D1A),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFD4AF37).withValues(alpha: _pulseAnimation.value),
+            color: const Color(0xFFD4AF37)
+                .withValues(alpha: _pulseAnimation.value),
             width: 2,
           ),
         ),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -135,7 +137,7 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
       );
 
   Widget _buildAppBar(BuildContext context) => SliverAppBar(
-        expandedHeight: 180,
+        expandedHeight: Platform.isMacOS ? 215 : 180,
         pinned: true,
         // backgroundColor: Colors.transparent,
         backgroundColor: const Color(0xFF0D0D1A),

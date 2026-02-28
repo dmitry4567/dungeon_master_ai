@@ -14,6 +14,7 @@ import '../../features/character/ui/character_detail_page.dart';
 import '../../features/character/ui/character_list_page.dart';
 import '../../features/game_session/bloc/game_session_bloc.dart';
 import '../../features/game_session/bloc/game_session_event.dart';
+import '../../features/game_session/bloc/tts_cubit.dart';
 import '../../features/game_session/bloc/voice_cubit.dart';
 import '../../features/game_session/data/game_session_repository.dart';
 import '../../features/game_session/ui/game_session_page.dart';
@@ -243,6 +244,9 @@ class AppRouter {
                   repository: getIt<GameSessionRepository>(),
                 ),
               ),
+              BlocProvider(
+                create: (_) => getIt<TTSCubit>(),
+              ),
             ],
             child: GameSessionPage(
               roomId: roomId,
@@ -403,43 +407,54 @@ class _NavBarItem extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFD4AF37).withOpacity(0.12)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(
-                    color: const Color(0xFFD4AF37).withOpacity(0.25),
-                  )
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? item.activeIcon : item.icon,
-                size: 24,
-                color: isSelected
-                    ? const Color(0xFFD4AF37)
-                    : const Color(0xFF5A5A7E),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                item.label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected
-                      ? const Color(0xFFD4AF37)
-                      : const Color(0xFF5A5A7E),
+        child: SizedBox(
+          width: 80,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? const Color(0xFFD4AF37).withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: isSelected
+                  ? Border.all(
+                      color: const Color(0xFFD4AF37).withValues(alpha: 0.25),
+                    )
+                  : null,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: Icon(
+                    isSelected ? item.activeIcon : item.icon,
+                    size: 24,
+                    color: isSelected
+                        ? const Color(0xFFD4AF37)
+                        : const Color(0xFF5A5A7E),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  item.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected
+                        ? const Color(0xFFD4AF37)
+                        : const Color(0xFF5A5A7E),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );

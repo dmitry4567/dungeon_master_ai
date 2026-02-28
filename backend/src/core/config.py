@@ -116,6 +116,19 @@ class Settings(BaseSettings):
     agora_app_certificate: str = Field(default="", alias="AGORA_APP_CERTIFICATE")
     agora_token_expire_seconds: int = Field(default=14400, alias="AGORA_TOKEN_EXPIRE_SECONDS")
 
+    # AWS Polly TTS
+    aws_access_key_id: str = Field(default="", alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: str = Field(default="", alias="AWS_SECRET_ACCESS_KEY")
+    aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
+
+    # Polly Voice Settings
+    # Russian (standard): Maxim (male), Tatyana (female)
+    # English (neural): Joanna (female), Matthew (male)
+    polly_voice_id: str = Field(default="Maxim", alias="POLLY_VOICE_ID")
+    polly_engine: str = Field(default="standard", alias="POLLY_ENGINE")
+    tts_max_text_length: int = Field(default=5000, alias="TTS_MAX_TEXT_LENGTH")
+    tts_chunk_size: int = Field(default=2500, alias="TTS_CHUNK_SIZE")
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: Any) -> list[str]:

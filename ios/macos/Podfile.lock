@@ -45,6 +45,8 @@ PODS:
   - AgoraRtcEngine_macOS/VideoCodecEnc (4.5.2)
   - AgoraRtcEngine_macOS/VirtualBackground (4.5.2)
   - AgoraRtcEngine_macOS/VQA (4.5.2)
+  - audio_session (0.0.1):
+    - FlutterMacOS
   - connectivity_plus (0.0.1):
     - FlutterMacOS
   - Firebase/Analytics (11.15.0):
@@ -176,6 +178,9 @@ PODS:
     - GoogleUtilities/Privacy
   - iris_method_channel (0.0.1):
     - FlutterMacOS
+  - just_audio (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -192,6 +197,7 @@ PODS:
 
 DEPENDENCIES:
   - agora_rtc_engine (from `Flutter/ephemeral/.symlinks/plugins/agora_rtc_engine/macos`)
+  - audio_session (from `Flutter/ephemeral/.symlinks/plugins/audio_session/macos`)
   - connectivity_plus (from `Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos`)
   - firebase_analytics (from `Flutter/ephemeral/.symlinks/plugins/firebase_analytics/macos`)
   - firebase_core (from `Flutter/ephemeral/.symlinks/plugins/firebase_core/macos`)
@@ -199,6 +205,7 @@ DEPENDENCIES:
   - flutter_secure_storage_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - iris_method_channel (from `Flutter/ephemeral/.symlinks/plugins/iris_method_channel/macos`)
+  - just_audio (from `Flutter/ephemeral/.symlinks/plugins/just_audio/darwin`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `Flutter/ephemeral/.symlinks/plugins/sign_in_with_apple/macos`)
 
@@ -226,6 +233,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   agora_rtc_engine:
     :path: Flutter/ephemeral/.symlinks/plugins/agora_rtc_engine/macos
+  audio_session:
+    :path: Flutter/ephemeral/.symlinks/plugins/audio_session/macos
   connectivity_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/connectivity_plus/macos
   firebase_analytics:
@@ -240,6 +249,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   iris_method_channel:
     :path: Flutter/ephemeral/.symlinks/plugins/iris_method_channel/macos
+  just_audio:
+    :path: Flutter/ephemeral/.symlinks/plugins/just_audio/darwin
   shared_preferences_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
   sign_in_with_apple:
@@ -250,6 +261,7 @@ SPEC CHECKSUMS:
   AgoraInfra_macOS: 9bc9cea2486446c87d3ee3e69325cdb45ecf99c2
   AgoraIrisRTC_macOS: 66c134edf52e1dd9863b00494207345e2140b286
   AgoraRtcEngine_macOS: ca423379ffb023c12a267e9ce6234f90a431f4d2
+  audio_session: 728ae3823d914f809c485d390274861a24b0904e
   connectivity_plus: 0a976dfd033b59192912fa3c6c7b54aab5093802
   Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
   firebase_analytics: c6a3f80cf2e8681b4e6b3402162acf116c4d3a57
@@ -269,6 +281,7 @@ SPEC CHECKSUMS:
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   iris_method_channel: 9e3741834643c53dc41ea01f3edab11c204788c4
+  just_audio: a42c63806f16995daf5b219ae1d679deb76e6a79
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
