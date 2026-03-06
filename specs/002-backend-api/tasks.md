@@ -202,24 +202,24 @@
 
 ---
 
-## Phase 8: User Story 6 — Голосовой прокси (Priority: P6)
+## Phase 8: User Story 6 — Голосовой прокси (TTS) (Priority: P6)
 
-**Goal**: TTS/STT через внешние сервисы, хранение аудио
+**Goal**: TTS через внешние сервисы, хранение аудио
 
-**Independent Test**: Отправить текст на TTS, получить URL аудио; отправить аудио на STT, получить текст
+**Independent Test**: Отправить текст на TTS, получить URL аудио
 
 ### Тесты для User Story 6
 
-- [ ] T085 [P] [US6] Контрактный тест TTS/STT эндпоинтов (mock внешних сервисов) в backend/tests/contract/test_voice_contract.py
+- [X] T085 [P] [US6] Контрактный тест TTS эндпоинта (mock внешних сервисов) в backend/tests/contract/test_voice_contract.py
 
 ### Реализация User Story 6
 
-- [ ] T086 [P] [US6] Создать Pydantic-схемы для voice в backend/src/schemas/voice.py
-- [ ] T087 [US6] Реализовать VoiceService (TTS, STT, хранение) в backend/src/services/voice_service.py
-- [ ] T088 [US6] Реализовать роуты /voice/* в backend/src/api/routes/voice.py
-- [ ] T089 [US6] Подключить роуты voice к main.py
+- [X] T086 [P] [US6] Создать Pydantic-схемы для voice в backend/src/schemas/voice.py
+- [X] T087 [US6] Реализовать VoiceService (TTS) в backend/src/services/voice_service.py
+- [X] T088 [US6] Реализовать роуты /voice/* в backend/src/api/routes/voice.py
+- [X] T089 [US6] Подключить роуты voice к main.py
 
-**Checkpoint**: Голосовая функциональность работает независимо
+**Checkpoint**: Голосовая функциональность TTS работает
 
 ---
 
@@ -227,17 +227,17 @@
 
 **Purpose**: Улучшения, затрагивающие несколько историй
 
-- [ ] T089a [P] Создать Pydantic-схему ModerationEvent для логирования в backend/src/schemas/moderation.py
-- [ ] T090 [P] Реализовать фильтры модерации контента в backend/src/services/moderation_service.py
-- [ ] T091 [P] Добавить метрики latency и error rate в backend/src/api/middleware.py
-- [ ] T092 [P] Реализовать обработку граничных случаев: недоступность AI-провайдера (503 + retry-after)
-- [ ] T093 [P] Реализовать обработку переподключения WebSocket (синхронизация пропущенных сообщений)
-- [ ] T094 [P] Реализовать очередь действий с метками времени для параллельных действий игроков
-- [ ] T095 Создать Dockerfile для production в backend/Dockerfile
-- [ ] T096 Запустить валидацию quickstart.md
-- [ ] T097 Финальный прогон всех тестов и проверка покрытия
-- [ ] T098 [P] Создать тест эндпоинта /metrics (Prometheus-формат) в backend/tests/contract/test_metrics_contract.py
-- [ ] T099 [P] Создать нагрузочный тест 100 одновременных WebSocket-соединений в backend/tests/load/test_websocket_load.py
+- [x] T089a [P] Создать Pydantic-схему ModerationEvent для логирования в backend/src/schemas/moderation.py
+- [x] T090 [P] Реализовать фильтры модерации контента в backend/src/services/moderation_service.py
+- [x] T091 [P] Добавить метрики latency и error rate в backend/src/api/middleware.py
+- [x] T092 [P] Реализовать обработку граничных случаев: недоступность AI-провайдера (503 + retry-after)
+- [x] T093 [P] Реализовать обработку переподключения WebSocket (синхронизация пропущенных сообщений)
+- [x] T094 [P] Реализовать очередь действий с метками времени для параллельных действий игроков
+- [x] T095 Создать Dockerfile для production в backend/Dockerfile
+- [x] T096 Запустить валидацию quickstart.md
+- [x] T097 Финальный прогон всех тестов и проверка покрытия
+- [x] T098 [P] Создать тест эндпоинта /metrics (Prometheus-формат) в backend/tests/contract/test_metrics_contract.py
+- [x] T099 [P] Создать нагрузочный тест 100 одновременных WebSocket-соединений в backend/tests/load/test_websocket_load.py
 
 ---
 

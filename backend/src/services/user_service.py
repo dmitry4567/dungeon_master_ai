@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-import logging
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.logging import get_logger
 from src.models.user import User
 from src.schemas.user import UserUpdate
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class UserNotFoundError(Exception):
@@ -60,8 +60,9 @@ class UserService:
         await self.db.refresh(user)
 
         logger.info(
-            "User profile updated",
-            extra={"user_id": str(user_id), "fields": list(update_data.keys())},
+            "User profile updated: user_id=%s, fields=%s",
+            str(user_id),
+            list(update_data.keys()),
         )
 
         return user
@@ -72,4 +73,4 @@ class UserService:
         await self.db.delete(user)
         await self.db.commit()
 
-        logger.info("User deleted", extra={"user_id": str(user_id)})
+        logger.info("User deleted: user_id=%s", str(user_id))

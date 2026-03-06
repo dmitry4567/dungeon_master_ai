@@ -12,6 +12,7 @@ class LobbyEvent with _$LobbyEvent {
     required String name,
     required String scenarioVersionId,
     @Default(5) int maxPlayers,
+    String? characterId,
   }) = CreateRoomEvent;
 
   /// Загрузить детали комнаты

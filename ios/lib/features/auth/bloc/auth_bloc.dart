@@ -7,7 +7,7 @@ import 'auth_event.dart';
 import 'auth_state.dart';
 
 /// BLoC аутентификации
-@injectable
+@lazySingleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc(this._authRepository) : super(const AuthState.initial()) {
     on<AuthCheckSession>(_onCheckSession);

@@ -8,7 +8,7 @@ import '../../bloc/game_session_bloc.dart';
 import '../../bloc/game_session_event.dart';
 import '../../models/dice_result.dart';
 
-/// Виджет запроса на бросок кубика
+/// Компактный виджет запроса на бросок кубика, встраиваемый в чат
 class DiceRollRequestWidget extends StatefulWidget {
   const DiceRollRequestWidget({required this.request, super.key});
 
@@ -20,25 +20,25 @@ class DiceRollRequestWidget extends StatefulWidget {
 
 class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
   bool _isRolling = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.3, end: 0.6).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -49,9 +49,6 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
       _isRolling = true;
     });
 
-    _controller.forward().then((_) => _controller.reverse());
-
-    // Генерируем случайные результаты для каждого кубика
     final random = Random();
     final dieSize = _parseDieSize(widget.request.diceType);
     final rolls = List.generate(
@@ -59,7 +56,6 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
       (_) => random.nextInt(dieSize) + 1,
     );
 
-    // Отправляем результат
     context.read<GameSessionBloc>().add(
           GameSessionEvent.rollDice(
             requestId: widget.request.requestId,
@@ -69,7 +65,6 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
   }
 
   int _parseDieSize(String diceType) {
-    // Парсим d20, d6, d12, etc.
     final match = RegExp(r'd(\d+)').firstMatch(diceType.toLowerCase());
     if (match != null) {
       return int.tryParse(match.group(1)!) ?? 20;
@@ -79,142 +74,234 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
 
   @override
   Widget build(BuildContext context) {
-    final dieSize = _parseDieSize(widget.request.diceType);
+    final diceNotation = widget.request.numDice > 1
+        ? '${widget.request.numDice}${widget.request.diceType}'
+        : widget.request.diceType.toUpperCase();
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF2D2418), Color(0xFF352A1C)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.9),
-            AppColors.primaryDark,
-          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.secondary.withValues(alpha: 0.5),
-          width: 2,
+          color: AppColors.secondary.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Заголовок
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.casino,
-                color: AppColors.secondary,
-                size: 28,
-              ),
-              SizedBox(width: 12),
-              Text(
-                'Бросок кубика',
-                style: TextStyle(
-                  color: AppColors.secondary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Причина броска
-          if (widget.request.reason != null) ...[
-            Text(
-              widget.request.reason!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.onSurface.withValues(alpha: 0.9),
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-
-          // Информация о броске
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceVariant.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
+          // Заголовок DM
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildInfoChip(
-                  label: 'Тип',
-                  value: widget.request.numDice > 1
-                      ? '${widget.request.numDice}${widget.request.diceType}'
-                      : widget.request.diceType,
+                const Icon(
+                  Icons.auto_stories,
+                  color: AppColors.secondary,
+                  size: 16,
                 ),
-                if (widget.request.modifier != 0)
-                  _buildInfoChip(
-                    label: 'Модификатор',
-                    value: widget.request.modifier > 0
-                        ? '+${widget.request.modifier}'
-                        : '${widget.request.modifier}',
+                const SizedBox(width: 6),
+                const Text(
+                  'Dungeon Master',
+                  style: TextStyle(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
-                if (widget.request.dc != null)
-                  _buildInfoChip(
-                    label: 'DC',
-                    value: '${widget.request.dc}',
-                  ),
-                if (widget.request.skill != null)
-                  _buildInfoChip(
-                    label: 'Навык',
-                    value: widget.request.skill!,
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Кнопка броска
-          ScaleTransition(
-            scale: _scaleAnimation,
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isRolling ? null : _rollDice,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: AppColors.onSecondary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 8,
-                  shadowColor: AppColors.secondary.withValues(alpha: 0.5),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.casino,
-                      size: 28,
+                const Spacer(),
+                AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) => Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary
+                          .withValues(alpha: _pulseAnimation.value),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      _isRolling ? 'Бросаю...' : 'Бросить ${widget.request.diceType.toUpperCase()}',
-                      style: const TextStyle(
-                        fontSize: 18,
+                    child: const Text(
+                      'Ваш ход',
+                      style: TextStyle(
+                        color: AppColors.onSecondary,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Причина броска
+          if (widget.request.reason != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
+              child: Text(
+                widget.request.reason!,
+                style: const TextStyle(
+                  color: AppColors.onSurface,
+                  fontSize: 15,
+                  height: 1.4,
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 12),
+
+          // Компактная карточка броска
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+            child: AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) => DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.primaryDark,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.secondary
+                        .withValues(alpha: _pulseAnimation.value),
+                    width: 1.5,
+                  ),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _isRolling ? null : _rollDice,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          // Иконка кубика
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: _isRolling
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.secondary,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.casino,
+                                      color: AppColors.secondary,
+                                      size: 24,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+
+                          // Информация о броске
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Тип кубика и навык
+                                Row(
+                                  children: [
+                                    Text(
+                                      diceNotation,
+                                      style: const TextStyle(
+                                        color: AppColors.secondary,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    if (widget.request.modifier != 0) ...[
+                                      Text(
+                                        widget.request.modifier > 0
+                                            ? ' +${widget.request.modifier}'
+                                            : ' ${widget.request.modifier}',
+                                        style: TextStyle(
+                                          color: AppColors.onSurface
+                                              .withValues(alpha: 0.7),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                    if (widget.request.skill != null) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.secondaryLight
+                                              .withValues(alpha: 0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          widget.request.skill!,
+                                          style: const TextStyle(
+                                            color: AppColors.secondaryLight,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                // DC
+                                if (widget.request.dc != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      'Сложность: ${widget.request.dc}',
+                                      style: TextStyle(
+                                        color: AppColors.onSurface
+                                            .withValues(alpha: 0.6),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          // Кнопка
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _isRolling
+                                  ? AppColors.secondary.withValues(alpha: 0.5)
+                                  : AppColors.secondary,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              _isRolling ? '...' : 'Бросить',
+                              style: const TextStyle(
+                                color: AppColors.onSecondary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -223,26 +310,4 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
       ),
     );
   }
-
-  Widget _buildInfoChip({required String label, required String value}) => Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.onSurface.withValues(alpha: 0.6),
-            fontSize: 11,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppColors.secondary,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
 }

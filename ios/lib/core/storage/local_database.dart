@@ -1,7 +1,8 @@
+
 import 'package:injectable/injectable.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Локальная база данных SQLite для кэширования
 @lazySingleton
@@ -21,13 +22,15 @@ class LocalDatabase {
     if (_database != null) return;
 
     final documentsDirectory = await getApplicationDocumentsDirectory();
-    final path = join(documentsDirectory.path, 'ai_dungeon_master.db');
+    final dbPath = join(documentsDirectory.path, 'ai_dungeon_master.db');
 
-    _database = await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+    // Использовать databaseFactoryFfi напрямую
+    _database = await databaseFactoryFfi.openDatabase(
+      dbPath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: _onCreate,
+      ),
     );
   }
 
@@ -74,11 +77,6 @@ class LocalDatabase {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_messages_room_id ON cached_messages(room_id)',
     );
-  }
-
-  /// Миграции
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Миграции будут добавляться по мере необходимости
   }
 
   /// Закрыть базу данных

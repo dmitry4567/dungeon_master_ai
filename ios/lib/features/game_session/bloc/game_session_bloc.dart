@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/network/websocket_client.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../scenario/models/scenario_content.dart';
 import '../data/game_session_repository.dart';
 import '../models/dice_result.dart';
 import '../models/message.dart';
@@ -24,6 +25,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     on<EndSessionEvent>(_onEndSession);
     on<LeaveSessionEvent>(_onLeaveSession);
     on<RollDiceEvent>(_onRollDice);
+    on<MarkMessageRolledEvent>(_onMarkMessageRolled);
   }
 
   final GameSessionRepository _repository;
@@ -40,14 +42,20 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     emit(const GameSessionState.connecting());
 
     try {
-      // Загрузить сессию через REST
+      // 1. Загрузить сессию по ID комнаты
       final session = await _repository.getSessionByRoom(event.roomId);
 
-      // Загрузить начальные сообщения
-      final messages = await _repository.getMessages(session.id);
+      // 2. Параллельно загрузить остальное, используя session.id
+      final results = await Future.wait([
+        _repository.getMessages(session.id),
+        _repository.getScenarioContent(session.id),
+        _secureStorage.getUserId(),
+      ]);
 
-      // Определить, является ли текущий пользователь хостом
-      _currentUserId = await _secureStorage.getUserId();
+      final messages = results[0]! as List<Message>;
+      final scenarioContent = results[1]! as ScenarioContent;
+      _currentUserId = results[2] as String?;
+
       final isHost = _currentUserId != null; // Упрощённо, TODO: проверить через room
 
       // Подписаться на WS-события
@@ -69,6 +77,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         roomId: event.roomId,
         messages: messages,
         worldState: session.worldState,
+        scenarioContent: scenarioContent,
         isHost: isHost,
       ),);
     } catch (e) {
@@ -132,6 +141,8 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         _handleSystemMessage(currentState, event.data, emit);
       case 'dice_request':
         _handleDiceRequest(currentState, event.data, emit);
+      case 'voice_channel_closed':
+        _handleVoiceChannelClosed(currentState, emit);
     }
   }
 
@@ -323,6 +334,14 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     ),);
   }
 
+  void _handleVoiceChannelClosed(
+    GameSessionActive currentState,
+    Emitter<GameSessionState> emit,
+  ) {
+    // Устанавливаем флаг, чтобы UI-слой мог отреагировать и отключить голосовой канал
+    emit(currentState.copyWith(voiceChannelClosed: true));
+  }
+
   void _handleDiceRequest(
     GameSessionActive currentState,
     Map<String, dynamic> data,
@@ -371,6 +390,18 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     ),);
   }
 
+  Future<void> _onMarkMessageRolled(
+    MarkMessageRolledEvent event,
+    Emitter<GameSessionState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! GameSessionActive) return;
+
+    emit(currentState.copyWith(
+      rolledMessageIds: {...currentState.rolledMessageIds, event.messageId},
+    ),);
+  }
+
   Future<void> _onConnectionStateChanged(
     ConnectionStateChangedEvent event,
     Emitter<GameSessionState> emit,
@@ -408,8 +439,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
   }
 
   String _formatDiceResult(DiceResult result) {
-    final buffer = StringBuffer();
-    buffer.write('${result.type}: ');
+    final buffer = StringBuffer()..write('${result.type}: ');
     if (result.baseRoll != null) buffer.write('${result.baseRoll}');
     if (result.modifier != null && result.modifier != 0) {
       buffer.write(result.modifier! > 0

@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:injectable/injectable.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common/sql.dart';
 
 import '../../../core/network/websocket_client.dart';
 import '../../../core/storage/local_database.dart';
+import '../../scenario/models/scenario_content.dart';
 import '../models/message.dart';
+import '../models/voice_models.dart';
 import '../models/world_state.dart';
 import 'game_session_api.dart';
 
@@ -88,10 +90,16 @@ class GameSessionRepository {
     }
   }
 
+  /// Получить контент сценария
+  Future<ScenarioContent> getScenarioContent(String sessionId) async => _api.getScenarioContent(sessionId);
+
   /// Завершить сессию
   Future<void> endSession(String sessionId) async {
     await _api.endSession(sessionId);
   }
+
+  /// Получить токен для голосового канала
+  Future<VoiceToken> getVoiceToken(String roomId) async => _api.getVoiceToken(roomId);
 
   /// Кэшировать сообщения в SQLite
   Future<void> _cacheMessages(

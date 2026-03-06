@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AI Dungeon Master needs microphone access for voice input during gameplay</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>AI Dungeon Master needs speech recognition to convert your voice to text</string>
 </dict>
 </plist>

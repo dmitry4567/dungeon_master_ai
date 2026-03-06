@@ -49,6 +49,10 @@ class _OfflineBannerState extends State<OfflineBanner>
   }
 
   void _updateStatus(List<ConnectivityResult> results) {
+    // Debug: log connectivity results
+    // ignore: avoid_print
+    print('[Connectivity] Results: $results');
+
     final isOffline =
         results.isEmpty || results.every((r) => r == ConnectivityResult.none);
 

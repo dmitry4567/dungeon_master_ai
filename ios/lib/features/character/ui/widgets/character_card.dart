@@ -1,15 +1,16 @@
-import 'package:ai_dungeon_master/features/character/models/ability_scores.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/theme/colors.dart';
 import '../../data/dnd_reference_data.dart';
+import '../../models/ability_scores.dart';
 import '../../models/character.dart';
 
 /// Карточка персонажа для отображения в списке
 class CharacterCard extends StatelessWidget {
   const CharacterCard({
-    required this.character, required this.onTap, super.key,
+    required this.character,
+    required this.onTap,
+    super.key,
     this.onLongPress,
   });
 
@@ -26,77 +27,66 @@ class CharacterCard extends StatelessWidget {
       button: true,
       label:
           '${character.name}, ${dndRace?.nameRu ?? character.race} ${dndClass?.nameRu ?? character.characterClass}, уровень ${character.level}',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onTap();
-          },
-          onLongPress: onLongPress != null
-              ? () {
-                  HapticFeedback.mediumImpact();
-                  onLongPress!();
-                }
-              : null,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.outline),
-            ),
-            child: Row(
-              children: [
-                // Аватар/иконка класса
-                _CharacterAvatar(
-                  emoji: dndClass?.iconEmoji ?? '⚔️',
-                  level: character.level,
-                ),
-                const SizedBox(width: 16),
-
-                // Информация о персонаже
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Имя
-                      Text(
-                        character.name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.onSurface,
-                              fontWeight: FontWeight.bold,
-                            ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        onLongPress: onLongPress != null
+            ? () {
+                HapticFeedback.mediumImpact();
+                onLongPress!();
+              }
+            : null,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF2A2A4E)),
+          ),
+          child: Row(
+            children: [
+              _CharacterAvatar(
+                emoji: dndClass?.iconEmoji ?? '⚔️',
+                level: character.level,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      character.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.3,
                       ),
-                      const SizedBox(height: 4),
-
-                      // Раса и класс
-                      Text(
-                        '${dndRace?.nameRu ?? character.race} ${dndClass?.nameRu ?? character.characterClass}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.onSurface.withValues(alpha: 0.7),
-                            ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${dndRace?.nameRu ?? character.race} · ${dndClass?.nameRu ?? character.characterClass}',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 13,
                       ),
-                      const SizedBox(height: 8),
-
-                      // Характеристики preview
-                      _AbilityScoresPreview(
-                        scores: character.abilityScores,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+                    _AbilityScoresPreview(scores: character.abilityScores),
+                  ],
                 ),
-
-                // Стрелка
-                const Icon(
-                  Icons.chevron_right,
-                  color: AppColors.outline,
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF3A3A5E),
+              ),
+            ],
           ),
         ),
       ),
@@ -115,59 +105,64 @@ class _CharacterAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Stack(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.primary.withValues(alpha: 0.3),
-                AppColors.primary.withValues(alpha: 0.1),
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF2A2A4A),
+              border: Border.all(
+                color: const Color(0xFFD4AF37),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD4AF37).withOpacity(0.2),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.5),
+            child: Center(
+              child: Text(
+                emoji,
+                style: const TextStyle(fontSize: 26),
+              ),
             ),
           ),
-          child: Center(
-            child: Text(
-              emoji,
-              style: const TextStyle(fontSize: 28),
+          Positioned(
+            bottom: -4,
+            right: -4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD4AF37),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF1A1A2E),
+                  width: 2,
+                ),
+              ),
+              child: Text(
+                '$level',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-        ),
-        // Бейдж уровня
-        Positioned(
-          bottom: -2,
-          right: -2,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: AppColors.secondary,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.surface, width: 2),
-            ),
-            child: Text(
-              '$level',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.onSecondary,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ),
-        ),
-      ],
-    );
+        ],
+      );
 }
 
 class _AbilityScoresPreview extends StatelessWidget {
   const _AbilityScoresPreview({required this.scores});
 
-  final AbilityScores scores; // AbilityScores
+  final AbilityScores scores;
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +176,7 @@ class _AbilityScoresPreview extends StatelessWidget {
     ];
 
     return Wrap(
-      spacing: 8,
+      spacing: 6,
       runSpacing: 4,
       children: abilities
           .map((a) => _MiniAbilityChip(name: a.$1, value: a.$2))
@@ -201,17 +196,19 @@ class _MiniAbilityChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        '$name $value',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.onSurface.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w500,
-            ),
-      ),
-    );
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D0D1A),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFF2A2A4E)),
+        ),
+        child: Text(
+          '$name $value',
+          style: const TextStyle(
+            color: Colors.white54,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
 }

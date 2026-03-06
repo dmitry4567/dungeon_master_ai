@@ -1,13 +1,16 @@
 """WebSocket handler for real-time game sessions."""
 import asyncio
 import json
-import logging
+import time
 import uuid
+from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import Any
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from src.core.database import get_db_context
+from src.core.logging import get_logger
 from src.core.redis import get_redis_service
 from src.core.security import verify_token_type
 from src.schemas.websocket import (
@@ -27,9 +30,23 @@ from src.services.dice_parser import DiceParser, DiceRequest
 from src.services.session_service import SessionService
 from src.services.state_extractor import StateExtractor
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(tags=["WebSocket"])
+
+
+_MAX_RECONNECT_HISTORY = 50  # Max messages stored for reconnect sync
+_ACTION_QUEUE_WINDOW_MS = 500  # Window to collect simultaneous actions (ms)
+
+
+@dataclass(order=True)
+class QueuedAction:
+    """A player action queued for processing."""
+
+    timestamp: float  # Unix timestamp when action arrived
+    user_id: str = field(compare=False)
+    content: str = field(compare=False)
+    action_id: str = field(compare=False, default_factory=lambda: str(uuid.uuid4()))
 
 
 class ConnectionManager:
@@ -41,6 +58,12 @@ class ConnectionManager:
         self._subscribe_tasks: dict[str, asyncio.Task] = {}
         # Pending dice requests: request_id -> {request_data, player_id, room_id, ...}
         self.pending_dice_requests: dict[str, dict[str, Any]] = {}
+        # Recent message history per room for reconnect sync: room_id -> [msg, ...]
+        self._room_message_history: dict[str, list[dict[str, Any]]] = {}
+        # Per-room action processing locks to serialize AI calls
+        self._room_locks: dict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
+        # Per-room action queues: room_id -> [QueuedAction]
+        self._action_queues: dict[str, list[QueuedAction]] = defaultdict(list)
 
     async def connect(
         self,
@@ -49,9 +72,21 @@ class ConnectionManager:
         user_id: str,
         user_name: str,
         character_name: str | None = None,
+        last_message_id: str | None = None,
     ) -> None:
-        """Add a new WebSocket connection."""
+        """Add a new WebSocket connection.
+
+        Args:
+            websocket: The WebSocket connection
+            room_id: Room identifier
+            user_id: User identifier
+            user_name: Display name of the user
+            character_name: Character name if applicable
+            last_message_id: If reconnecting, ID of last received message for sync
+        """
         await websocket.accept()
+
+        is_reconnect = user_id in self.user_info
 
         if room_id not in self.active_connections:
             self.active_connections[room_id] = {}
@@ -73,9 +108,14 @@ class ConnectionManager:
                 self._subscribe_to_room(room_id)
             )
 
+        # On reconnect: send missed messages
+        if is_reconnect or last_message_id is not None:
+            await self._sync_missed_messages(websocket, room_id, last_message_id)
+
         logger.info(
-            f"User {user_id} connected to room {room_id}",
-            extra={"user_id": user_id, "room_id": room_id},
+            "User connected to room: user_id=%s, room_id=%s",
+            user_id,
+            room_id,
         )
 
     async def disconnect(self, websocket: WebSocket, room_id: str, user_id: str) -> None:
@@ -96,8 +136,9 @@ class ConnectionManager:
         await redis.srem(f"room:{room_id}:connections", user_id)
 
         logger.info(
-            f"User {user_id} disconnected from room {room_id}",
-            extra={"user_id": user_id, "room_id": room_id},
+            "User disconnected from room: user_id=%s, room_id=%s",
+            user_id,
+            room_id,
         )
 
     async def send_personal(self, user_id: str, message: dict) -> None:
@@ -115,10 +156,110 @@ class ConnectionManager:
             try:
                 await ws.send_json(message)
             except Exception as e:
-                logger.error(f"Failed to send personal message to {user_id}: {e}")
+                logger.error("Failed to send personal message to user=%s: %s", user_id, str(e))
+
+    def _record_room_message(self, room_id: str, message: dict) -> None:
+        """Store message in room history for reconnect sync."""
+        if room_id not in self._room_message_history:
+            self._room_message_history[room_id] = []
+        history = self._room_message_history[room_id]
+        history.append(message)
+        # Keep only the last N messages
+        if len(history) > _MAX_RECONNECT_HISTORY:
+            self._room_message_history[room_id] = history[-_MAX_RECONNECT_HISTORY:]
+
+    async def _sync_missed_messages(
+        self,
+        websocket: WebSocket,
+        room_id: str,
+        last_message_id: str | None,
+    ) -> None:
+        """Send missed messages to a reconnecting client.
+
+        Args:
+            websocket: The reconnected client's WebSocket
+            room_id: Room to sync
+            last_message_id: ID of the last message the client received, or None for all
+        """
+        history = self._room_message_history.get(room_id, [])
+        if not history:
+            return
+
+        missed: list[dict] = []
+        if last_message_id is None:
+            missed = history
+        else:
+            # Find messages after last_message_id
+            found = False
+            for msg in history:
+                if found:
+                    missed.append(msg)
+                elif str(msg.get("message_id", msg.get("id", ""))) == last_message_id:
+                    found = True
+
+        if missed:
+            try:
+                sync_envelope = {
+                    "type": "sync_missed_messages",
+                    "count": len(missed),
+                    "messages": missed,
+                }
+                await websocket.send_json(sync_envelope)
+                logger.info(
+                    "Synced %s missed messages on reconnect: user in room=%s",
+                    len(missed),
+                    room_id,
+                )
+            except Exception as e:
+                logger.error("Failed to sync missed messages: %s", str(e))
+
+    def get_room_lock(self, room_id: str) -> asyncio.Lock:
+        """Get per-room lock for serializing AI processing."""
+        return self._room_locks[room_id]
+
+    def enqueue_action(self, room_id: str, user_id: str, content: str) -> QueuedAction:
+        """Add a player action to the room's processing queue.
+
+        Actions are timestamped on arrival. If multiple players act simultaneously
+        (within _ACTION_QUEUE_WINDOW_MS), they are queued and processed in order.
+
+        Args:
+            room_id: Room identifier
+            user_id: Player user ID
+            content: Action content/text
+
+        Returns:
+            The queued action
+        """
+        action = QueuedAction(
+            timestamp=time.time(),
+            user_id=user_id,
+            content=content,
+        )
+        self._action_queues[room_id].append(action)
+        self._action_queues[room_id].sort()  # Sort by timestamp
+        return action
+
+    def dequeue_action(self, room_id: str, action_id: str) -> QueuedAction | None:
+        """Remove and return a specific action from the queue."""
+        queue = self._action_queues[room_id]
+        for i, action in enumerate(queue):
+            if action.action_id == action_id:
+                return queue.pop(i)
+        return None
+
+    def get_queue_position(self, room_id: str, action_id: str) -> int:
+        """Return 1-based position of action in queue, or 0 if not found."""
+        queue = self._action_queues[room_id]
+        for i, action in enumerate(queue):
+            if action.action_id == action_id:
+                return i + 1
+        return 0
 
     async def broadcast_to_room(self, room_id: str, message: dict) -> None:
         """Broadcast a message to all users in a room via Redis pub/sub."""
+        # Record in history for reconnect sync
+        self._record_room_message(room_id, message)
         redis = await get_redis_service()
         await redis.publish(f"room:{room_id}", json.dumps(message))
 
@@ -131,7 +272,7 @@ class ConnectionManager:
             try:
                 await ws.send_json(message)
             except Exception as e:
-                logger.error(f"Failed to send to {user_id}: {e}")
+                logger.error("Failed to send to user=%s: %s", user_id, str(e))
                 disconnected.append(user_id)
 
         # Clean up disconnected
@@ -157,7 +298,7 @@ class ConnectionManager:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            logger.error(f"Redis subscription error for room {room_id}: {e}")
+            logger.error("Redis subscription error for room=%s: %s", room_id, str(e))
 
 
 manager = ConnectionManager()
@@ -202,7 +343,7 @@ async def _process_dm_response_completion(
             state_delta = state_update.to_dict()
 
     except Exception as e:
-        logger.error(f"State extraction error: {e}")
+        logger.error("State extraction error: %s", str(e))
 
     # Save DM message
     async with get_db_context() as db:
@@ -228,6 +369,7 @@ async def websocket_session(
     websocket: WebSocket,
     room_id: str,
     token: str,
+    last_message_id: str | None = None,
 ):
     """WebSocket endpoint for game session communication.
 
@@ -238,6 +380,8 @@ async def websocket_session(
     - Dice roll results
 
     The LLM responds in the same language as the player's message.
+
+    On reconnect, pass `last_message_id` query parameter to receive missed messages.
     """
     # Authenticate user
     user_data = await get_user_from_token(token)
@@ -271,13 +415,14 @@ async def websocket_session(
             character_name = character.get("name")
 
     except Exception as e:
-        logger.error(f"Session lookup error: {e}")
+        logger.error("Session lookup error: %s", str(e))
         await websocket.close(code=4000, reason="Session error")
         return
 
-    # Connect
+    # Connect (pass last_message_id for reconnect sync)
     await manager.connect(
-        websocket, room_id, user_id, user_name, character_name
+        websocket, room_id, user_id, user_name, character_name,
+        last_message_id=last_message_id,
     )
 
     # Notify room of player join
@@ -303,6 +448,26 @@ async def websocket_session(
                 content = data.get("content", "").strip()
                 if not content:
                     continue
+
+                # Enqueue action with timestamp for ordered processing
+                queued = manager.enqueue_action(room_id, user_id, content)
+                queue_pos = manager.get_queue_position(room_id, queued.action_id)
+
+                # Notify player of their position if they must wait
+                if queue_pos > 1:
+                    wait_msg = {
+                        "type": "action_queued",
+                        "action_id": queued.action_id,
+                        "queue_position": queue_pos,
+                        "message": f"Your action is queued (position {queue_pos}). Please wait...",
+                    }
+                    await manager.send_personal(user_id, wait_msg)
+
+                # Acquire room lock to serialize AI processing
+                room_lock = manager.get_room_lock(room_id)
+                async with room_lock:
+                    # Remove from queue now that we hold the lock
+                    manager.dequeue_action(room_id, queued.action_id)
 
                 # Use fresh DB session for each message processing
                 async with get_db_context() as db:
@@ -340,6 +505,9 @@ async def websocket_session(
 
                 try:
                     # Stream DM response token by token
+                    chunk_count = 0
+                    logger.info("Starting DM response streaming: room_id=%s", room_id)
+
                     async for chunk in ai_service.stream_dm_response(
                         player_message=content,
                         scenario_content=scenario_content,
@@ -347,6 +515,7 @@ async def websocket_session(
                         players=players,
                         conversation_history=conversation_history,
                     ):
+                        chunk_count += 1
                         full_response += chunk
                         # Send chunk to all players
                         chunk_msg = WSDMResponseChunk(
@@ -357,6 +526,8 @@ async def websocket_session(
                             room_id, chunk_msg.model_dump(mode="json")
                         )
 
+                    logger.info("DM streaming complete: chunk_count=%s, room_id=%s", chunk_count, room_id)
+
                     # Send end marker
                     end_msg = WSDMResponseEnd(
                         message_id=dm_message_id,
@@ -365,7 +536,7 @@ async def websocket_session(
                     await manager.broadcast_to_room(room_id, end_msg.model_dump(mode="json"))
 
                 except Exception as e:
-                    logger.error(f"AI streaming error: {e}")
+                    logger.error("AI streaming error: %s", str(e))
                     error_msg = WSError(
                         error="ai_error",
                         message="Failed to generate DM response",
@@ -534,7 +705,7 @@ async def websocket_session(
                     await manager.broadcast_to_room(pending["room_id"], end_msg.model_dump(mode="json"))
 
                 except Exception as e:
-                    logger.error(f"AI continuation error: {e}")
+                    logger.error("AI continuation error: %s", str(e))
                     # Even if continuation fails, we still process the original response
 
                 # Combine original response + continuation for storage
@@ -552,9 +723,9 @@ async def websocket_session(
                 )
 
     except WebSocketDisconnect:
-        logger.info(f"User {user_id} disconnected")
+        logger.info("User disconnected: user_id=%s", user_id)
     except Exception as e:
-        logger.exception(f"WebSocket error for user {user_id}: {e}")
+        logger.exception("WebSocket error for user=%s: %s", user_id, str(e))
     finally:
         # Disconnect and notify room
         await manager.disconnect(websocket, room_id, user_id)

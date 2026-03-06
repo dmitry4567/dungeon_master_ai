@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../scenario/models/scenario_content.dart';
 import '../models/dice_result.dart';
 import '../models/message.dart';
 import '../models/world_state.dart';
@@ -20,12 +21,17 @@ class GameSessionState with _$GameSessionState {
     required String roomId,
     required List<Message> messages,
     required WorldState worldState,
+    required ScenarioContent scenarioContent,
     required bool isHost,
     String? streamingContent,
     String? streamingMessageId,
     @Default('connected') String connectionState,
     /// Ожидающий запрос на бросок кубика (для текущего игрока)
     DiceRequest? pendingDiceRequest,
+    /// ID сообщений DM, для которых уже был выполнен бросок кубика
+    @Default({}) Set<String> rolledMessageIds,
+    /// Флаг, сигнализирующий о закрытии голосового канала (для auto-disconnect)
+    @Default(false) bool voiceChannelClosed,
   }) = GameSessionActive;
 
   /// Сессия завершена

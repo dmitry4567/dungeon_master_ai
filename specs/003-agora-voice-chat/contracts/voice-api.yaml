@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: Voice Chat API
+  description: Endpoints for Agora voice channel token management
+  version: 1.1.0
+
+paths:
+  /rooms/{room_id}/voice-token:
+    get:
+      summary: Get Agora voice token for a room
+      description: |
+        Returns an Agora RTC token that allows the authenticated user to join
+        the voice channel for the specified room. Room must be in ACTIVE status.
+        Can be called again to refresh a token before expiry (e.g., on onTokenPrivilegeWillExpire).
+      operationId: getVoiceToken
+      tags:
+        - Voice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: room_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the room
+      responses:
+        '200':
+          description: Voice token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceTokenResponse'
+        '403':
+          description: User is not a player in this room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Room not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Room is not in ACTIVE status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Agora credentials not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    VoiceTokenResponse:
+      type: object
+      required:
+        - token
+        - channel_name
+        - uid
+        - app_id
+        - expires_at
+      properties:
+        token:
+          type: string
+          description: Agora RTC token for joining the voice channel
+          example: "006xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx..."
+        channel_name:
+          type: string
+          format: uuid
+          description: Agora channel name (equals room_id)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        uid:
+          type: integer
+          description: Numeric uid for this user in the Agora channel
+          example: 1234567890
+        app_id:
+          type: string
+          description: Agora App ID needed by client SDK initialization
+          example: "abcdef1234567890abcdef1234567890"
+        expires_at:
+          type: string
+          format: date-time
+          description: UTC datetime when the token expires
+          example: "2026-02-27T13:00:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+          example: "Room is not in active status"
+
+websocket:
+  messages:
+    server_to_client:
+      VOICE_CHANNEL_CLOSED:
+        description: Game session has ended, clients must leave voice channel
+        schema:
+          type: object
+          required: [type, data]
+          properties:
+            type:
+              type: string
+              enum: [VOICE_CHANNEL_CLOSED]
+            data:
+              type: object
+              properties: {}

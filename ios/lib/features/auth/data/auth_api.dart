@@ -56,7 +56,7 @@ class AuthApi {
 
   /// Получить текущего пользователя
   Future<Map<String, dynamic>> getCurrentUser() async {
-    final response = await _dio.get<Map<String, dynamic>>('/auth/me');
+    final response = await _dio.get<Map<String, dynamic>>('/users/me');
     return response.data!;
   }
 }

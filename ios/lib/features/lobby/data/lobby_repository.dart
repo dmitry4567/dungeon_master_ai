@@ -41,11 +41,13 @@ class LobbyRepository {
     required String name,
     required String scenarioVersionId,
     int maxPlayers = 5,
+    String? characterId,
   }) async {
     final request = CreateRoomRequest(
       name: name,
       scenarioVersionId: scenarioVersionId,
       maxPlayers: maxPlayers,
+      characterId: characterId,
     );
     final room = await _api.createRoom(request);
     _cachedRooms = null; // Invalidate cache

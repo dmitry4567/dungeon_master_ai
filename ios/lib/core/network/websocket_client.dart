@@ -56,6 +56,7 @@ class WebSocketClient {
 
       await _channel!.ready;
 
+      print('[WebSocket] Connected successfully');
       _updateState(WebSocketState.connected);
       _reconnectAttempts = 0;
 
@@ -119,10 +120,12 @@ class WebSocketClient {
   }
 
   void _onError(Object error) {
+    print('[WebSocket] Error: $error');
     _updateState(WebSocketState.error);
   }
 
   void _onDone(String roomId) {
+    print('[WebSocket] Connection closed (onDone), will reconnect...');
     _updateState(WebSocketState.disconnected);
     _scheduleReconnect(roomId);
   }

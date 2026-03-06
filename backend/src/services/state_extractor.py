@@ -1,6 +1,5 @@
 """State extractor for extracting world state changes from DM responses."""
 import json
-import logging
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -8,8 +7,9 @@ from typing import Any
 import httpx
 
 from src.core.config import get_settings
+from src.core.logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _extract_json(text: str) -> str:
@@ -28,7 +28,7 @@ class StateUpdate:
     events_occurred: list[str]
     location_changed: str | None
     scene_completed: str | None
-    flags_changed: dict[str, bool]
+    flags_changed: dict[str, dict[str, Any]]  # {id: {"value": bool, "label": str}}
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -52,33 +52,55 @@ class StateUpdate:
 class StateExtractor:
     """Extracts world state changes from DM responses using AI."""
 
-    STATE_EXTRACTION_PROMPT = """Analyze the Dungeon Master's response and extract any world state changes as JSON.
+    STATE_EXTRACTION_PROMPT = """You are a state extraction system for a D&D game. Analyze the Dungeon Master's response and extract world state changes.
 
-Return ONLY a valid JSON object with this exact structure:
+CRITICAL RULES:
+1. You MUST respond with ONLY valid JSON. No explanations, no markdown, no additional text.
+2. For flags_changed: PREFER flag IDs from the "Available Flags" list in the context.
+3. Each flag in flags_changed must have: {"value": bool, "label": "Human readable name in DM's language"}
+4. For NEW flags: use a simple snake_case ID, and a human-readable label in the SAME LANGUAGE as the DM's response.
+
+Return this exact JSON structure:
 {
-  "events_occurred": ["event_id", ...],
-  "location_changed": "location_id or null",
-  "scene_completed": "scene_id or null",
-  "flags_changed": {"flag_name": true/false, ...}
+  "events_occurred": [],
+  "location_changed": null,
+  "scene_completed": null,
+  "flags_changed": {}
 }
 
 Guidelines:
-- events_occurred: Key plot events (e.g., "npc_rescued", "combat_started", "door_opened")
-- location_changed: Only if characters moved to a new location (use location_id from scenario)
-- scene_completed: Only if a scene has definitively ended
-- flags_changed: Important story flags that changed state
+- events_occurred: Array of key plot events as strings (e.g., ["npc_rescued", "combat_started"])
+- location_changed: String location_id if moved to new location, otherwise null
+- scene_completed: String scene_id if scene definitively ended, otherwise null
+- flags_changed: Object where each key is a flag ID and value is {"value": bool, "label": "readable name"}
 
-If no changes occurred, return empty arrays/objects.
-Always return valid JSON, nothing else."""
+Examples (Russian):
+DM says "Вы входите в таверну": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
+DM says "Бой начинается!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": {"value": true, "label": "Бой активен"}}}
+DM says "Дверь со скрипом открывается": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"door_open": {"value": true, "label": "Дверь открыта"}}}
+DM says "Вы нашли ключ": {"events_occurred": ["key_found"], "location_changed": null, "scene_completed": null, "flags_changed": {"key_found": {"value": true, "label": "Ключ найден"}}}
+
+Examples (English):
+DM says "You enter the tavern": {"events_occurred": [], "location_changed": "tavern", "scene_completed": null, "flags_changed": {}}
+DM says "Combat begins!": {"events_occurred": ["combat_started"], "location_changed": null, "scene_completed": null, "flags_changed": {"combat_active": {"value": true, "label": "Combat Active"}}}
+DM says "The door creaks open": {"events_occurred": [], "location_changed": null, "scene_completed": null, "flags_changed": {"door_open": {"value": true, "label": "Door Open"}}}
+
+If unsure or no clear changes, return empty structure. Always return valid JSON."""
 
     def __init__(self) -> None:
-        """Initialize state extractor with OpenRouter client."""
+        """Initialize state extractor with Anthropic Claude client."""
         settings = get_settings()
-        self.api_key = settings.OPENROUTER_API_KEY
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
-        # Use a fast model for state extraction
-        self.model = "nousresearch/deephermes-3-llama-3-8b-preview:free"
-        self.max_tokens = 500
+        self.api_key = settings.ANTHROPIC_API_KEY
+        self.base_url = "https://api.anthropic.com/v1/messages"
+        self.model = settings.model_state_extraction
+        self.max_tokens = settings.max_tokens_state_extraction
+
+        # Warn if API key is not set
+        if not self.api_key:
+            logger.warning(
+                "ANTHROPIC_API_KEY not set. State extraction will fail. "
+                "Consider setting it or state updates will be disabled."
+            )
 
     async def extract_state_update(
         self,
@@ -96,6 +118,16 @@ Always return valid JSON, nothing else."""
         Returns:
             StateUpdate with any changes
         """
+        # Return empty state if API key is not configured
+        if not self.api_key:
+            logger.debug("Anthropic API key not set, skipping state extraction")
+            return StateUpdate(
+                events_occurred=[],
+                location_changed=None,
+                scene_completed=None,
+                flags_changed={},
+            )
+
         # Build context for the extraction
         context = self._build_context(current_world_state, scenario_content)
 
@@ -109,8 +141,44 @@ Extract any state changes from this response."""
 
         try:
             result = await self._call_model(user_prompt)
-            response_text = result["choices"][0]["message"]["content"]
+
+            # Check if response has content
+            if not result.get("content") or not result["content"]:
+                logger.warning("State extraction API returned no content")
+                return StateUpdate(
+                    events_occurred=[],
+                    location_changed=None,
+                    scene_completed=None,
+                    flags_changed={},
+                )
+
+            response_text = result["content"][0].get("text", "")
+
+            # Check if content is empty
+            if not response_text or response_text.strip() == "":
+                logger.warning("State extraction returned empty content")
+                return StateUpdate(
+                    events_occurred=[],
+                    location_changed=None,
+                    scene_completed=None,
+                    flags_changed={},
+                )
+
+            # Log the raw response for debugging
+            logger.debug("State extraction raw response: %s", response_text[:200])
+
             json_text = _extract_json(response_text)
+
+            # Check if json_text is empty after extraction
+            if not json_text or json_text.strip() == "":
+                logger.warning("State extraction JSON extraction resulted in empty string")
+                return StateUpdate(
+                    events_occurred=[],
+                    location_changed=None,
+                    scene_completed=None,
+                    flags_changed={},
+                )
+
             data = json.loads(json_text)
 
             return StateUpdate(
@@ -121,7 +189,10 @@ Extract any state changes from this response."""
             )
 
         except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse state extraction JSON: {e}")
+            logger.warning(
+                "Failed to parse state extraction JSON: %s",
+                str(e),
+            )
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -129,7 +200,7 @@ Extract any state changes from this response."""
                 flags_changed={},
             )
         except Exception as e:
-            logger.error(f"Failed to extract state: {e}")
+            logger.error("Failed to extract state: %s", str(e), exc_info=True)
             return StateUpdate(
                 events_occurred=[],
                 location_changed=None,
@@ -147,37 +218,69 @@ Extract any state changes from this response."""
         scenes = []
         for act in scenario_content.get("acts", []):
             scenes.extend([s.get("id") for s in act.get("scenes", [])])
+        
+        # Build flags list with IDs and names
+        flags = scenario_content.get("flags", [])
+        flags_info = [f"- {f.get('id')}: {f.get('name')}" for f in flags] if flags else ["No flags defined"]
+
+        # Format active flags for display
+        active_flags = world_state.get("flags", {})
+        active_flags_display = {
+            fid: fdata.get("value") if isinstance(fdata, dict) else fdata
+            for fid, fdata in active_flags.items()
+        }
 
         return f"""Current World State:
 - Current Act: {world_state.get("current_act")}
 - Current Location: {world_state.get("current_location")}
 - Completed Scenes: {world_state.get("completed_scenes", [])}
-- Active Flags: {world_state.get("flags", {})}
+- Active Flags: {active_flags_display}
 
 Available Locations: {locations}
-Available Scenes: {scenes}"""
+Available Scenes: {scenes}
+Available Flags:
+{chr(10).join(flags_info)}"""
 
     async def _call_model(self, user_prompt: str) -> dict:
-        """Call OpenRouter API."""
+        """Call Anthropic Claude API."""
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "x-api-key": self.api_key,
             "Content-Type": "application/json",
+            "anthropic-version": "2023-06-01",
         }
 
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": self.STATE_EXTRACTION_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
+            "system": self.STATE_EXTRACTION_PROMPT,
             "max_tokens": self.max_tokens,
             "temperature": 0.1,  # Low temperature for consistent JSON
         }
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(self.base_url, headers=headers, json=payload)
-            response.raise_for_status()
-            return response.json()
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(self.base_url, headers=headers, json=payload)
+                response.raise_for_status()
+                result = response.json()
+
+                # Check if the response has the expected structure
+                if "content" not in result or not result["content"]:
+                    logger.error("Unexpected API response structure: %s", result)
+                    raise ValueError("Invalid API response: missing 'content'")
+
+                return result
+
+        except httpx.HTTPStatusError as e:
+            logger.error("Anthropic API HTTP error: status_code=%s, response=%s", e.response.status_code, e.response.text)
+            raise
+        except httpx.RequestError as e:
+            logger.error("Anthropic API request error: %s", str(e))
+            raise
+        except Exception as e:
+            logger.error("Unexpected error calling Anthropic API: %s", str(e))
+            raise
 
     def apply_state_update(
         self,
@@ -206,10 +309,16 @@ Available Scenes: {scenes}"""
                 completed.append(update.scene_completed)
             new_state["completed_scenes"] = completed
 
-        # Update flags
+        # Update flags - merge new flags with existing ones
         if update.flags_changed:
             flags = new_state.get("flags", {})
-            flags.update(update.flags_changed)
+            for flag_id, flag_data in update.flags_changed.items():
+                if isinstance(flag_data, dict):
+                    # New format: {"value": bool, "label": str}
+                    flags[flag_id] = flag_data
+                else:
+                    # Legacy format: plain bool - wrap it
+                    flags[flag_id] = {"value": bool(flag_data), "label": flag_id}
             new_state["flags"] = flags
 
         return new_state

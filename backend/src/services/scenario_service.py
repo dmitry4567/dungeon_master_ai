@@ -1,5 +1,4 @@
 """Scenario service for managing scenario generation and versioning."""
-import logging
 import uuid
 from typing import Any
 
@@ -8,10 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.models.scenario import Scenario, ScenarioStatus, ScenarioVersion
-# from src.services.ai_service import AIService
-from src.services.ai_service_openrouter import AIServiceOpenRouter
+from src.services.ai_service import AIService
+from src.core.logging import get_logger
+# from src.services.ai_service_openrouter import AIServiceOpenRouter
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ScenarioService:
@@ -21,7 +21,7 @@ class ScenarioService:
         """Initialize scenario service."""
         self.db = db
         # self.ai_service = AIService()
-        self.ai_service = AIServiceOpenRouter()
+        self.ai_service = AIService()
 
     async def generate_scenario(
         self, user_id: uuid.UUID, description: str
@@ -36,13 +36,21 @@ class ScenarioService:
         Returns:
             Created scenario with initial version
         """
+        logger.info("Starting scenario generation for user=%s, description=%s", str(user_id), description[:100])
+        
         # Generate scenario content using AI
+        logger.info("Calling AI service to generate scenario")
         title, content = await self.ai_service.generate_scenario(description)
+        logger.info("AI scenario generation complete: title=%s, content_keys=%s", title, list(content.keys()))
 
         # Validate the generated content
+        logger.info("Validating scenario content")
         validation_errors = self._validate_scenario_content(content)
+        if validation_errors:
+            logger.warning("Validation errors found: %s", validation_errors)
 
         # Create scenario
+        logger.info("Creating scenario record in database")
         scenario = Scenario(
             id=uuid.uuid4(),
             creator_id=user_id,
@@ -51,8 +59,10 @@ class ScenarioService:
         )
         self.db.add(scenario)
         await self.db.flush()
+        logger.info("Scenario record created: scenario_id=%s", str(scenario.id))
 
         # Create initial version
+        logger.info("Creating initial scenario version")
         version = ScenarioVersion(
             id=uuid.uuid4(),
             scenario_id=scenario.id,
@@ -63,6 +73,7 @@ class ScenarioService:
         )
         self.db.add(version)
         await self.db.flush()
+        logger.info("Scenario version created: version_id=%s", str(version.id))
 
         # Set current version
         scenario.current_version_id = version.id
@@ -70,8 +81,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Created scenario {scenario.id} with version {version.version}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario created: scenario_id=%s, version=%s, user_id=%s",
+            str(scenario.id),
+            version.version,
+            str(user_id),
         )
 
         return scenario
@@ -151,8 +164,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Refined scenario {scenario.id} to version {new_version.version}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario refined",
+            scenario_id=str(scenario.id),
+            version=new_version.version,
+            user_id=str(user_id),
         )
 
         return scenario
@@ -294,8 +309,10 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Restored scenario {scenario.id} to version {version.version}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario restored",
+            scenario_id=str(scenario.id),
+            version=version.version,
+            user_id=str(user_id),
         )
 
         return scenario
@@ -329,8 +346,9 @@ class ScenarioService:
         await self.db.refresh(scenario, ["current_version"])
 
         logger.info(
-            f"Published scenario {scenario.id}",
-            extra={"user_id": str(user_id), "scenario_id": str(scenario.id)},
+            "Scenario published: scenario_id=%s, user_id=%s",
+            str(scenario.id),
+            str(user_id),
         )
         return scenario
 
@@ -360,6 +378,26 @@ class ScenarioService:
         for field in required_fields:
             if field not in content:
                 errors.append(f"Missing required field: {field}")
+
+        # Validate flags if present (optional field)
+        if "flags" in content:
+            flag_ids = set()
+            for i, flag in enumerate(content["flags"]):
+                if "id" not in flag:
+                    errors.append(f"Flag {i} missing 'id' field")
+                elif flag["id"] in flag_ids:
+                    errors.append(f"Duplicate flag ID: {flag['id']}")
+                else:
+                    flag_ids.add(flag["id"])
+                if "name" not in flag:
+                    errors.append(f"Flag {flag.get('id', i)} missing 'name' field")
+                if "description" not in flag:
+                    errors.append(f"Flag {flag.get('id', i)} missing 'description' field")
+
+        # Skip remaining validation if required fields are missing
+        if errors:
+            return errors
+
 
         # Validate acts
         if "acts" in content:

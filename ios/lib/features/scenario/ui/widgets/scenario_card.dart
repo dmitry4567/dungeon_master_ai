@@ -1,206 +1,203 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import '../../models/scenario.dart';
 
 class ScenarioCard extends StatelessWidget {
-
   const ScenarioCard({
-    required this.scenario, required this.onTap, super.key,
+    required this.scenario,
+    required this.onTap,
+    super.key,
   });
+
   final Scenario scenario;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final content = scenario.currentVersion?.content;
+    final status = _StatusInfo.from(scenario.status);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.book,
-                    color: Theme.of(context).primaryColor,
+    return InkWell(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A2E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF2A2A4E)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF2A2A4A),
+                    border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          scenario.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                  child: const Icon(
+                    Icons.auto_stories,
+                    color: Color(0xFFD4AF37),
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        scenario.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _getStatusText(scenario.status),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: status.color.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: status.color.withOpacity(0.35)),
+                        ),
+                        child: Text(
+                          status.label,
                           style: TextStyle(
-                            color: _getStatusColor(scenario.status),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            color: status.color,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
+                ),
+                const Icon(Icons.chevron_right, color: Color(0xFF3A3A5E)),
+              ],
+            ),
+            if (content != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                height: 0.5,
+                color: const Color(0xFF2A2A4E),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  _InfoChip(icon: Icons.trending_up_outlined, label: content.difficulty),
+                  _InfoChip(icon: Icons.palette_outlined, label: content.tone),
+                  _InfoChip(
+                    icon: Icons.group_outlined,
+                    label: '${content.playersMin}–${content.playersMax} игр.',
+                  ),
                 ],
               ),
-              if (content != null) ...[
-                const SizedBox(height: 12),
-                const Divider(height: 1),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _InfoChip(
-                      icon: Icons.trending_up,
-                      label: content.difficulty,
-                    ),
-                    _InfoChip(
-                      icon: Icons.palette,
-                      label: content.tone,
-                    ),
-                    _InfoChip(
-                      icon: Icons.people,
-                      label: '${content.playersMin}-${content.playersMax} игроков',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _StatChip(
-                      icon: Icons.theater_comedy,
-                      count: content.acts.length,
-                      label: 'Актов',
-                    ),
-                    const SizedBox(width: 12),
-                    _StatChip(
-                      icon: Icons.person,
-                      count: content.npcs.length,
-                      label: 'NPC',
-                    ),
-                    const SizedBox(width: 12),
-                    _StatChip(
-                      icon: Icons.location_on,
-                      count: content.locations.length,
-                      label: 'Локаций',
-                    ),
-                  ],
-                ),
-              ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _StatItem(icon: Icons.theater_comedy_outlined, count: content.acts.length, label: 'Актов'),
+                  const SizedBox(width: 16),
+                  _StatItem(icon: Icons.person_outline, count: content.npcs.length, label: 'NPC'),
+                  const SizedBox(width: 16),
+                  _StatItem(icon: Icons.location_on_outlined, count: content.locations.length, label: 'Локаций'),
+                ],
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );
   }
+}
 
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'draft':
-        return 'Черновик';
-      case 'published':
-        return 'Опубликован';
-      case 'archived':
-        return 'Архив';
-      default:
-        return status;
-    }
-  }
+class _StatusInfo {
+  const _StatusInfo({required this.label, required this.color});
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'draft':
-        return Colors.orange;
-      case 'published':
-        return Colors.green;
-      case 'archived':
-        return Colors.grey;
-      default:
-        return Colors.grey;
-    }
-  }
+  factory _StatusInfo.from(String status) => switch (status) {
+        'draft' => const _StatusInfo(label: 'Черновик', color: Color(0xFFF4A261)),
+        'published' => const _StatusInfo(label: 'Опубликован', color: Color(0xFF52B788)),
+        'archived' => const _StatusInfo(label: 'Архив', color: Color(0xFF6B7280)),
+        _ => const _StatusInfo(label: 'Неизвестно', color: Color(0xFF6B7280)),
+      };
+
+  final String label;
+  final Color color;
 }
 
 class _InfoChip extends StatelessWidget {
+  const _InfoChip({required this.icon, required this.label});
 
-  const _InfoChip({
-    required this.icon,
-    required this.label,
-  });
   final IconData icon;
   final String label;
 
   @override
   Widget build(BuildContext context) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Theme.of(context).primaryColor),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).primaryColor,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D0D1A),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFF2A2A4E)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: const Color(0xFFD4AF37)),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
 }
 
-class _StatChip extends StatelessWidget {
+class _StatItem extends StatelessWidget {
+  const _StatItem({required this.icon, required this.count, required this.label});
 
-  const _StatChip({
-    required this.icon,
-    required this.count,
-    required this.label,
-  });
   final IconData icon;
   final int count;
   final String label;
 
   @override
   Widget build(BuildContext context) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: Colors.grey),
-        const SizedBox(width: 4),
-        Text(
-          '$count',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFF5A5A7E)),
+          const SizedBox(width: 4),
+          Text(
+            '$count',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 12,
+          const SizedBox(width: 3),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white38, fontSize: 12),
           ),
-        ),
-      ],
-    );
+        ],
+      );
 }

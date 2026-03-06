@@ -3,11 +3,23 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'scenario_content.freezed.dart';
 part 'scenario_content.g.dart';
 
+@freezed
+class Condition with _$Condition {
+  const factory Condition({
+    required String condition,
+    required String description,
+  }) = _Condition;
+
+  factory Condition.fromJson(Map<String, dynamic> json) =>
+      _$ConditionFromJson(json);
+}
+
 /// Scene within an act
 @freezed
 class Scene with _$Scene {
   const factory Scene({
     required String id,
+    required String name,
     required bool mandatory,
     required String descriptionForAi,
     required List<String> dmHints,
@@ -22,8 +34,9 @@ class Scene with _$Scene {
 class Act with _$Act {
   const factory Act({
     required String id,
-    required String entryCondition,
-    required List<String> exitConditions,
+    required String name,
+    required Condition entryCondition,
+    required List<Condition> exitConditions,
     required List<Scene> scenes,
   }) = _Act;
 
@@ -60,6 +73,18 @@ class Location with _$Location {
       _$LocationFromJson(json);
 }
 
+/// Flag definition
+@freezed
+class Flag with _$Flag {
+  const factory Flag({
+    required String id,
+    required String name,
+    required String description,
+  }) = _Flag;
+
+  factory Flag.fromJson(Map<String, dynamic> json) => _$FlagFromJson(json);
+}
+
 /// Complete scenario content
 @freezed
 class ScenarioContent with _$ScenarioContent {
@@ -72,6 +97,7 @@ class ScenarioContent with _$ScenarioContent {
     required List<Act> acts,
     required List<Npc> npcs,
     required List<Location> locations,
+    @Default([]) List<Flag> flags,
   }) = _ScenarioContent;
 
   factory ScenarioContent.fromJson(Map<String, dynamic> json) =>

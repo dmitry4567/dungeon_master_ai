@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:isolate';
-
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -31,16 +28,6 @@ class FirebaseService {
 
       // Ловим ошибки Flutter
       FlutterError.onError = _crashlytics!.recordFlutterFatalError;
-
-      // Ловим ошибки в изолятах
-      Isolate.current.addErrorListener(RawReceivePort((dynamic pair) async {
-        final errorAndStacktrace = pair as List<dynamic>;
-        await _crashlytics!.recordError(
-          errorAndStacktrace.first,
-          errorAndStacktrace.last as StackTrace?,
-          fatal: true,
-        );
-      },).sendPort,);
 
       // Ловим ошибки платформы
       PlatformDispatcher.instance.onError = (error, stack) {

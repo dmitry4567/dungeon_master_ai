@@ -4,12 +4,14 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, status
 
 from src.api.dependencies import CurrentUser, DbSession
+from src.schemas.scenario import ScenarioContent
 from src.schemas.session import (
     GameSessionResponse,
     SendMessageRequest,
     SessionMessageResponse,
     WorldStateResponse,
 )
+from src.schemas.websocket import WSMessageType, WSVoiceChannelClosed
 from src.services.session_service import SessionService
 
 router = APIRouter(prefix="/sessions", tags=["Sessions"])
@@ -64,6 +66,34 @@ async def get_session(
         ended_at=session.ended_at,
         messages=messages,
     )
+
+
+@router.get("/{session_id}/scenario", response_model=ScenarioContent)
+async def get_session_scenario(
+    session_id: UUID,
+    db: DbSession,
+    current_user: CurrentUser,
+):
+    """Get scenario content for a session."""
+    service = SessionService(db)
+    try:
+        # Check permissions first
+        session = await service.get_session(session_id)
+        players = await service.get_session_players(session_id)
+        if not any(p["id"] == str(current_user.id) for p in players):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not a member of this session's room",
+            )
+        
+        content = await service.get_scenario_content(session_id)
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Scenario content not found"
+            )
+        return content
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.get("/{session_id}/state", response_model=WorldStateResponse)
@@ -215,6 +245,15 @@ async def end_session(
         )
 
     session = await service.end_session(session_id)
+
+    # Broadcast VOICE_CHANNEL_CLOSED to all room members
+    from src.api.routes.websocket import manager
+
+    voice_closed_msg = WSVoiceChannelClosed()
+    await manager.broadcast_to_room(
+        str(session.room_id),
+        voice_closed_msg.model_dump(mode="json"),
+    )
 
     return {"message": "Session ended", "ended_at": session.ended_at.isoformat()}
 
