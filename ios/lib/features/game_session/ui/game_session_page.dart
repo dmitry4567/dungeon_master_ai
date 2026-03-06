@@ -265,13 +265,13 @@ class _GameSessionPageState extends State<GameSessionPage>
             scenarioContent: state.scenarioContent,
           ),
           // Панель голосового чата
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: VoiceControlsWidget(
-              roomId: widget.roomId,
-              isRoomActive: true,
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          //   child: VoiceControlsWidget(
+          //     roomId: widget.roomId,
+          //     isRoomActive: true,
+          //   ),
+          // ),
           // Список сообщений
           Expanded(
             child: _buildMessageList(context, state),

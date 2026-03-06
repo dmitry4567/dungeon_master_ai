@@ -135,7 +135,7 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
       );
 
   Widget _buildAppBar(BuildContext context) => SliverAppBar(
-        expandedHeight: 180,
+        expandedHeight: 214,
         pinned: true,
         // backgroundColor: Colors.transparent,
         backgroundColor: const Color(0xFF0D0D1A),

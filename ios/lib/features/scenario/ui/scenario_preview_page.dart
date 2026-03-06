@@ -211,7 +211,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
 
   Widget _buildSliverAppBar(BuildContext? context, Scenario? scenario) =>
       SliverAppBar(
-        expandedHeight: 220,
+        expandedHeight: 244,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,

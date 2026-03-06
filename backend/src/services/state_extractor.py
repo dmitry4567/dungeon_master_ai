@@ -88,19 +88,25 @@ DM says "The door creaks open": {"events_occurred": [], "location_changed": null
 If unsure or no clear changes, return empty structure. Always return valid JSON."""
 
     def __init__(self) -> None:
-        """Initialize state extractor with Anthropic Claude client."""
+        """Initialize state extractor based on AI_PROVIDER setting."""
         settings = get_settings()
-        self.api_key = settings.ANTHROPIC_API_KEY
-        self.base_url = "https://api.anthropic.com/v1/messages"
-        self.model = settings.model_state_extraction
+        self.provider = settings.ai_provider.lower()
         self.max_tokens = settings.max_tokens_state_extraction
 
-        # Warn if API key is not set
-        if not self.api_key:
-            logger.warning(
-                "ANTHROPIC_API_KEY not set. State extraction will fail. "
-                "Consider setting it or state updates will be disabled."
-            )
+        if self.provider == "ollama":
+            self.ollama_base_url = settings.ollama_base_url.rstrip("/") + "/v1/chat/completions"
+            self.model = settings.ollama_model
+            self.api_key = ""
+            logger.info("StateExtractor using Ollama: model=%s", self.model)
+        else:
+            self.api_key = settings.ANTHROPIC_API_KEY
+            self.base_url = "https://api.anthropic.com/v1/messages"
+            self.model = settings.model_state_extraction
+            if not self.api_key:
+                logger.warning(
+                    "ANTHROPIC_API_KEY not set. State extraction will fail. "
+                    "Consider setting it or state updates will be disabled."
+                )
 
     async def extract_state_update(
         self,
@@ -118,8 +124,8 @@ If unsure or no clear changes, return empty structure. Always return valid JSON.
         Returns:
             StateUpdate with any changes
         """
-        # Return empty state if API key is not configured
-        if not self.api_key:
+        # Return empty state if Anthropic API key is not configured (skip for Ollama)
+        if self.provider != "ollama" and not self.api_key:
             logger.debug("Anthropic API key not set, skipping state extraction")
             return StateUpdate(
                 events_occurred=[],
@@ -242,44 +248,66 @@ Available Flags:
 {chr(10).join(flags_info)}"""
 
     async def _call_model(self, user_prompt: str) -> dict:
+        """Call AI provider (Anthropic or Ollama) for state extraction."""
+        if self.provider == "ollama":
+            return await self._call_ollama(user_prompt)
+        return await self._call_anthropic(user_prompt)
+
+    async def _call_anthropic(self, user_prompt: str) -> dict:
         """Call Anthropic Claude API."""
         headers = {
             "x-api-key": self.api_key,
             "Content-Type": "application/json",
             "anthropic-version": "2023-06-01",
         }
-
         payload = {
             "model": self.model,
-            "messages": [
-                {"role": "user", "content": user_prompt},
-            ],
+            "messages": [{"role": "user", "content": user_prompt}],
             "system": self.STATE_EXTRACTION_PROMPT,
             "max_tokens": self.max_tokens,
-            "temperature": 0.1,  # Low temperature for consistent JSON
+            "temperature": 0.1,
         }
-
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(self.base_url, headers=headers, json=payload)
                 response.raise_for_status()
                 result = response.json()
-
-                # Check if the response has the expected structure
                 if "content" not in result or not result["content"]:
-                    logger.error("Unexpected API response structure: %s", result)
+                    logger.error("Unexpected Anthropic API response: %s", result)
                     raise ValueError("Invalid API response: missing 'content'")
-
                 return result
-
         except httpx.HTTPStatusError as e:
             logger.error("Anthropic API HTTP error: status_code=%s, response=%s", e.response.status_code, e.response.text)
             raise
         except httpx.RequestError as e:
             logger.error("Anthropic API request error: %s", str(e))
             raise
-        except Exception as e:
-            logger.error("Unexpected error calling Anthropic API: %s", str(e))
+
+    async def _call_ollama(self, user_prompt: str) -> dict:
+        """Call Ollama via OpenAI-compatible API."""
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": self.STATE_EXTRACTION_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            "max_tokens": self.max_tokens,
+            "temperature": 0.1,
+            "stream": False,
+        }
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(self.ollama_base_url, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                content_text = data["choices"][0]["message"]["content"]
+                # Return Anthropic-compatible shape
+                return {"content": [{"text": content_text}]}
+        except httpx.HTTPStatusError as e:
+            logger.error("Ollama API HTTP error: status_code=%s, response=%s", e.response.status_code, e.response.text)
+            raise
+        except httpx.RequestError as e:
+            logger.error("Ollama API request error: %s", str(e))
             raise
 
     def apply_state_update(

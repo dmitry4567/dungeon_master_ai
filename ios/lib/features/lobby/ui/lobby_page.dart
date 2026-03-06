@@ -290,7 +290,7 @@ class _LobbyPageState extends State<LobbyPage>
       );
 
   Widget _buildSliverAppBar() => SliverAppBar(
-        expandedHeight: 200,
+        expandedHeight: 242,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,

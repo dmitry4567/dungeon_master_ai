@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
@@ -17,6 +18,12 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
+      // Initialize sqflite FFI for desktop platforms (macOS, Windows, Linux)
+      if (!kIsWeb &&
+          (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
+        sqfliteFfiInit();
+      }
+      
       // System UI
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,

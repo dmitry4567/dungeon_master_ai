@@ -189,7 +189,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
       );
 
   Widget _buildSliverAppBar() => SliverAppBar(
-        expandedHeight: 180,
+        expandedHeight: 214,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,

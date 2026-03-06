@@ -60,21 +60,13 @@ class TokenUsage:
 
 
 class AIService:
-    """Service for AI generation using Anthropic Claude with streaming support."""
+    """Service for AI generation using Anthropic Claude or Ollama with streaming support."""
 
     def __init__(self) -> None:
-        """Initialize AI service with Anthropic Claude client."""
+        """Initialize AI service based on AI_PROVIDER setting."""
         settings = get_settings()
-        self.api_key = settings.ANTHROPIC_API_KEY
-        self.base_url = "https://api.anthropic.com/v1/messages"
+        self.provider = settings.ai_provider.lower()
         self._usage_log: list[TokenUsage] = []
-
-        # Per-task model selection from config
-        self.model_dm_response = settings.model_dm_response
-        self.model_scenario_generation = settings.model_scenario_generation
-        self.model_scenario_refinement = settings.model_scenario_refinement
-        # Default model alias
-        self.model = self.model_dm_response
 
         # Per-task max tokens from config
         self.max_tokens_dm_response = settings.max_tokens_dm_response
@@ -83,13 +75,31 @@ class AIService:
         # Default max_tokens (used by _call_model fallback)
         self.max_tokens = self.max_tokens_dm_response
 
-        logger.info(
-            "Anthropic Claude initialized: "
-            "dm=%s(max=%s), scenario_gen=%s(max=%s), scenario_refine=%s(max=%s)",
-            self.model_dm_response, self.max_tokens_dm_response,
-            self.model_scenario_generation, self.max_tokens_scenario_generation,
-            self.model_scenario_refinement, self.max_tokens_scenario_refinement,
-        )
+        if self.provider == "ollama":
+            self.ollama_base_url = settings.ollama_base_url.rstrip("/") + "/v1/chat/completions"
+            ollama_model = settings.ollama_model
+            self.model_dm_response = ollama_model
+            self.model_scenario_generation = ollama_model
+            self.model_scenario_refinement = ollama_model
+            self.model = ollama_model
+            logger.info(
+                "Ollama initialized: model=%s, base_url=%s",
+                ollama_model, self.ollama_base_url,
+            )
+        else:
+            self.api_key = settings.ANTHROPIC_API_KEY
+            self.base_url = "https://api.anthropic.com/v1/messages"
+            self.model_dm_response = settings.model_dm_response
+            self.model_scenario_generation = settings.model_scenario_generation
+            self.model_scenario_refinement = settings.model_scenario_refinement
+            self.model = self.model_dm_response
+            logger.info(
+                "Anthropic Claude initialized: "
+                "dm=%s(max=%s), scenario_gen=%s(max=%s), scenario_refine=%s(max=%s)",
+                self.model_dm_response, self.max_tokens_dm_response,
+                self.model_scenario_generation, self.max_tokens_scenario_generation,
+                self.model_scenario_refinement, self.max_tokens_scenario_refinement,
+            )
 
     def _build_dm_system_prompt(
         self,
@@ -220,18 +230,24 @@ Remember: ALWAYS respond in the same language the player uses!"""
         model: str | None = None,
         max_tokens: int | None = None,
     ) -> dict | AsyncIterator[str]:
-        """Internal helper to call Anthropic Claude API.
+        """Internal helper — routes to Anthropic or Ollama based on AI_PROVIDER."""
+        if self.provider == "ollama":
+            return await self._call_ollama(
+                system_prompt, messages, stream=stream,
+                model=model or self.model,
+                max_tokens=max_tokens or self.max_tokens,
+            )
+        return await self._call_anthropic(system_prompt, messages, stream=stream, model=model, max_tokens=max_tokens)
 
-        Args:
-            system_prompt: System prompt for the model
-            messages: List of conversation messages
-            stream: Whether to stream the response
-            model: Override model ID; defaults to self.model (model_dm_response)
-            max_tokens: Override max_tokens; defaults to self.max_tokens
-
-        Returns:
-            Response dict or async iterator of chunks
-        """
+    async def _call_anthropic(
+        self,
+        system_prompt: str,
+        messages: list[dict[str, str]],
+        stream: bool = False,
+        model: str | None = None,
+        max_tokens: int | None = None,
+    ) -> dict | AsyncIterator[str]:
+        """Call Anthropic Claude API."""
         selected_model = model or self.model
         selected_max_tokens = max_tokens or self.max_tokens
         headers = {
@@ -240,13 +256,7 @@ Remember: ALWAYS respond in the same language the player uses!"""
             "anthropic-version": "2023-06-01",
         }
 
-        # Claude uses a different message format with system prompt separate
-        claude_messages = []
-        for msg in messages:
-            claude_messages.append({
-                "role": msg["role"],
-                "content": msg["content"],
-            })
+        claude_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
 
         payload = {
             "model": selected_model,
@@ -261,6 +271,66 @@ Remember: ALWAYS respond in the same language the player uses!"""
             return self._stream_response(headers, payload)
         else:
             return await self._call_with_retry(headers, payload)
+
+    async def _call_ollama(
+        self,
+        system_prompt: str,
+        messages: list[dict[str, str]],
+        stream: bool = False,
+        model: str | None = None,
+        max_tokens: int | None = None,
+    ) -> dict | AsyncIterator[str]:
+        """Call Ollama via OpenAI-compatible API."""
+        selected_model = model or self.model
+        selected_max_tokens = max_tokens or self.max_tokens
+
+        ollama_messages = [{"role": "system", "content": system_prompt}]
+        ollama_messages += [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+
+        payload = {
+            "model": selected_model,
+            "messages": ollama_messages,
+            "max_tokens": selected_max_tokens,
+            "temperature": 0.8,
+            "stream": stream,
+        }
+
+        if stream:
+            return self._stream_ollama(payload)
+
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(self.ollama_base_url, json=payload)
+            response.raise_for_status()
+            data = response.json()
+            # Convert to Anthropic-compatible response shape
+            content_text = data["choices"][0]["message"]["content"]
+            usage = data.get("usage", {})
+            self._log_usage(usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+            return {"content": [{"text": content_text}], "stop_reason": "end_turn"}
+
+    async def _stream_ollama(self, payload: dict) -> AsyncIterator[str]:
+        """Stream response from Ollama OpenAI-compatible API."""
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            async with client.stream("POST", self.ollama_base_url, json=payload) as response:
+                response.raise_for_status()
+                buffer = ""
+                async for chunk_bytes in response.aiter_bytes():
+                    buffer += chunk_bytes.decode("utf-8", errors="ignore")
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+                        line = line.strip()
+                        if not line or not line.startswith("data: "):
+                            continue
+                        data = line[6:]
+                        if data == "[DONE]":
+                            return
+                        try:
+                            chunk = json.loads(data)
+                            content = chunk["choices"][0].get("delta", {}).get("content", "")
+                            if content:
+                                yield content
+                        except (json.JSONDecodeError, KeyError):
+                            continue
 
     async def _call_with_retry(self, headers: dict, payload: dict) -> dict:
         """Call Anthropic API with retry logic for transient failures.

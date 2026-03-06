@@ -32,8 +32,15 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
+    # AI Provider selection: "anthropic" or "ollama"
+    ai_provider: str = Field(default="anthropic", alias="AI_PROVIDER")
+
     # Anthropic Claude API
     ANTHROPIC_API_KEY: str = Field(default="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", alias="ANTHROPIC_API_KEY")
+
+    # Ollama settings (used when AI_PROVIDER=ollama)
+    ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
+    ollama_model: str = Field(default="llama3.2", alias="OLLAMA_MODEL")
     
     # Model selection for different request types
     model_dm_response: str = Field(

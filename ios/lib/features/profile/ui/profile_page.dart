@@ -105,7 +105,7 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildSliverAppBar(BuildContext context, User user, bool isUpdating) =>
       SliverAppBar(
-        expandedHeight: 280,
+        expandedHeight: 339,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
