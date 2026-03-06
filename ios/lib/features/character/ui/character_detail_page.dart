@@ -167,7 +167,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
   }
 
   Widget _buildSliverAppBar(Character? character) => SliverAppBar(
-        expandedHeight: 220,
+        expandedHeight: 265,
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
