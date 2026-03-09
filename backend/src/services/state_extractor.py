@@ -1,6 +1,7 @@
 """State extractor for extracting world state changes from DM responses."""
 import json
 import re
+import time
 from dataclasses import dataclass
 from typing import Any
 
@@ -10,6 +11,14 @@ from src.core.config import get_settings
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
+
+# ── Orange terminal colors for outgoing OpenRouter API calls ──────────────────
+_O  = "\033[38;5;214m"   # orange
+_OB = "\033[1;38;5;214m" # bold orange
+_OD = "\033[38;5;172m"   # dim orange
+_G  = "\033[38;5;82m"    # green  (success)
+_R  = "\033[38;5;196m"   # red    (error)
+_X  = "\033[0m"          # reset
 
 
 def _extract_json(text: str) -> str:
@@ -93,11 +102,26 @@ If unsure or no clear changes, return empty structure. Always return valid JSON.
         self.provider = settings.ai_provider.lower()
         self.max_tokens = settings.max_tokens_state_extraction
 
-        if self.provider == "ollama":
+        if self.provider == "lmstudio":
+            self.lmstudio_base_url = settings.lmstudio_base_url
+            self.model = settings.lmstudio_model
+            self.api_key = ""
+            logger.info("StateExtractor using LM Studio: model=%s", self.model)
+        elif self.provider == "ollama":
             self.ollama_base_url = settings.ollama_base_url.rstrip("/") + "/v1/chat/completions"
             self.model = settings.ollama_model
             self.api_key = ""
             logger.info("StateExtractor using Ollama: model=%s", self.model)
+        elif self.provider == "openrouter":
+            self.openrouter_api_key = settings.openrouter_api_key
+            self.openrouter_base_url = settings.openrouter_base_url
+            self.model = settings.openrouter_model
+            self.api_key = settings.openrouter_api_key
+            logger.info("StateExtractor using OpenRouter: model=%s", self.model)
+            if not self.openrouter_api_key:
+                logger.warning(
+                    "OPENROUTER_API_KEY not set. State extraction will fail."
+                )
         else:
             self.api_key = settings.ANTHROPIC_API_KEY
             self.base_url = "https://api.anthropic.com/v1/messages"
@@ -124,8 +148,8 @@ If unsure or no clear changes, return empty structure. Always return valid JSON.
         Returns:
             StateUpdate with any changes
         """
-        # Return empty state if Anthropic API key is not configured (skip for Ollama)
-        if self.provider != "ollama" and not self.api_key:
+        # Return empty state if API key is not configured (skip for Ollama/LM Studio)
+        if self.provider not in ("ollama", "lmstudio", "openrouter") and not self.api_key:
             logger.debug("Anthropic API key not set, skipping state extraction")
             return StateUpdate(
                 events_occurred=[],
@@ -171,7 +195,7 @@ Extract any state changes from this response."""
                 )
 
             # Log the raw response for debugging
-            logger.debug("State extraction raw response: %s", response_text[:200])
+            logger.info("State extraction raw response: %s", response_text[:500])
 
             json_text = _extract_json(response_text)
 
@@ -248,9 +272,13 @@ Available Flags:
 {chr(10).join(flags_info)}"""
 
     async def _call_model(self, user_prompt: str) -> dict:
-        """Call AI provider (Anthropic or Ollama) for state extraction."""
+        """Call AI provider (Anthropic, Ollama, LM Studio, or OpenRouter) for state extraction."""
+        if self.provider == "lmstudio":
+            return await self._call_lmstudio(user_prompt)
         if self.provider == "ollama":
             return await self._call_ollama(user_prompt)
+        if self.provider == "openrouter":
+            return await self._call_openrouter(user_prompt)
         return await self._call_anthropic(user_prompt)
 
     async def _call_anthropic(self, user_prompt: str) -> dict:
@@ -283,13 +311,48 @@ Available Flags:
             logger.error("Anthropic API request error: %s", str(e))
             raise
 
-    async def _call_ollama(self, user_prompt: str) -> dict:
-        """Call Ollama via OpenAI-compatible API."""
+    async def _call_lmstudio(self, user_prompt: str) -> dict:
+        """Call LM Studio chat API for state extraction.
+
+        Note: LM Studio doesn't support "system" role, so system prompt is combined with user message.
+        """
         payload = {
             "model": self.model,
             "messages": [
-                {"role": "system", "content": self.STATE_EXTRACTION_PROMPT},
-                {"role": "user", "content": user_prompt},
+                {"role": "user", "content": f"{self.STATE_EXTRACTION_PROMPT}\n\n{user_prompt}"},
+            ],
+            "max_tokens": self.max_tokens,
+            "temperature": 0.1,
+            "stream": False,
+        }
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(self.lmstudio_base_url, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                # LM Studio returns Anthropic-style response format
+                if "content" in data and isinstance(data["content"], list):
+                    content_text = data["content"][0].get("text", "")
+                else:
+                    # Fallback for OpenAI format
+                    content_text = data["choices"][0]["message"]["content"]
+                return {"content": [{"text": content_text}]}
+        except httpx.HTTPStatusError as e:
+            logger.error("LM Studio API HTTP error: status_code=%s, response=%s", e.response.status_code, e.response.text)
+            raise
+        except httpx.RequestError as e:
+            logger.error("LM Studio API request error: %s", str(e))
+            raise
+
+    async def _call_ollama(self, user_prompt: str) -> dict:
+        """Call Ollama via OpenAI-compatible API.
+
+        Note: System prompt is combined with user message for compatibility.
+        """
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "user", "content": f"{self.STATE_EXTRACTION_PROMPT}\n\n{user_prompt}"},
             ],
             "max_tokens": self.max_tokens,
             "temperature": 0.1,
@@ -308,6 +371,56 @@ Available Flags:
             raise
         except httpx.RequestError as e:
             logger.error("Ollama API request error: %s", str(e))
+            raise
+
+    async def _call_openrouter(self, user_prompt: str) -> dict:
+        """Call OpenRouter API for state extraction."""
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": self.STATE_EXTRACTION_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            "max_tokens": self.max_tokens,
+            "temperature": 0.1,
+        }
+        headers = {
+            "Authorization": f"Bearer {self.openrouter_api_key}",
+            "Content-Type": "application/json",
+        }
+        print(
+            f"{_O}┌─{_X} {_OB}▶ OpenRouter REQUEST{_X} [state_extractor]  "
+            f"{_OD}model={_X}{self.model}  "
+            f"{_OD}max_tokens={_X}{self.max_tokens}\n"
+            f"{_O}│{_X}  {_OD}url={_X}{self.openrouter_base_url}"
+        )
+        t0 = time.perf_counter()
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(self.openrouter_base_url, headers=headers, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                content_text = data["choices"][0]["message"]["content"]
+                usage = data.get("usage", {})
+                in_tok  = usage.get("prompt_tokens", 0)
+                out_tok = usage.get("completion_tokens", 0)
+                elapsed = (time.perf_counter() - t0) * 1000
+                print(
+                    f"{_O}└─{_X} {_G}✓ {response.status_code}{_X}  "
+                    f"{_OD}in={_X}{in_tok} tok  "
+                    f"{_OD}out={_X}{out_tok} tok  "
+                    f"{_OD}⏱ {elapsed:.0f} ms{_X}"
+                )
+                return {"content": [{"text": content_text}]}
+        except httpx.HTTPStatusError as e:
+            elapsed = (time.perf_counter() - t0) * 1000
+            print(f"{_O}└─{_X} {_R}✗ {e.response.status_code}  error={e}{_X}  {_OD}⏱ {elapsed:.0f} ms{_X}")
+            logger.error("OpenRouter API HTTP error: status_code=%s, response=%s", e.response.status_code, e.response.text)
+            raise
+        except httpx.RequestError as e:
+            elapsed = (time.perf_counter() - t0) * 1000
+            print(f"{_O}└─{_X} {_R}✗ request error={e}{_X}  {_OD}⏱ {elapsed:.0f} ms{_X}")
+            logger.error("OpenRouter API request error: %s", str(e))
             raise
 
     def apply_state_update(

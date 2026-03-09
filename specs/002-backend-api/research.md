@@ -72,7 +72,7 @@ import redis.asyncio as redis
 class ConnectionManager:
     def __init__(self):
         self.connections: dict[str, list[WebSocket]] = {}  # room_id -> connections
-        self.redis = redis.from_url(settings.REDIS_URL)
+        self.redis = redis.from_url(settings.)
 
     async def connect(self, room_id: str, websocket: WebSocket):
         await websocket.accept()

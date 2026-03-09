@@ -330,7 +330,7 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
                     ),
                   ),
                   child: Text(
-                    '${_descriptionController.text.length}/${_isRefining ? 1000 : 2000}',
+                    '${_descriptionController.text.length}/${_isRefining ? 1000 : 5000}',
                     style: const TextStyle(
                       color: Color(0xFFD4AF37),
                       fontSize: 11,
@@ -355,8 +355,8 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
               ),
               child: TextFormField(
                 controller: _descriptionController,
-                maxLines: 10,
-                maxLength: _isRefining ? 1000 : 2000,
+                maxLines: 20,
+                maxLength: _isRefining ? 1000 : 5000,
                 enabled: !isGenerating,
                 style: const TextStyle(
                   color: Colors.white,

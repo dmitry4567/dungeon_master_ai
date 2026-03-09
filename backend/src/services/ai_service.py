@@ -2,6 +2,7 @@
 import asyncio
 import json
 import re
+import time
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -19,6 +20,57 @@ _RETRY_DELAYS = [1.0, 2.0, 4.0]  # Exponential backoff in seconds
 _RETRY_STATUS_CODES = {429, 500, 502, 503, 504}  # Retryable HTTP status codes
 
 logger = get_logger(__name__)
+
+# ── Orange terminal colors for outgoing OpenRouter API calls ──────────────────
+_O  = "\033[38;5;214m"   # orange
+_OB = "\033[1;38;5;214m" # bold orange
+_OD = "\033[38;5;172m"   # dim orange
+_G  = "\033[38;5;82m"    # green  (success)
+_R  = "\033[38;5;196m"   # red    (error)
+_X  = "\033[0m"          # reset
+
+
+def _or_log_request(url: str, model: str, stream: bool, max_tokens: int) -> None:
+    print(
+        f"{_O}┌─{_X} {_OB}▶ OpenRouter REQUEST{_X}  "
+        f"{_OD}model={_X}{model}  "
+        f"{_OD}stream={_X}{stream}  "
+        f"{_OD}max_tokens={_X}{max_tokens}\n"
+        f"{_O}│{_X}  {_OD}url={_X}{url}"
+    )
+
+
+def _or_log_response(status: int, input_tokens: int, output_tokens: int, elapsed_ms: float) -> None:
+    color = _G if status < 400 else _R
+    icon  = "✓" if status < 400 else "✗"
+    print(
+        f"{_O}└─{_X} {color}{icon} {status}{_X}  "
+        f"{_OD}in={_X}{input_tokens} tok  "
+        f"{_OD}out={_X}{output_tokens} tok  "
+        f"{_OD}⏱ {elapsed_ms:.0f} ms{_X}"
+    )
+
+
+def _or_log_stream_start(model: str) -> None:
+    print(
+        f"{_O}┌─{_X} {_OB}▶ OpenRouter STREAM{_X}  {_OD}model={_X}{model}"
+    )
+
+
+def _or_log_stream_done(chunks: int, elapsed_ms: float) -> None:
+    print(
+        f"{_O}└─{_X} {_G}✓ stream done{_X}  "
+        f"{_OD}chunks={_X}{chunks}  "
+        f"{_OD}⏱ {elapsed_ms:.0f} ms{_X}"
+    )
+
+
+def _or_log_error(exc: Exception, elapsed_ms: float) -> None:
+    print(
+        f"{_O}└─{_X} {_R}✗ OpenRouter ERROR{_X}  "
+        f"{_OD}error={_X}{exc}  "
+        f"{_OD}⏱ {elapsed_ms:.0f} ms{_X}"
+    )
 
 
 def _extract_json(text: str) -> str:
@@ -42,6 +94,18 @@ def _extract_json(text: str) -> str:
         return match.group(1).strip()
 
     # No code block — return as-is
+    return text
+
+
+def _repair_json(text: str) -> str:
+    """Attempt to repair common JSON issues produced by LLMs.
+
+    Fixes:
+    - Trailing commas before } or ]
+    - Single-quoted strings (Python-style)
+    """
+    # Remove trailing commas before } or ]
+    text = re.sub(r",\s*([}\]])", r"\1", text)
     return text
 
 
@@ -75,7 +139,26 @@ class AIService:
         # Default max_tokens (used by _call_model fallback)
         self.max_tokens = self.max_tokens_dm_response
 
-        if self.provider == "ollama":
+        if self.provider == "lmstudio":
+            self.lmstudio_base_url = settings.lmstudio_base_url
+            # Extract base URL without /v1/chat/completions for other API calls
+            base = settings.lmstudio_base_url
+            if "/v1/chat/completions" in base:
+                self.lmstudio_api_base = base.replace("/v1/chat/completions", "")
+            else:
+                self.lmstudio_api_base = base.rstrip("/")
+            lmstudio_model = settings.lmstudio_model
+            self.lmstudio_context_length = settings.lmstudio_context_length
+            self.lmstudio_auto_load = settings.lmstudio_auto_load
+            self.model_dm_response = lmstudio_model
+            self.model_scenario_generation = lmstudio_model
+            self.model_scenario_refinement = lmstudio_model
+            self.model = lmstudio_model
+            logger.info(
+                "LM Studio initialized: model=%s, base_url=%s, api_base=%s, context_length=%s, auto_load=%s",
+                lmstudio_model, self.lmstudio_base_url, self.lmstudio_api_base, self.lmstudio_context_length, self.lmstudio_auto_load,
+            )
+        elif self.provider == "ollama":
             self.ollama_base_url = settings.ollama_base_url.rstrip("/") + "/v1/chat/completions"
             ollama_model = settings.ollama_model
             self.model_dm_response = ollama_model
@@ -85,6 +168,18 @@ class AIService:
             logger.info(
                 "Ollama initialized: model=%s, base_url=%s",
                 ollama_model, self.ollama_base_url,
+            )
+        elif self.provider == "openrouter":
+            self.openrouter_api_key = settings.openrouter_api_key
+            self.openrouter_base_url = settings.openrouter_base_url
+            openrouter_model = settings.openrouter_model
+            self.model_dm_response = openrouter_model
+            self.model_scenario_generation = openrouter_model
+            self.model_scenario_refinement = openrouter_model
+            self.model = openrouter_model
+            logger.info(
+                "OpenRouter initialized: model=%s, base_url=%s",
+                openrouter_model, self.openrouter_base_url,
             )
         else:
             self.api_key = settings.ANTHROPIC_API_KEY
@@ -229,15 +324,31 @@ Remember: ALWAYS respond in the same language the player uses!"""
         stream: bool = False,
         model: str | None = None,
         max_tokens: int | None = None,
+        timeout: float | None = None,
     ) -> dict | AsyncIterator[str]:
-        """Internal helper — routes to Anthropic or Ollama based on AI_PROVIDER."""
+        """Internal helper — routes to Anthropic, Ollama, or LM Studio based on AI_PROVIDER."""
+        if self.provider == "lmstudio":
+            return await self._call_lmstudio(
+                system_prompt, messages, stream=stream,
+                model=model or self.model,
+                max_tokens=max_tokens or self.max_tokens,
+                timeout=timeout,
+            )
         if self.provider == "ollama":
             return await self._call_ollama(
                 system_prompt, messages, stream=stream,
                 model=model or self.model,
                 max_tokens=max_tokens or self.max_tokens,
+                timeout=timeout,
             )
-        return await self._call_anthropic(system_prompt, messages, stream=stream, model=model, max_tokens=max_tokens)
+        if self.provider == "openrouter":
+            return await self._call_openrouter(
+                system_prompt, messages, stream=stream,
+                model=model or self.model,
+                max_tokens=max_tokens or self.max_tokens,
+                timeout=timeout,
+            )
+        return await self._call_anthropic(system_prompt, messages, stream=stream, model=model, max_tokens=max_tokens, timeout=timeout)
 
     async def _call_anthropic(
         self,
@@ -246,6 +357,7 @@ Remember: ALWAYS respond in the same language the player uses!"""
         stream: bool = False,
         model: str | None = None,
         max_tokens: int | None = None,
+        timeout: float | None = None,
     ) -> dict | AsyncIterator[str]:
         """Call Anthropic Claude API."""
         selected_model = model or self.model
@@ -268,9 +380,213 @@ Remember: ALWAYS respond in the same language the player uses!"""
         }
 
         if stream:
-            return self._stream_response(headers, payload)
+            return self._stream_response(headers, payload, timeout)
         else:
-            return await self._call_with_retry(headers, payload)
+            return await self._call_with_retry(headers, payload, timeout)
+
+    async def _check_lmstudio_model_loaded(self, model: str) -> bool:
+        """Check if a model is currently loaded in LM Studio.
+        
+        Args:
+            model: Model name to check
+            
+        Returns:
+            True if model is loaded, False otherwise
+        """
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                # Use the LM Studio API endpoint for listing loaded models
+                response = await client.get(f"{self.lmstudio_api_base}/v1/models")
+                if response.status_code == 200:
+                    data = response.json()
+                    models = data.get("data", [])
+                    for m in models:
+                        model_id = m.get("id", "")
+                        # Check if the model is loaded (either exact match or contains the model name)
+                        if model_id == model or model in model_id:
+                            logger.info("Model %s is loaded (id: %s)", model, model_id)
+                            return True
+                    logger.info("Model %s not found in loaded models: %s", model, [m.get("id") for m in models])
+                    return False
+                logger.warning("Failed to check LM Studio models: Status %s", response.status_code)
+                return False
+        except Exception as e:
+            logger.warning("Failed to check LM Studio model status: %s", str(e))
+            return False
+
+    async def _load_lmstudio_model(self, model: str, context_length: int | None = None) -> bool:
+        """Load a model in LM Studio via its API.
+        
+        Args:
+            model: Model name/path to load
+            context_length: Context window size (optional)
+            
+        Returns:
+            True if model loaded successfully, False otherwise
+        """
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                # Build load configuration
+                payload = {
+                    "model": model,
+                }
+                if context_length:
+                    payload["context_length"] = context_length
+                
+                # Add recommended defaults for better performance
+                payload["flash_attention"] = True
+                payload["echo_load_config"] = True
+                
+                logger.info("Loading LM Studio model: %s (context_length=%s)", model, context_length)
+                
+                # Use the correct LM Studio endpoint: /api/v1/models/load
+                # lmstudio_api_base is like http://localhost:1234
+                load_url = f"{self.lmstudio_api_base}/api/v1/models/load"
+                logger.info("POST to %s with payload: %s", load_url, payload)
+                
+                response = await client.post(load_url, json=payload)
+                
+                if response.status_code in (200, 201):
+                    logger.info("LM Studio model loaded successfully: %s", model)
+                    return True
+                    
+                logger.error("Failed to load LM Studio model: %s - Status: %s, Response: %s", 
+                           model, response.status_code, response.text[:200])
+                return False
+        except httpx.ConnectError as e:
+            logger.error("Cannot connect to LM Studio at %s: %s. Make sure LM Studio is running.", 
+                        self.lmstudio_api_base, str(e))
+            return False
+        except Exception as e:
+            logger.error("Error loading LM Studio model: %s", str(e))
+            return False
+
+    async def _ensure_lmstudio_model_ready(self, model: str, context_length: int) -> None:
+        """Ensure LM Studio model is loaded, loading it if necessary.
+        
+        Args:
+            model: Model name to ensure is loaded
+            context_length: Context window size
+        """
+        if not self.lmstudio_auto_load:
+            logger.debug("LM Studio auto-load disabled, skipping model check")
+            return
+            
+        logger.info("Checking if LM Studio model is loaded: %s", model)
+        
+        # Check if model is already loaded
+        is_loaded = await self._check_lmstudio_model_loaded(model)
+        
+        if is_loaded:
+            logger.info("LM Studio model already loaded: %s", model)
+            return
+        
+        # Model not loaded, attempt to load it
+        logger.warning("LM Studio model not loaded, attempting to load: %s", model)
+        loaded = await self._load_lmstudio_model(model, context_length)
+        
+        if not loaded:
+            logger.error(
+                "Failed to auto-load LM Studio model: %s. "
+                "Please load the model manually in LM Studio.",
+                model
+            )
+
+    async def _call_lmstudio(
+        self,
+        system_prompt: str,
+        messages: list[dict[str, str]],
+        stream: bool = False,
+        model: str | None = None,
+        max_tokens: int | None = None,
+        timeout: float | None = None,
+    ) -> dict | AsyncIterator[str]:
+        """Call LM Studio via its chat API.
+
+        Note: LM Studio doesn't support "system" role in messages array.
+        System prompt is combined with the first user message instead.
+        """
+        selected_model = model or self.model
+        selected_max_tokens = max_tokens or self.max_tokens
+
+        # Ensure model is loaded before making requests
+        await self._ensure_lmstudio_model_ready(selected_model, self.lmstudio_context_length)
+
+        lm_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+
+        # Combine system prompt with first user message since LM Studio doesn't support system role
+        if lm_messages:
+            if lm_messages[0]["role"] == "user":
+                lm_messages[0]["content"] = f"{system_prompt}\n\n{lm_messages[0]['content']}"
+            else:
+                lm_messages.insert(0, {"role": "user", "content": system_prompt})
+        else:
+            lm_messages = [{"role": "user", "content": system_prompt}]
+
+        payload = {
+            "model": selected_model,
+            "messages": lm_messages,
+            "max_tokens": selected_max_tokens,
+            "temperature": 0.8,
+            "stream": stream,
+        }
+
+        if stream:
+            return self._stream_lmstudio(payload, timeout)
+
+        request_timeout = timeout or 120.0
+        async with httpx.AsyncClient(timeout=request_timeout) as client:
+            response = await client.post(self.lmstudio_base_url, json=payload)
+            response.raise_for_status()
+            data = response.json()
+
+            # LM Studio returns Anthropic-style response format
+            if "content" in data and isinstance(data["content"], list):
+                content_text = data["content"][0].get("text", "")
+                stop_reason = data.get("stop_reason", "end_turn")
+            else:
+                # Fallback for OpenAI format
+                content_text = data["choices"][0]["message"]["content"]
+                finish_reason = data["choices"][0].get("finish_reason", "stop")
+                # Normalize to Anthropic-style stop_reason
+                stop_reason = "max_tokens" if finish_reason == "length" else "end_turn"
+
+            usage = data.get("usage", {})
+            self._log_usage(usage.get("input_tokens", 0), usage.get("output_tokens", 0))
+            return {"content": [{"text": content_text}], "stop_reason": stop_reason}
+
+    async def _stream_lmstudio(self, payload: dict, timeout: float | None = None) -> AsyncIterator[str]:
+        """Stream response from LM Studio chat API.
+
+        LM Studio returns Anthropic-style streaming format with delta.text.
+        """
+        request_timeout = timeout or 120.0
+        async with httpx.AsyncClient(timeout=request_timeout) as client:
+            async with client.stream("POST", self.lmstudio_base_url, json=payload) as response:
+                response.raise_for_status()
+                buffer = ""
+                async for chunk_bytes in response.aiter_bytes():
+                    buffer += chunk_bytes.decode("utf-8", errors="ignore")
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+                        line = line.strip()
+                        if not line or not line.startswith("data: "):
+                            continue
+                        data = line[6:]
+                        if data == "[DONE]":
+                            return
+                        try:
+                            chunk = json.loads(data)
+                            # LM Studio returns Anthropic-style format with delta.text
+                            if "delta" in chunk:
+                                content = chunk.get("delta", {}).get("text", "")
+                            else:
+                                # Fallback for OpenAI format
+                                content = chunk["choices"][0].get("delta", {}).get("content", "")
+                            if content:
+                                yield content
+                        except (json.JSONDecodeError, KeyError):
+                            continue
 
     async def _call_ollama(
         self,
@@ -279,13 +595,25 @@ Remember: ALWAYS respond in the same language the player uses!"""
         stream: bool = False,
         model: str | None = None,
         max_tokens: int | None = None,
+        timeout: float | None = None,
     ) -> dict | AsyncIterator[str]:
-        """Call Ollama via OpenAI-compatible API."""
+        """Call Ollama via OpenAI-compatible API.
+
+        Note: System prompt is combined with the first user message for compatibility.
+        """
         selected_model = model or self.model
         selected_max_tokens = max_tokens or self.max_tokens
 
-        ollama_messages = [{"role": "system", "content": system_prompt}]
-        ollama_messages += [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+        ollama_messages = [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+
+        # Combine system prompt with first user message for compatibility
+        if ollama_messages:
+            if ollama_messages[0]["role"] == "user":
+                ollama_messages[0]["content"] = f"{system_prompt}\n\n{ollama_messages[0]['content']}"
+            else:
+                ollama_messages.insert(0, {"role": "user", "content": system_prompt})
+        else:
+            ollama_messages = [{"role": "user", "content": system_prompt}]
 
         payload = {
             "model": selected_model,
@@ -296,9 +624,10 @@ Remember: ALWAYS respond in the same language the player uses!"""
         }
 
         if stream:
-            return self._stream_ollama(payload)
+            return self._stream_ollama(payload, timeout)
 
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        request_timeout = timeout or 120.0
+        async with httpx.AsyncClient(timeout=request_timeout) as client:
             response = await client.post(self.ollama_base_url, json=payload)
             response.raise_for_status()
             data = response.json()
@@ -308,9 +637,104 @@ Remember: ALWAYS respond in the same language the player uses!"""
             self._log_usage(usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
             return {"content": [{"text": content_text}], "stop_reason": "end_turn"}
 
-    async def _stream_ollama(self, payload: dict) -> AsyncIterator[str]:
+    async def _call_openrouter(
+        self,
+        system_prompt: str,
+        messages: list[dict[str, str]],
+        stream: bool = False,
+        model: str | None = None,
+        max_tokens: int | None = None,
+        timeout: float | None = None,
+    ) -> dict | AsyncIterator[str]:
+        """Call OpenRouter via OpenAI-compatible API."""
+        selected_model = model or self.model
+        selected_max_tokens = max_tokens or self.max_tokens
+
+        or_messages = [{"role": "system", "content": system_prompt}]
+        or_messages += [{"role": msg["role"], "content": msg["content"]} for msg in messages]
+
+        payload = {
+            "model": selected_model,
+            "messages": or_messages,
+            "max_tokens": selected_max_tokens,
+            "temperature": 0.8,
+            "stream": stream,
+        }
+
+        if stream:
+            return self._stream_openrouter(payload, timeout, selected_model)
+
+        request_timeout = timeout or 120.0
+        headers = {
+            "Authorization": f"Bearer {self.openrouter_api_key}",
+            "Content-Type": "application/json",
+        }
+        _or_log_request(self.openrouter_base_url, selected_model, stream=False, max_tokens=selected_max_tokens)
+        t0 = time.perf_counter()
+        try:
+            async with httpx.AsyncClient(timeout=request_timeout) as client:
+                response = await client.post(self.openrouter_base_url, headers=headers, json=payload)
+                response.raise_for_status()
+                data = response.json()
+                content_text = data["choices"][0]["message"]["content"]
+                finish_reason = data["choices"][0].get("finish_reason", "stop")
+                stop_reason = "max_tokens" if finish_reason == "length" else "end_turn"
+                usage = data.get("usage", {})
+                in_tok  = usage.get("prompt_tokens", 0)
+                out_tok = usage.get("completion_tokens", 0)
+                self._log_usage(in_tok, out_tok)
+                _or_log_response(response.status_code, in_tok, out_tok, (time.perf_counter() - t0) * 1000)
+                return {"content": [{"text": content_text}], "stop_reason": stop_reason}
+        except Exception as exc:
+            _or_log_error(exc, (time.perf_counter() - t0) * 1000)
+            raise
+
+    async def _stream_openrouter(self, payload: dict, timeout: float | None = None, model: str | None = None) -> AsyncIterator[str]:
+        """Stream response from OpenRouter API."""
+        request_timeout = timeout or 120.0
+        headers = {
+            "Authorization": f"Bearer {self.openrouter_api_key}",
+            "Content-Type": "application/json",
+        }
+        _or_log_stream_start(model or payload.get("model", "?"))
+        t0 = time.perf_counter()
+        chunks = 0
+        try:
+            async with httpx.AsyncClient(timeout=request_timeout) as client:
+                async with client.stream("POST", self.openrouter_base_url, headers=headers, json=payload) as response:
+                    response.raise_for_status()
+                    buffer = ""
+                    async for chunk_bytes in response.aiter_bytes():
+                        buffer += chunk_bytes.decode("utf-8", errors="ignore")
+                        while "\n" in buffer:
+                            line, buffer = buffer.split("\n", 1)
+                            line = line.strip()
+                            if not line or not line.startswith("data: "):
+                                continue
+                            data = line[6:]
+                            if data == "[DONE]":
+                                _or_log_stream_done(chunks, (time.perf_counter() - t0) * 1000)
+                                return
+                            try:
+                                chunk = json.loads(data)
+                                choices = chunk.get("choices", [])
+                                if not choices:
+                                    continue
+                                content = choices[0].get("delta", {}).get("content", "")
+                                if content:
+                                    chunks += 1
+                                    yield content
+                            except (json.JSONDecodeError, KeyError, IndexError):
+                                continue
+            _or_log_stream_done(chunks, (time.perf_counter() - t0) * 1000)
+        except Exception as exc:
+            _or_log_error(exc, (time.perf_counter() - t0) * 1000)
+            raise
+
+    async def _stream_ollama(self, payload: dict, timeout: float | None = None) -> AsyncIterator[str]:
         """Stream response from Ollama OpenAI-compatible API."""
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        request_timeout = timeout or 120.0
+        async with httpx.AsyncClient(timeout=request_timeout) as client:
             async with client.stream("POST", self.ollama_base_url, json=payload) as response:
                 response.raise_for_status()
                 buffer = ""
@@ -326,13 +750,16 @@ Remember: ALWAYS respond in the same language the player uses!"""
                             return
                         try:
                             chunk = json.loads(data)
-                            content = chunk["choices"][0].get("delta", {}).get("content", "")
+                            choices = chunk.get("choices", [])
+                            if not choices:
+                                continue
+                            content = choices[0].get("delta", {}).get("content", "")
                             if content:
                                 yield content
-                        except (json.JSONDecodeError, KeyError):
+                        except (json.JSONDecodeError, KeyError, IndexError):
                             continue
 
-    async def _call_with_retry(self, headers: dict, payload: dict) -> dict:
+    async def _call_with_retry(self, headers: dict, payload: dict, timeout: float | None = None) -> dict:
         """Call Anthropic API with retry logic for transient failures.
 
         Retries on 429, 500, 502, 503, 504 with exponential backoff.
@@ -340,10 +767,11 @@ Remember: ALWAYS respond in the same language the player uses!"""
         """
         last_exc: Exception | None = None
         retry_after: int = 60  # Default retry-after in seconds
+        request_timeout = timeout or 120.0
 
         for attempt in range(_MAX_RETRIES):
             try:
-                async with httpx.AsyncClient(timeout=120.0) as client:
+                async with httpx.AsyncClient(timeout=request_timeout) as client:
                     response = await client.post(
                         self.base_url, headers=headers, json=payload
                     )
@@ -420,17 +848,20 @@ Remember: ALWAYS respond in the same language the player uses!"""
         self,
         headers: dict,
         payload: dict,
+        timeout: float | None = None,
     ) -> AsyncIterator[str]:
         """Stream response from Anthropic Claude API.
 
         Args:
             headers: Request headers
             payload: Request payload
+            timeout: Request timeout in seconds
 
         Yields:
             Response text chunks
         """
-        async with httpx.AsyncClient(timeout=120.0) as client:
+        request_timeout = timeout or 120.0
+        async with httpx.AsyncClient(timeout=request_timeout) as client:
             async with client.stream(
                 "POST",
                 self.base_url,
@@ -660,7 +1091,7 @@ Ensure valid JSON only."""
             logger.info(
                 "Generating scenario with model=%s: %s",
                 self.model_scenario_generation,
-                user_description[:100],
+                user_description,
             )
 
             result = await self._call_model(
@@ -669,6 +1100,7 @@ Ensure valid JSON only."""
                 stream=False,
                 model=self.model_scenario_generation,
                 max_tokens=self.max_tokens_scenario_generation,
+                timeout=300.0,  # 5 minutes for scenario generation
             )
 
             logger.info("AI model response received: result_keys=%s", list(result.keys()))
@@ -691,7 +1123,12 @@ Ensure valid JSON only."""
             json_text = _extract_json(response_text)
             logger.info("JSON extracted (length=%s): %s", len(json_text), json_text[:200])
 
-            response_data = json.loads(json_text)
+            try:
+                response_data = json.loads(json_text)
+            except json.JSONDecodeError:
+                # Try to repair common LLM JSON issues (trailing commas, etc.)
+                json_text = _repair_json(json_text)
+                response_data = json.loads(json_text)
             logger.info("JSON parsed successfully: keys=%s", list(response_data.keys()))
 
             title = response_data.get("title", "Untitled Scenario")
@@ -745,11 +1182,17 @@ Generate the updated scenario."""
                 stream=False,
                 model=self.model_scenario_refinement,
                 max_tokens=self.max_tokens_scenario_refinement,
+                timeout=300.0,  # 5 minutes for scenario refinement
             )
 
             response_text = result["content"][0]["text"]
             json_text = _extract_json(response_text)
-            response_data = json.loads(json_text)
+
+            try:
+                response_data = json.loads(json_text)
+            except json.JSONDecodeError:
+                json_text = _repair_json(json_text)
+                response_data = json.loads(json_text)
 
             title = response_data.get("title", current_title)
             content = response_data.get("content", current_content)

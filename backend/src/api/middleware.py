@@ -12,6 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.core.config import get_settings
 from src.core.logging import get_logger
 
+
 settings = get_settings()
 logger = get_logger(__name__)
 
@@ -36,15 +37,14 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Middleware to log requests and responses with beautiful formatting."""
+    """Middleware to log requests and responses."""
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         start_time = time.perf_counter()
 
-        # Extract path without query params for cleaner logs
         path = request.url.path
         if request.url.query:
-            path = f"{path}?{request.url.query[:100]}"  # Truncate long query strings
+            path = f"{path}?{request.url.query[:100]}"
 
         logger.info("Request started: method=%s, path=%s", request.method, path)
 
@@ -56,7 +56,6 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         process_time = (time.perf_counter() - start_time) * 1000
 
-        # Log with appropriate level based on status code
         if response.status_code >= 500:
             log_method = logger.error
         elif response.status_code >= 400:

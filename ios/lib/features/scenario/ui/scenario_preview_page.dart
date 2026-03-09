@@ -209,9 +209,28 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
         ],
       );
 
+  double _titleExpandedHeight(BuildContext? context, String? title) {
+    if (context == null || title == null) return 244 + 31;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: title,
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+      maxLines: 2,
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: screenWidth - 32);
+    final lines = textPainter.computeLineMetrics().length;
+    return lines > 1 ? 244 + 31 : 244;
+  }
+
   Widget _buildSliverAppBar(BuildContext? context, Scenario? scenario) =>
       SliverAppBar(
-        expandedHeight: 244,
+        expandedHeight: _titleExpandedHeight(context, scenario?.title),
         pinned: true,
         backgroundColor: const Color(0xFF0D0D1A),
         surfaceTintColor: Colors.transparent,
@@ -397,6 +416,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
           ),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,

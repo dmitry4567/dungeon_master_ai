@@ -16,11 +16,12 @@ class ApiClient {
     _dio.interceptors.addAll([
       _authInterceptor,
       _errorInterceptor,
-      if (!AppConfig.current.isProduction) LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        logPrint: (o) => print('[DIO] $o'), // ignore: avoid_print
-      ),
+      if (!AppConfig.current.isProduction)
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          logPrint: (o) => print('[DIO] $o'), // ignore: avoid_print
+        ),
     ]);
   }
 
@@ -34,9 +35,9 @@ class ApiClient {
   /// Базовые настройки
   BaseOptions get _baseOptions => BaseOptions(
         baseUrl: AppConfig.current.apiBaseUrl,
-        connectTimeout: const Duration(seconds: 120),
-        receiveTimeout: const Duration(seconds: 120),
-        sendTimeout: const Duration(seconds: 120),
+        connectTimeout: Duration.zero,
+        receiveTimeout: Duration.zero,
+        sendTimeout: Duration.zero,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

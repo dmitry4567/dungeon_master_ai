@@ -29,7 +29,7 @@ pip install -e ".[dev]"
 DATABASE_URL=postgresql+asyncpg://aidm:aidm@localhost:5432/aidm
 
 # Redis
-REDIS_URL=redis://localhost:6379/0
+=redis://localhost:6379/0
 
 # Anthropic
 ANTHROPIC_API_KEY=sk-ant-...

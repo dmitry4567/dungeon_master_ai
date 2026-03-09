@@ -23,6 +23,20 @@ async def lifespan(app: FastAPI):
     setup_logging(level=settings.log_level, log_format=settings.log_format)
     await init_db()
     await get_redis()
+    
+    # Auto-load LM Studio model on startup if enabled
+    if settings.ai_provider.lower() == "lmstudio" and settings.lmstudio_auto_load:
+        try:
+            from src.services.ai_service import AIService
+            ai_service = AIService()
+            await ai_service._ensure_lmstudio_model_ready(
+                model=settings.lmstudio_model,
+                context_length=settings.lmstudio_context_length
+            )
+        except Exception as e:
+            logging = __import__("logging")
+            logging.getLogger(__name__).warning("Failed to auto-load LM Studio model on startup: %s", str(e))
+    
     yield
     await close_redis()
     await close_db()

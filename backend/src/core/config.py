@@ -32,15 +32,26 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
-    # AI Provider selection: "anthropic" or "ollama"
-    ai_provider: str = Field(default="anthropic", alias="AI_PROVIDER")
+    # AI Provider selection: "anthropic", "ollama", "lmstudio", or "openrouter"
+    ai_provider: str = Field(default="lmstudio", alias="AI_PROVIDER")
 
     # Anthropic Claude API
-    ANTHROPIC_API_KEY: str = Field(default="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", alias="ANTHROPIC_API_KEY")
+    ANTHROPIC_API_KEY: str = Field(default="", alias="ANTHROPIC_API_KEY")
+
+    # OpenRouter settings (used when AI_PROVIDER=openrouter)
+    openrouter_api_key: str = Field(default="", alias="OPENROUTER_API_KEY")
+    openrouter_base_url: str = Field(default="https://openrouter.ai/api/v1/chat/completions", alias="OPENROUTER_BASE_URL")
+    openrouter_model: str = Field(default="openai/gpt-4o-mini", alias="OPENROUTER_MODEL")
 
     # Ollama settings (used when AI_PROVIDER=ollama)
     ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
     ollama_model: str = Field(default="llama3.2", alias="OLLAMA_MODEL")
+
+    # LM Studio settings (used when AI_PROVIDER=lmstudio)
+    lmstudio_base_url: str = Field(default="http://localhost:1234/v1/chat/completions", alias="LMSTUDIO_BASE_URL")
+    lmstudio_model: str = Field(default="qwen3-4b-rpg-roleplay-v2", alias="LMSTUDIO_MODEL")
+    lmstudio_context_length: int = Field(default=8192, alias="LMSTUDIO_CONTEXT_LENGTH", description="Context window size for LM Studio model")
+    lmstudio_auto_load: bool = Field(default=True, alias="LMSTUDIO_AUTO_LOAD", description="Auto-load model in LM Studio if not loaded")
     
     # Model selection for different request types
     model_dm_response: str = Field(

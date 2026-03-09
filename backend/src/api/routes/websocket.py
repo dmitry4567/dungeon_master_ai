@@ -323,6 +323,15 @@ async def _process_dm_response_completion(
             scenario_content,
         )
 
+        logger.info(
+            "State extraction result: has_changes=%s, events=%s, location=%s, scene=%s, flags=%s",
+            state_update.has_changes(),
+            state_update.events_occurred,
+            state_update.location_changed,
+            state_update.scene_completed,
+            list(state_update.flags_changed.keys()),
+        )
+
         if state_update.has_changes():
             async with get_db_context() as db:
                 session_service = SessionService(db)
@@ -336,14 +345,17 @@ async def _process_dm_response_completion(
 
             # Broadcast state update
             state_msg = WSStateUpdate(world_state=new_world_state)
+            logger.info("Broadcasting state update to room %s: %s", room_id, new_world_state)
             await manager.broadcast_to_room(
                 room_id, state_msg.model_dump(mode="json")
             )
 
             state_delta = state_update.to_dict()
+        else:
+            logger.info("No state changes detected, skipping broadcast")
 
     except Exception as e:
-        logger.error("State extraction error: %s", str(e))
+        logger.error("State extraction error: %s", str(e), exc_info=True)
 
     # Save DM message
     async with get_db_context() as db:

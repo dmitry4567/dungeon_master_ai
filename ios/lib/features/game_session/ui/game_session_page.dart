@@ -8,7 +8,6 @@ import '../bloc/game_session_state.dart';
 import '../bloc/voice_cubit.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/message_input.dart';
-import 'widgets/voice_controls_widget.dart';
 import 'widgets/world_state_bar.dart';
 
 /// Основная страница игровой сессии
@@ -29,7 +28,10 @@ class GameSessionPage extends StatefulWidget {
 class _GameSessionPageState extends State<GameSessionPage>
     with SingleTickerProviderStateMixin {
   final _scrollController = ScrollController();
-  DateTime? _lastScrollTime;
+  bool _isAtBottom = true;
+  bool _userTouching = false;
+  bool _listReady = false;
+  int _lastMessageCount = 0;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -37,6 +39,8 @@ class _GameSessionPageState extends State<GameSessionPage>
   @override
   void initState() {
     super.initState();
+
+    _scrollController.addListener(_onScroll);
 
     _animationController = AnimationController(
       vsync: this,
@@ -49,53 +53,36 @@ class _GameSessionPageState extends State<GameSessionPage>
     _animationController.forward();
   }
 
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    final atBottom = pos.pixels >= pos.maxScrollExtent - 50;
+    if (atBottom != _isAtBottom) {
+      setState(() => _isAtBottom = atBottom);
+    }
+  }
+
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
-  void _scrollToBottom({bool smooth = true}) {
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        if (smooth) {
-          _scrollController.animateTo(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        } else {
-          _scrollController.jumpTo(0);
-        }
+      if (!_scrollController.hasClients || _userTouching) return;
+      if (_isAtBottom) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
-  }
-
-  bool _shouldScrollForStreaming() {
-    final now = DateTime.now();
-    if (_lastScrollTime == null ||
-        now.difference(_lastScrollTime!) > const Duration(milliseconds: 100)) {
-      _lastScrollTime = now;
-      return true;
-    }
-    return false;
   }
 
   @override
   Widget build(BuildContext context) => BlocConsumer<GameSessionBloc, GameSessionState>(
         listener: (context, state) {
           if (state is GameSessionActive) {
-            final isStreaming = state.streamingContent != null;
-
-            if (!_scrollController.hasClients) {
-              if (isStreaming && _shouldScrollForStreaming()) {
-                _scrollToBottom(smooth: false);
-              }
-            } else {
-              _scrollToBottom();
-            }
-
             // Автоотключение голосового канала при закрытии сессии
             if (state.voiceChannelClosed) {
               context.read<VoiceCubit>().disconnect();
@@ -438,18 +425,58 @@ class _GameSessionPageState extends State<GameSessionPage>
       );
     }
 
-    return ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      reverse: true,
-      itemCount: messages.length + (hasStreaming ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == 0 && hasStreaming) {
-          return StreamingBubble(content: state.streamingContent!);
-        }
-        final messageIndex = hasStreaming ? index - 1 : index;
-        return MessageBubble(message: messages[messages.length - 1 - messageIndex]);
-      },
+    if (!_listReady) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollController.hasClients) return;
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        if (mounted) setState(() => _listReady = true);
+      });
+    } else {
+      if (messages.length > _lastMessageCount) {
+        // Новое сообщение — плавный скролл вниз
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      } else if (hasStreaming && _isAtBottom) {
+        _scrollToBottom();
+      }
+    }
+    _lastMessageCount = messages.length;
+
+    return Offstage(
+      offstage: !_listReady,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollStartNotification &&
+              notification.dragDetails != null) {
+            _userTouching = true;
+          } else if (notification is ScrollEndNotification) {
+            _userTouching = false;
+          }
+          return false;
+        },
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          physics: const ClampingScrollPhysics(),
+          itemCount: messages.length + (hasStreaming ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == messages.length && hasStreaming) {
+              return StreamingBubble(content: state.streamingContent!);
+            }
+            return MessageBubble(message: messages[index]);
+          },
+        ),
+        ),
+      ),
     );
   }
 
