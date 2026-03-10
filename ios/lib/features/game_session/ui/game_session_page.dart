@@ -250,6 +250,7 @@ class _GameSessionPageState extends State<GameSessionPage>
           WorldStateBar(
             worldState: state.worldState,
             scenarioContent: state.scenarioContent,
+            progressPercentage: state.progressPercentage,
           ),
           // Панель голосового чата
           // Padding(

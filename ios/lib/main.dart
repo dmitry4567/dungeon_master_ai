@@ -49,9 +49,11 @@ Future<void> main() async {
       // final firebaseService = getIt<FirebaseService>();
       // await firebaseService.init();
 
-      // Initialize local database
-      final localDatabase = getIt<LocalDatabase>();
-      await localDatabase.init();
+      // Initialize local database (not supported on web)
+      if (!kIsWeb) {
+        final localDatabase = getIt<LocalDatabase>();
+        await localDatabase.init();
+      }
 
       // Log app start
       // if (AppConfig.current.enableAnalytics) {
@@ -61,6 +63,8 @@ Future<void> main() async {
       runApp(const App());
     },
     (error, stackTrace) {
+      // ignore: avoid_print
+      print('Unhandled error: $error\n$stackTrace');
       // Log errors to Firebase Crashlytics
       if (AppConfig.current.enableCrashlytics) {
         getIt<FirebaseService>().recordError(

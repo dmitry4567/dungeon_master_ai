@@ -32,6 +32,8 @@ class GameSessionState with _$GameSessionState {
     @Default({}) Set<String> rolledMessageIds,
     /// Флаг, сигнализирующий о закрытии голосового канала (для auto-disconnect)
     @Default(false) bool voiceChannelClosed,
+    /// Процент прохождения обязательных сцен сценария (0-100)
+    @Default(0.0) double progressPercentage,
   }) = GameSessionActive;
 
   /// Сессия завершена

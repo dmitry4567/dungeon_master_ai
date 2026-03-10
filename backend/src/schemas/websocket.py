@@ -98,6 +98,7 @@ class WSStateUpdate(WSBaseMessage):
 
     type: WSMessageType = WSMessageType.STATE_UPDATE
     world_state: dict
+    progress_percentage: float = 0.0  # Процент прохождения обязательных сцен (0-100)
 
 
 class WSDiceRequest(WSBaseMessage):

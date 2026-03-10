@@ -9,11 +9,13 @@ class WorldStateBar extends StatefulWidget {
   const WorldStateBar({
     required this.worldState,
     required this.scenarioContent,
+    this.progressPercentage = 0.0,
     super.key,
   });
 
   final WorldState worldState;
   final ScenarioContent scenarioContent;
+  final double progressPercentage;
 
   @override
   State<WorldStateBar> createState() => _WorldStateBarState();
@@ -78,6 +80,8 @@ class _WorldStateBarState extends State<WorldStateBar> {
       return sceneId; // Fallback to ID if not found
     }).toList();
 
+    final progress = (widget.progressPercentage / 100).clamp(0.0, 1.0);
+
     return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
       child: AnimatedContainer(
@@ -95,6 +99,23 @@ class _WorldStateBarState extends State<WorldStateBar> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Прогресс-бар сценария
+            if (widget.progressPercentage > 0)
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOut,
+                builder: (context, value, _) => LinearProgressIndicator(
+                  value: value,
+                  minHeight: 2,
+                  backgroundColor: const Color(0xFF1A1A2E),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    widget.worldState.combatActive
+                        ? AppColors.error
+                        : const Color(0xFF6C63FF),
+                  ),
+                ),
+              ),
             // Основная строка
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -162,8 +183,18 @@ class _WorldStateBarState extends State<WorldStateBar> {
                       ],
                     ),
                   ),
-                  // Иконка справа (фиксированная)
+                  // Прогресс % + иконка справа (фиксированные)
                   const SizedBox(width: 8),
+                  if (widget.progressPercentage > 0)
+                    Text(
+                      '${widget.progressPercentage.toStringAsFixed(0)}%',
+                      style: const TextStyle(
+                        color: Color(0xFF6C63FF),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  const SizedBox(width: 4),
                   Icon(
                     _expanded
                         ? Icons.keyboard_arrow_up

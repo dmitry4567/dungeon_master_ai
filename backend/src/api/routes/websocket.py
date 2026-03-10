@@ -35,6 +35,22 @@ logger = get_logger(__name__)
 router = APIRouter(tags=["WebSocket"])
 
 
+def _calculate_progress(world_state: dict, scenario_content: dict) -> float:
+    """Считает % пройденных обязательных сцен сценария."""
+    acts = scenario_content.get("acts", [])
+    total = sum(
+        1 for act in acts for scene in act.get("scenes", []) if scene.get("mandatory", False)
+    )
+    if total == 0:
+        return 0.0
+    completed_ids = set(world_state.get("completed_scenes", []))
+    done = sum(
+        1 for act in acts for scene in act.get("scenes", [])
+        if scene.get("mandatory", False) and scene.get("id") in completed_ids
+    )
+    return round(min(done / total * 100, 100.0), 1)
+
+
 _MAX_RECONNECT_HISTORY = 50  # Max messages stored for reconnect sync
 _ACTION_QUEUE_WINDOW_MS = 500  # Window to collect simultaneous actions (ms)
 
@@ -344,8 +360,9 @@ async def _process_dm_response_completion(
                 )
 
             # Broadcast state update
-            state_msg = WSStateUpdate(world_state=new_world_state)
-            logger.info("Broadcasting state update to room %s: %s", room_id, new_world_state)
+            progress = _calculate_progress(new_world_state, scenario_content)
+            state_msg = WSStateUpdate(world_state=new_world_state, progress_percentage=progress)
+            logger.info("Broadcasting state update to room %s: %s (progress=%.1f%%)", room_id, new_world_state, progress)
             await manager.broadcast_to_room(
                 room_id, state_msg.model_dump(mode="json")
             )
@@ -485,6 +502,14 @@ async def websocket_session(
                 async with get_db_context() as db:
                     session_service = SessionService(db)
 
+                    # Get context for AI BEFORE saving player message to avoid duplication
+                    scenario_content = await session_service.get_scenario_content(session_id)
+                    conversation_history = await session_service.get_conversation_history(session_id)
+
+                    # Refresh session for latest world state
+                    session_obj = await session_service.get_session(session_id)
+                    world_state = session_obj.world_state
+
                     # Save player message
                     player_msg = await session_service.add_player_message(
                         session_id,
@@ -502,14 +527,6 @@ async def websocket_session(
                         created_at=player_msg.created_at,
                     )
                     await manager.broadcast_to_room(room_id, broadcast.model_dump(mode="json"))
-
-                    # Get context for AI
-                    scenario_content = await session_service.get_scenario_content(session_id)
-                    conversation_history = await session_service.get_conversation_history(session_id)
-
-                    # Refresh session for latest world state
-                    session_obj = await session_service.get_session(session_id)
-                    world_state = session_obj.world_state
 
                 # Generate DM response with streaming (no DB needed during streaming)
                 dm_message_id = uuid.uuid4()

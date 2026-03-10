@@ -19,8 +19,8 @@ class SecureStorage {
   final FlutterSecureStorage _storage;
   final SharedPreferences _prefs;
 
-  // На macOS в debug режиме используем SharedPreferences
-  bool get _useFallback => Platform.isMacOS && kDebugMode;
+  // На macOS/web в debug режиме используем SharedPreferences
+  bool get _useFallback => kIsWeb || (!kIsWeb && Platform.isMacOS && kDebugMode);
 
   // Ключи
   static const _accessTokenKey = 'access_token';

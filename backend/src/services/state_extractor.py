@@ -451,15 +451,24 @@ Available Flags:
             new_state["completed_scenes"] = completed
 
         # Update flags - merge new flags with existing ones
+        flags = new_state.get("flags", {})
+
         if update.flags_changed:
-            flags = new_state.get("flags", {})
             for flag_id, flag_data in update.flags_changed.items():
                 if isinstance(flag_data, dict):
-                    # New format: {"value": bool, "label": str}
                     flags[flag_id] = flag_data
                 else:
-                    # Legacy format: plain bool - wrap it
                     flags[flag_id] = {"value": bool(flag_data), "label": flag_id}
+
+        # Convert events_occurred → flags so they are visible in UI
+        # (OpenRouter models often put state changes in events_occurred
+        #  instead of flags_changed)
+        for event_id in update.events_occurred:
+            if event_id not in flags:
+                label = event_id.replace("_", " ").title()
+                flags[event_id] = {"value": True, "label": label}
+
+        if flags != new_state.get("flags", {}):
             new_state["flags"] = flags
 
         return new_state

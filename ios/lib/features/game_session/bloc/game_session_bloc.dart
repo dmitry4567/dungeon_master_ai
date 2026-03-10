@@ -253,7 +253,13 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     if (worldStateData == null) return;
 
     final newWorldState = WorldState.fromJson(worldStateData);
-    emit(currentState.copyWith(worldState: newWorldState));
+    final progressPercentage =
+        (data['progress_percentage'] as num?)?.toDouble() ??
+            currentState.progressPercentage;
+    emit(currentState.copyWith(
+      worldState: newWorldState,
+      progressPercentage: progressPercentage,
+    ));
   }
 
   void _handlePlayerJoin(

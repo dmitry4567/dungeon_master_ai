@@ -230,12 +230,11 @@ class AIService:
                 location_info = f"{loc.get('name', 'Unknown')} - {loc.get('atmosphere', '')}"
                 break
 
-        # Build NPC reference
+        # Build NPC reference (limit to 5 to save tokens)
         npcs_section = []
-        for npc in scenario_content.get("npcs", []):
+        for npc in scenario_content.get("npcs", [])[:5]:
             npcs_section.append(
-                f"- {npc.get('name')}: {npc.get('role')} - {npc.get('personality')} "
-                f"(speaks: {npc.get('speech_style', 'normally')})"
+                f"- {npc.get('name')}: {npc.get('role')} - {npc.get('personality')}"
             )
         npcs_text = "\n".join(npcs_section) if npcs_section else "No NPCs defined"
 
@@ -249,22 +248,19 @@ class AIService:
                     break
                 break
 
+        world_lore = scenario_content.get("world_lore", "A mysterious world awaits...")
+        world_lore_short = world_lore[:800] + "..." if len(world_lore) > 800 else world_lore
+
         return f"""You are an expert Dungeon Master for a D&D 5e game session.
+Respond in the SAME LANGUAGE as the player's message.
 
-CRITICAL INSTRUCTION: You MUST respond in the SAME LANGUAGE as the player's message. If they write in Russian, respond in Russian. If they write in English, respond in English. Match their language exactly.
-
-## Scenario: {scenario_content.get("title", "Adventure")}
-Tone: {scenario_content.get("tone", "heroic")}
-Difficulty: {scenario_content.get("difficulty", "intermediate")}
+## Scenario: {scenario_content.get("title", "Adventure")} | Tone: {scenario_content.get("tone", "heroic")} | Difficulty: {scenario_content.get("difficulty", "intermediate")}
 
 ## World Lore
-{scenario_content.get("world_lore", "A mysterious world awaits...")}
+{world_lore_short}
 
-## Current Location
-{location_info}
-
-## Current Scene
-{current_scene_info}
+## Location: {location_info}
+## Scene: {current_scene_info}
 
 ## NPCs
 {npcs_text}
@@ -273,10 +269,10 @@ Difficulty: {scenario_content.get("difficulty", "intermediate")}
 {players_section}
 
 ## World State
-- Current Act: {world_state.get("current_act", "act_1")}
-- Completed Scenes: {", ".join(world_state.get("completed_scenes", [])) or "None"}
-- Active Flags: {json.dumps(world_state.get("flags", {}))}
-- Combat Active: {world_state.get("combat_active", False)}
+- Act: {world_state.get("current_act", "act_1")}
+- Completed: {", ".join(world_state.get("completed_scenes", [])) or "None"}
+- Flags: {self._compact_flags(world_state.get("flags", {}))}
+- Combat: {world_state.get("combat_active", False)}
 
 ## Your Role
 1. Narrate the story based on player actions
@@ -316,6 +312,17 @@ When you receive a message like "[DICE RESULT: d20+5 rolled 18 = 23 vs DC 15 - S
 - Continue the narrative normally
 
 Remember: ALWAYS respond in the same language the player uses!"""
+
+    def _compact_flags(self, flags: dict) -> str:
+        """Return only active (True) flags as a compact string to save tokens."""
+        active = {
+            fid: (fdata.get("label", fid) if isinstance(fdata, dict) else fid)
+            for fid, fdata in flags.items()
+            if (fdata.get("value", False) if isinstance(fdata, dict) else bool(fdata))
+        }
+        if not active:
+            return "none"
+        return ", ".join(active.values())
 
     async def _call_model(
         self,
@@ -999,8 +1006,8 @@ Remember: ALWAYS respond in the same language the player uses!"""
             scenario_content, world_state, players
         )
 
-        # Build messages with history (last 15 messages for context window)
-        messages = conversation_history[-15:]
+        # Build messages with history (last 6 messages to keep input tokens low for free models)
+        messages = list(conversation_history[-6:])
         messages.append({"role": "user", "content": player_message})
 
         async for chunk in await self._call_model(system_prompt, messages, stream=True, model=self.model_dm_response):
