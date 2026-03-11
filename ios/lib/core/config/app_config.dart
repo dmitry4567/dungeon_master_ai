@@ -23,8 +23,8 @@ enum AppConfig {
 
   /// Конфигурация для продакшена
   production._(
-    apiBaseUrl: 'https://api.aidungeonmaster.com/v1',
-    wsBaseUrl: 'wss://api.aidungeonmaster.com/v1/ws',
+    apiBaseUrl: 'https://dungeon-master-ai.onrender.com/v1',
+    wsBaseUrl: 'wss://dungeon-master-ai.onrender.com/v1/ws',
     environment: Environment.production,
     enableCrashlytics: true,
     enableAnalytics: true,
