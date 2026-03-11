@@ -13,7 +13,7 @@ COPY assets/ ./assets/
 RUN flutter pub get
 
 # Build for web with production environment
-RUN flutter build web --release --dart-define=ENV=production
+RUN flutter build web --release
 
 # ---- Runtime stage ----
 FROM nginx:alpine AS runtime

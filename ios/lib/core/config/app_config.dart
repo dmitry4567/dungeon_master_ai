@@ -65,22 +65,22 @@ enum AppConfig {
 
   /// Текущая конфигурация приложения
   static AppConfig get current {
-    if (kReleaseMode) {
-      return production;
-    }
+    // if (kReleaseMode) {
+    //   return production;
+    // }
 
-    const envName = String.fromEnvironment('ENV', defaultValue: 'development');
+    // const envName = String.fromEnvironment('ENV', defaultValue: 'development');
 
-    // Для web всегда используем production (если не указано иное)
-    if (kIsWeb && envName == 'development') {
-      return production;
-    }
+    // // Для web всегда используем production (если не указано иное)
+    // if (kIsWeb && envName == 'development') {
+    return production;
+    // }
 
-    return switch (envName) {
-      'production' => production,
-      'staging' => staging,
-      _ => development,
-    };
+    // return switch (envName) {
+    //   'production' => production,
+    //   'staging' => staging,
+    //   _ => development,
+    // };
   }
 }
 
