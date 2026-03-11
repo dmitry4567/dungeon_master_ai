@@ -1,31 +1,62 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import 'dice_result.dart';
-
-part 'message.freezed.dart';
-part 'message.g.dart';
 
 /// Роль автора сообщения
 enum MessageRole {
-  @JsonValue('player')
   player,
-  @JsonValue('dm')
   dm,
-  @JsonValue('system')
   system,
 }
 
 /// Сообщение в игровой сессии
-@freezed
-class Message with _$Message {
-  const factory Message({
-    required String id,
-    required MessageRole role, required String content, @JsonKey(name: 'created_at') required DateTime createdAt, @JsonKey(name: 'author_id') String? authorId,
-    @JsonKey(name: 'author_name') String? authorName,
-    @JsonKey(name: 'dice_result') DiceResult? diceResult,
-    @JsonKey(name: 'state_delta') Map<String, dynamic>? stateDelta,
-  }) = _Message;
+class Message {
+  final String id;
+  final MessageRole role;
+  final String content;
+  final DateTime createdAt;
+  final String? authorId;
+  final String? authorName;
+  final DiceResult? diceResult;
+  final Map<String, dynamic>? stateDelta;
 
-  factory Message.fromJson(Map<String, dynamic> json) =>
-      _$MessageFromJson(json);
+  const Message({
+    required this.id,
+    required this.role,
+    required this.content,
+    required this.createdAt,
+    this.authorId,
+    this.authorName,
+    this.diceResult,
+    this.stateDelta,
+  });
+
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      id: json['id'] as String,
+      role: MessageRole.values.firstWhere(
+        (e) => e.name == (json['role'] as String),
+        orElse: () => MessageRole.system,
+      ),
+      content: json['content'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      authorId: json['author_id'] as String?,
+      authorName: json['author_name'] as String?,
+      diceResult: json['dice_result'] != null
+          ? DiceResult.fromJson(json['dice_result'] as Map<String, dynamic>)
+          : null,
+      stateDelta: json['state_delta'] as Map<String, dynamic>?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'role': role.name,
+      'content': content,
+      'created_at': createdAt.toIso8601String(),
+      if (authorId != null) 'author_id': authorId,
+      if (authorName != null) 'author_name': authorName,
+      if (diceResult != null) 'dice_result': diceResult!.toJson(),
+      if (stateDelta != null) 'state_delta': stateDelta,
+    };
+  }
 }

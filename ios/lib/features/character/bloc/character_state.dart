@@ -1,71 +1,114 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../models/ability_scores.dart';
 import '../models/character.dart';
 import '../models/dnd_data.dart';
 
-part 'character_state.freezed.dart';
-
 /// Состояние CharacterBloc
-@freezed
-sealed class CharacterState with _$CharacterState {
-  /// Начальное состояние
-  const factory CharacterState.initial() = CharacterInitial;
+abstract class CharacterState {
+  const CharacterState();
+}
 
-  /// Загрузка списка персонажей
-  const factory CharacterState.loading() = CharacterLoading;
+/// Начальное состояние
+class CharacterInitial extends CharacterState {
+  const CharacterInitial();
+}
 
-  /// Список персонажей загружен
-  const factory CharacterState.loaded({
-    required List<Character> characters,
-  }) = CharacterLoaded;
+/// Загрузка списка персонажей
+class CharacterLoading extends CharacterState {
+  const CharacterLoading();
+}
 
-  /// Просмотр конкретного персонажа
-  const factory CharacterState.detail({
-    required Character character,
-  }) = CharacterDetail;
+/// Список персонажей загружен
+class CharacterLoaded extends CharacterState {
+  final List<Character> characters;
 
-  /// Создание персонажа (мастер)
-  const factory CharacterState.creating({
-    required CharacterCreationForm form,
-  }) = CharacterCreating;
+  const CharacterLoaded({required this.characters});
+}
 
-  /// Отправка формы
-  const factory CharacterState.submitting({
-    required CharacterCreationForm form,
-  }) = CharacterSubmitting;
+/// Просмотр конкретного персонажа
+class CharacterDetail extends CharacterState {
+  final Character character;
 
-  /// Персонаж успешно создан
-  const factory CharacterState.created({
-    required Character character,
-  }) = CharacterCreated;
+  const CharacterDetail({required this.character});
+}
 
-  /// Персонаж успешно удалён
-  const factory CharacterState.deleted({
-    required String characterId,
-  }) = CharacterDeleted;
+/// Создание персонажа (мастер)
+class CharacterCreating extends CharacterState {
+  final CharacterCreationForm form;
 
-  /// Ошибка
-  const factory CharacterState.error({
-    required String message,
-    CharacterState? previousState,
-  }) = CharacterError;
+  const CharacterCreating({required this.form});
+}
+
+/// Отправка формы
+class CharacterSubmitting extends CharacterState {
+  final CharacterCreationForm form;
+
+  const CharacterSubmitting({required this.form});
+}
+
+/// Персонаж успешно создан
+class CharacterCreated extends CharacterState {
+  final Character character;
+
+  const CharacterCreated({required this.character});
+}
+
+/// Персонаж успешно удалён
+class CharacterDeleted extends CharacterState {
+  final String characterId;
+
+  const CharacterDeleted({required this.characterId});
+}
+
+/// Ошибка
+class CharacterError extends CharacterState {
+  final String message;
+  final CharacterState? previousState;
+
+  const CharacterError({
+    required this.message,
+    this.previousState,
+  });
 }
 
 /// Форма создания персонажа
-@freezed
-class CharacterCreationForm with _$CharacterCreationForm {
+class CharacterCreationForm {
+  final int currentStep;
+  final DndClass? selectedClass;
+  final DndRace? selectedRace;
+  final AbilityScores abilityScores;
+  final String name;
+  final String backstory;
+  final List<String> validationErrors;
 
-  const factory CharacterCreationForm({
-    @Default(0) int currentStep,
+  const CharacterCreationForm({
+    this.currentStep = 0,
+    this.selectedClass,
+    this.selectedRace,
+    this.abilityScores = const AbilityScores(),
+    this.name = '',
+    this.backstory = '',
+    this.validationErrors = const [],
+  });
+
+  CharacterCreationForm copyWith({
+    int? currentStep,
     DndClass? selectedClass,
     DndRace? selectedRace,
-    @Default(AbilityScores()) AbilityScores abilityScores,
-    @Default('') String name,
-    @Default('') String backstory,
-    @Default([]) List<String> validationErrors,
-  }) = _CharacterCreationForm;
-  const CharacterCreationForm._();
+    AbilityScores? abilityScores,
+    String? name,
+    String? backstory,
+    List<String>? validationErrors,
+  }) {
+    return CharacterCreationForm(
+      currentStep: currentStep ?? this.currentStep,
+      selectedClass: selectedClass ?? this.selectedClass,
+      selectedRace: selectedRace ?? this.selectedRace,
+      abilityScores: abilityScores ?? this.abilityScores,
+      name: name ?? this.name,
+      backstory: backstory ?? this.backstory,
+      validationErrors: validationErrors ?? this.validationErrors,
+    );
+  }
 
   /// Шаги мастера
   static const int totalSteps = 4;

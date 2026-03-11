@@ -20,10 +20,6 @@ dependencies:
   get_it: ^8.0.3
   injectable: ^2.5.0
 
-  # Code Generation
-  freezed_annotation: ^2.4.4
-  json_annotation: ^4.9.0
-
   # Routing
   go_router: ^14.8.1
 
@@ -63,6 +59,7 @@ dependencies:
   permission_handler: ^12.0.1
   sqflite_common: 2.5.5
   sqflite_common_ffi: 2.3.6
+  sqlite3: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -72,8 +69,6 @@ dev_dependencies:
 
   # Code Generation
   build_runner: ^2.4.15
-  freezed: ^2.5.7
-  json_serializable: ^6.9.4
   injectable_generator: ^2.7.0
 
   # Testing

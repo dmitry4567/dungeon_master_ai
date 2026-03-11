@@ -11,7 +11,7 @@ import 'lobby_state.dart';
 class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
 
   LobbyBloc(this._repository, this._secureStorage)
-      : super(const LobbyState.initial()) {
+      : super(const LobbyInitial()) {
     on<LoadRoomsEvent>(_onLoadRooms);
     on<CreateRoomEvent>(_onCreateRoom);
     on<LoadRoomEvent>(_onLoadRoom);
@@ -30,12 +30,12 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     LoadRoomsEvent event,
     Emitter<LobbyState> emit,
   ) async {
-    emit(const LobbyState.loading());
+    emit(const LobbyLoading());
     try {
       final rooms = await _repository.listRooms(status: event.status);
-      emit(LobbyState.loaded(rooms: rooms));
+      emit(LobbyLoaded(rooms: rooms));
     } catch (e) {
-      emit(LobbyState.error(message: e.toString()));
+      emit(LobbyError(message: e.toString()));
     }
   }
 
@@ -43,7 +43,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     CreateRoomEvent event,
     Emitter<LobbyState> emit,
   ) async {
-    emit(const LobbyState.creating());
+    emit(const LobbyCreating());
     try {
       final room = await _repository.createRoom(
         name: event.name,
@@ -52,9 +52,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
         characterId: event.characterId,
       );
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось создать комнату: $e',
       ),);
     }
@@ -64,13 +64,13 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     LoadRoomEvent event,
     Emitter<LobbyState> emit,
   ) async {
-    emit(const LobbyState.loading());
+    emit(const LobbyLoading());
     try {
       final room = await _repository.getRoom(event.roomId);
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось загрузить комнату: $e',
       ),);
     }
@@ -83,9 +83,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     try {
       final room = await _repository.getRoom(event.roomId);
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось обновить комнату: $e',
       ),);
     }
@@ -95,14 +95,14 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     JoinRoomEvent event,
     Emitter<LobbyState> emit,
   ) async {
-    emit(const LobbyState.loading());
+    emit(const LobbyLoading());
     try {
       await _repository.joinRoom(event.roomId);
       final room = await _repository.getRoom(event.roomId);
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось присоединиться: $e',
       ),);
     }
@@ -116,9 +116,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
       await _repository.approvePlayer(event.roomId, event.playerId);
       final room = await _repository.getRoom(event.roomId);
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось одобрить игрока: $e',
       ),);
     }
@@ -132,9 +132,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
       await _repository.declinePlayer(event.roomId, event.playerId);
       final room = await _repository.getRoom(event.roomId);
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось отклонить игрока: $e',
       ),);
     }
@@ -152,9 +152,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
       );
       final room = await _repository.getRoom(event.roomId);
       final isHost = await _isCurrentUserHost(room);
-      emit(LobbyState.roomDetail(room: room, isCurrentUserHost: isHost));
+      emit(LobbyRoomDetail(room: room, isCurrentUserHost: isHost));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось обновить готовность: $e',
       ),);
     }
@@ -167,9 +167,9 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     try {
       final session = await _repository.startGame(event.roomId);
       final room = await _repository.getRoom(event.roomId);
-      emit(LobbyState.gameStarting(room: room, session: session));
+      emit(LobbyGameStarting(room: room, session: session));
     } catch (e) {
-      emit(LobbyState.error(
+      emit(LobbyError(
         message: 'Не удалось начать игру: $e',
       ),);
     }
@@ -179,7 +179,7 @@ class LobbyBloc extends Bloc<LobbyEvent, LobbyState> {
     ClearLobbyErrorEvent event,
     Emitter<LobbyState> emit,
   ) async {
-    emit(const LobbyState.initial());
+    emit(const LobbyInitial());
   }
 
   Future<bool> _isCurrentUserHost(Room room) async {

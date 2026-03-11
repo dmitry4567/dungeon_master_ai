@@ -28,7 +28,7 @@ class _VersionHistorySheetState extends State<VersionHistorySheet> {
   void initState() {
     super.initState();
     _bloc = getIt<ScenarioBloc>()
-      ..add(ScenarioEvent.loadVersionHistory(scenarioId: widget.scenarioId));
+      ..add(LoadVersionHistoryEvent(scenarioId: widget.scenarioId));
   }
 
   @override
@@ -63,7 +63,7 @@ class _VersionHistorySheetState extends State<VersionHistorySheet> {
 
               // Now restore the version and reload
               _bloc.add(
-                ScenarioEvent.restoreVersion(
+                RestoreVersionEvent(
                   scenarioId: widget.scenarioId,
                   versionId: versionId,
                 ),

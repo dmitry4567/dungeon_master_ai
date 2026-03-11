@@ -36,7 +36,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
   void initState() {
     super.initState();
     context.read<CharacterBloc>().add(
-          CharacterEvent.loadCharacter(id: widget.characterId),
+          LoadCharacterEvent(id: widget.characterId),
         );
 
     _animationController = AnimationController(
@@ -116,7 +116,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
                 message: message,
                 onRetry: () {
                   context.read<CharacterBloc>().add(
-                        CharacterEvent.loadCharacter(id: widget.characterId),
+                        LoadCharacterEvent(id: widget.characterId),
                       );
                 },
               ),
@@ -866,7 +866,7 @@ class _CharacterDetailPageState extends State<CharacterDetailPage>
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<CharacterBloc>().add(
-                    CharacterEvent.deleteCharacter(id: character.id),
+                    DeleteCharacterEvent(id: character.id),
                   );
             },
             child: const Text('Удалить'),

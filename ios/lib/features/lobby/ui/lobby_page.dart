@@ -58,7 +58,7 @@ class _LobbyPageState extends State<LobbyPage>
   }
 
   void _loadRooms() {
-    context.read<LobbyBloc>().add(const LobbyEvent.loadRooms());
+    context.read<LobbyBloc>().add(const LoadRoomsEvent());
   }
 
   @override
@@ -68,15 +68,30 @@ class _LobbyPageState extends State<LobbyPage>
           listener: (context, state) {
             // Handle state changes if needed
           },
-          builder: (context, state) => state.when(
-            initial: _buildInitialState,
-            loading: _buildLoadingView,
-            loaded: _buildLoadedView,
-            creating: _buildCreatingView,
-            roomDetail: (_, __) => const SizedBox.shrink(),
-            gameStarting: (_, __) => const SizedBox.shrink(),
-            error: _buildErrorView,
-          ),
+          builder: (context, state) {
+            if (state is LobbyInitial) {
+              return _buildInitialState();
+            }
+            if (state is LobbyLoading) {
+              return _buildLoadingView();
+            }
+            if (state is LobbyLoaded) {
+              return _buildLoadedView(state.rooms);
+            }
+            if (state is LobbyCreating) {
+              return _buildCreatingView();
+            }
+            if (state is LobbyRoomDetail) {
+              return const SizedBox.shrink();
+            }
+            if (state is LobbyGameStarting) {
+              return const SizedBox.shrink();
+            }
+            if (state is LobbyError) {
+              return _buildErrorView(state.message);
+            }
+            return _buildLoadingView();
+          },
         ),
       );
 
@@ -137,7 +152,7 @@ class _LobbyPageState extends State<LobbyPage>
         color: const Color(0xFFD4AF37),
         backgroundColor: const Color(0xFF1A1A2E),
         onRefresh: () async {
-          context.read<LobbyBloc>().add(const LobbyEvent.loadRooms());
+          context.read<LobbyBloc>().add(const LoadRoomsEvent());
           await Future<void>.delayed(const Duration(milliseconds: 300));
         },
         child: CustomScrollView(

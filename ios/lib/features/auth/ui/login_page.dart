@@ -133,7 +133,7 @@ class LoginPage extends StatelessWidget {
             AppleSignInButton(
               onPressed: () => context
                   .read<AuthBloc>()
-                  .add(const AuthEvent.signInWithApple()),
+                  .add(const AuthSignInWithApple()),
               isLoading: isLoading,
             ),
 
@@ -167,12 +167,12 @@ class LoginPage extends StatelessWidget {
               isLoading: isLoading,
               onLogin: (email, password) => context
                   .read<AuthBloc>()
-                  .add(AuthEvent.loginWithEmail(
+                  .add(AuthLoginWithEmail(
                     email: email,
                     password: password,
                   ),),
               onRegister: (email, password, name) =>
-                  context.read<AuthBloc>().add(AuthEvent.register(
+                  context.read<AuthBloc>().add(AuthRegister(
                         email: email,
                         password: password,
                         name: name,
@@ -183,21 +183,20 @@ class LoginPage extends StatelessWidget {
       );
 
   void _handleStateChange(BuildContext context, AuthState state) {
-    state.whenOrNull(
-      authenticated: (user) => context.go(Routes.lobby),
-      error: (message) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+    if (state is AuthAuthenticated) {
+      context.go(Routes.lobby);
+    } else if (state is AuthError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-        );
-      },
-    );
+        ),
+      );
+    }
   }
 }
 

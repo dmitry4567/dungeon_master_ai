@@ -60,14 +60,14 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
 
     if (_isRefining) {
       context.read<ScenarioBloc>().add(
-            ScenarioEvent.refineScenario(
+            RefineScenarioEvent(
               id: widget.scenarioId!,
               prompt: description,
             ),
           );
     } else {
       context.read<ScenarioBloc>().add(
-            ScenarioEvent.createScenario(description: description),
+            CreateScenarioEvent(description: description),
           );
     }
   }
@@ -79,20 +79,16 @@ class _ScenarioBuilderPageState extends State<ScenarioBuilderPage>
           onTap: () => FocusScope.of(context).unfocus(),
           child: BlocConsumer<ScenarioBloc, ScenarioState>(
             listener: (context, state) {
-              state.maybeWhen(
-                scenarioDetail: (scenario) {
-                  context.go('/scenarios/${scenario.id}');
-                },
-                error: (message) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      backgroundColor: const Color(0xFF8B3333),
-                    ),
-                  );
-                },
-                orElse: () {},
-              );
+              if (state is ScenarioDetail) {
+                context.go('/scenarios/${state.scenario.id}');
+              } else if (state is ScenarioError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: const Color(0xFF8B3333),
+                  ),
+                );
+              }
             },
             builder: (context, state) {
               final isGenerating = state is ScenarioGenerating;

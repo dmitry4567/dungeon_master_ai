@@ -269,7 +269,7 @@ class _GameSessionPageState extends State<GameSessionPage>
             onSend: (content) {
               context
                   .read<GameSessionBloc>()
-                  .add(GameSessionEvent.sendMessage(content: content));
+                  .add(SendMessageEvent(content: content));
             },
             isStreaming: isStreaming,
           ),
@@ -619,7 +619,7 @@ class _GameSessionPageState extends State<GameSessionPage>
               Navigator.of(ctx).pop(true);
               context
                   .read<GameSessionBloc>()
-                  .add(const GameSessionEvent.leaveSession());
+                  .add(const LeaveSessionEvent());
               context.pop();
             },
             child: const Text('Покинуть'),
@@ -661,7 +661,7 @@ class _GameSessionPageState extends State<GameSessionPage>
               Navigator.of(ctx).pop(true);
               context
                   .read<GameSessionBloc>()
-                  .add(const GameSessionEvent.endSession());
+                  .add(const EndSessionEvent());
             },
             child: const Text('Завершить'),
           ),

@@ -18,10 +18,8 @@ class GameSessionApi {
 
   /// Получить сессию по ID комнаты
   Future<GameSession> getSessionByRoom(String roomId) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      '/sessions/by-room/$roomId',
-    );
-    return GameSession.fromJson(response.data!);
+    final response = await _dio.get<dynamic>('/sessions/by-room/$roomId');
+    return GameSession.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// Получить сообщения сессии
@@ -30,34 +28,30 @@ class GameSessionApi {
     int limit = 50,
     int offset = 0,
   }) async {
-    final response = await _dio.get<List<dynamic>>(
+    final response = await _dio.get<dynamic>(
       '/sessions/$sessionId/messages',
       queryParameters: {'limit': limit, 'offset': offset},
     );
-    final data = response.data ?? [];
+    final data = (response.data ?? <dynamic>[]) as List<dynamic>;
     return data
-        .map((json) => Message.fromJson(json as Map<String, dynamic>))
+        .map((json) => Message.fromJson(Map<String, dynamic>.from(json as Map)))
         .toList();
   }
 
   /// Получить контент сценария
   Future<ScenarioContent> getScenarioContent(String sessionId) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      '/sessions/$sessionId/scenario',
-    );
-    return ScenarioContent.fromJson(response.data!);
+    final response = await _dio.get<dynamic>('/sessions/$sessionId/scenario');
+    return ScenarioContent.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// Завершить сессию (хост)
   Future<void> endSession(String sessionId) async {
-    await _dio.post<Map<String, dynamic>>('/sessions/$sessionId/end');
+    await _dio.post<dynamic>('/sessions/$sessionId/end');
   }
 
   /// Получить токен для голосового канала
   Future<VoiceToken> getVoiceToken(String roomId) async {
-    final response = await _dio.get<Map<String, dynamic>>(
-      '/rooms/$roomId/voice-token',
-    );
-    return VoiceToken.fromJson(response.data!);
+    final response = await _dio.get<dynamic>('/rooms/$roomId/voice-token');
+    return VoiceToken.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 }

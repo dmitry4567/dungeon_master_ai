@@ -1,73 +1,104 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../models/ability_scores.dart';
 import '../models/character.dart';
 import '../models/dnd_data.dart';
 
-part 'character_event.freezed.dart';
-
 /// События CharacterBloc
-@freezed
-sealed class CharacterEvent with _$CharacterEvent {
-  /// Загрузить список персонажей
-  const factory CharacterEvent.loadCharacters({
-    @Default(false) bool forceRefresh,
-  }) = LoadCharactersEvent;
+abstract class CharacterEvent {
+  const CharacterEvent();
+}
 
-  /// Загрузить конкретного персонажа
-  const factory CharacterEvent.loadCharacter({
-    required String id,
-    @Default(false) bool forceRefresh,
-  }) = LoadCharacterEvent;
+/// Загрузить список персонажей
+class LoadCharactersEvent extends CharacterEvent {
+  final bool forceRefresh;
 
-  /// Начать создание персонажа (сброс формы)
-  const factory CharacterEvent.startCreation() = StartCreationEvent;
+  const LoadCharactersEvent({this.forceRefresh = false});
+}
 
-  /// Выбрать класс
-  const factory CharacterEvent.selectClass({
-    required DndClass selectedClass,
-  }) = SelectClassEvent;
+/// Загрузить конкретного персонажа
+class LoadCharacterEvent extends CharacterEvent {
+  final String id;
+  final bool forceRefresh;
 
-  /// Выбрать расу
-  const factory CharacterEvent.selectRace({
-    required DndRace selectedRace,
-  }) = SelectRaceEvent;
+  const LoadCharacterEvent({
+    required this.id,
+    this.forceRefresh = false,
+  });
+}
 
-  /// Обновить характеристики
-  const factory CharacterEvent.updateAbilityScores({
-    required AbilityScores abilityScores,
-  }) = UpdateAbilityScoresEvent;
+/// Начать создание персонажа (сброс формы)
+class StartCreationEvent extends CharacterEvent {
+  const StartCreationEvent();
+}
 
-  /// Обновить имя
-  const factory CharacterEvent.updateName({
-    required String name,
-  }) = UpdateNameEvent;
+/// Выбрать класс
+class SelectClassEvent extends CharacterEvent {
+  final DndClass selectedClass;
 
-  /// Обновить предысторию
-  const factory CharacterEvent.updateBackstory({
-    required String backstory,
-  }) = UpdateBackstoryEvent;
+  const SelectClassEvent({required this.selectedClass});
+}
 
-  /// Отправить форму создания
-  const factory CharacterEvent.submitCreation() = SubmitCreationEvent;
+/// Выбрать расу
+class SelectRaceEvent extends CharacterEvent {
+  final DndRace selectedRace;
 
-  /// Удалить персонажа
-  const factory CharacterEvent.deleteCharacter({
-    required String id,
-  }) = DeleteCharacterEvent;
+  const SelectRaceEvent({required this.selectedRace});
+}
 
-  /// Обновить персонажа
-  const factory CharacterEvent.updateCharacter({
-    required String id,
-    required UpdateCharacterRequest request,
-  }) = UpdateCharacterEvent;
+/// Обновить характеристики
+class UpdateAbilityScoresEvent extends CharacterEvent {
+  final AbilityScores abilityScores;
 
-  /// Перейти к следующему шагу мастера
-  const factory CharacterEvent.nextStep() = NextStepEvent;
+  const UpdateAbilityScoresEvent({required this.abilityScores});
+}
 
-  /// Вернуться к предыдущему шагу
-  const factory CharacterEvent.previousStep() = PreviousStepEvent;
+/// Обновить имя
+class UpdateNameEvent extends CharacterEvent {
+  final String name;
 
-  /// Очистить ошибку
-  const factory CharacterEvent.clearError() = ClearErrorEvent;
+  const UpdateNameEvent({required this.name});
+}
+
+/// Обновить предысторию
+class UpdateBackstoryEvent extends CharacterEvent {
+  final String backstory;
+
+  const UpdateBackstoryEvent({required this.backstory});
+}
+
+/// Отправить форму создания
+class SubmitCreationEvent extends CharacterEvent {
+  const SubmitCreationEvent();
+}
+
+/// Удалить персонажа
+class DeleteCharacterEvent extends CharacterEvent {
+  final String id;
+
+  const DeleteCharacterEvent({required this.id});
+}
+
+/// Обновить персонажа
+class UpdateCharacterEvent extends CharacterEvent {
+  final String id;
+  final UpdateCharacterRequest request;
+
+  const UpdateCharacterEvent({
+    required this.id,
+    required this.request,
+  });
+}
+
+/// Перейти к следующему шагу мастера
+class NextStepEvent extends CharacterEvent {
+  const NextStepEvent();
+}
+
+/// Вернуться к предыдущему шагу
+class PreviousStepEvent extends CharacterEvent {
+  const PreviousStepEvent();
+}
+
+/// Очистить ошибку
+class ClearErrorEvent extends CharacterEvent {
+  const ClearErrorEvent();
 }

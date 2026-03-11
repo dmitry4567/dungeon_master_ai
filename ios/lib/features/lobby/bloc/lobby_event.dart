@@ -1,52 +1,94 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// События лобби
+abstract class LobbyEvent {
+  const LobbyEvent();
+}
 
-part 'lobby_event.freezed.dart';
+/// Загрузить список комнат
+class LoadRoomsEvent extends LobbyEvent {
+  final String? status;
 
-@freezed
-class LobbyEvent with _$LobbyEvent {
-  /// Загрузить список комнат
-  const factory LobbyEvent.loadRooms({String? status}) = LoadRoomsEvent;
+  const LoadRoomsEvent({this.status});
+}
 
-  /// Создать новую комнату
-  const factory LobbyEvent.createRoom({
-    required String name,
-    required String scenarioVersionId,
-    @Default(5) int maxPlayers,
-    String? characterId,
-  }) = CreateRoomEvent;
+/// Создать новую комнату
+class CreateRoomEvent extends LobbyEvent {
+  final String name;
+  final String scenarioVersionId;
+  final int maxPlayers;
+  final String? characterId;
 
-  /// Загрузить детали комнаты
-  const factory LobbyEvent.loadRoom({required String roomId}) = LoadRoomEvent;
+  const CreateRoomEvent({
+    required this.name,
+    required this.scenarioVersionId,
+    this.maxPlayers = 5,
+    this.characterId,
+  });
+}
 
-  /// Обновить детали комнаты (повторный запрос)
-  const factory LobbyEvent.refreshRoom({required String roomId}) =
-      RefreshRoomEvent;
+/// Загрузить детали комнаты
+class LoadRoomEvent extends LobbyEvent {
+  final String roomId;
 
-  /// Запрос на вступление в комнату
-  const factory LobbyEvent.joinRoom({required String roomId}) = JoinRoomEvent;
+  const LoadRoomEvent({required this.roomId});
+}
 
-  /// Одобрить игрока
-  const factory LobbyEvent.approvePlayer({
-    required String roomId,
-    required String playerId,
-  }) = ApprovePlayerEvent;
+/// Обновить детали комнаты (повторный запрос)
+class RefreshRoomEvent extends LobbyEvent {
+  final String roomId;
 
-  /// Отклонить игрока
-  const factory LobbyEvent.declinePlayer({
-    required String roomId,
-    required String playerId,
-  }) = DeclinePlayerEvent;
+  const RefreshRoomEvent({required this.roomId});
+}
 
-  /// Переключить готовность
-  const factory LobbyEvent.toggleReady({
-    required String roomId,
-    required bool ready, String? characterId,
-  }) = ToggleReadyEvent;
+/// Запрос на вступление в комнату
+class JoinRoomEvent extends LobbyEvent {
+  final String roomId;
 
-  /// Начать игру
-  const factory LobbyEvent.startGame({required String roomId}) =
-      StartGameEvent;
+  const JoinRoomEvent({required this.roomId});
+}
 
-  /// Очистить ошибку
-  const factory LobbyEvent.clearError() = ClearLobbyErrorEvent;
+/// Одобрить игрока
+class ApprovePlayerEvent extends LobbyEvent {
+  final String roomId;
+  final String playerId;
+
+  const ApprovePlayerEvent({
+    required this.roomId,
+    required this.playerId,
+  });
+}
+
+/// Отклонить игрока
+class DeclinePlayerEvent extends LobbyEvent {
+  final String roomId;
+  final String playerId;
+
+  const DeclinePlayerEvent({
+    required this.roomId,
+    required this.playerId,
+  });
+}
+
+/// Переключить готовность
+class ToggleReadyEvent extends LobbyEvent {
+  final String roomId;
+  final bool ready;
+  final String? characterId;
+
+  const ToggleReadyEvent({
+    required this.roomId,
+    required this.ready,
+    this.characterId,
+  });
+}
+
+/// Начать игру
+class StartGameEvent extends LobbyEvent {
+  final String roomId;
+
+  const StartGameEvent({required this.roomId});
+}
+
+/// Очистить ошибку
+class ClearLobbyErrorEvent extends LobbyEvent {
+  const ClearLobbyErrorEvent();
 }

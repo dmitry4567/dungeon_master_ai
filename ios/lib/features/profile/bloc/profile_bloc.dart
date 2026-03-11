@@ -6,7 +6,7 @@ import 'profile_state.dart';
 
 /// BLoC профиля пользователя
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc(this._profileRepository) : super(const ProfileState.initial()) {
+  ProfileBloc(this._profileRepository) : super(const ProfileInitial()) {
     on<LoadProfileEvent>(_onLoadProfile);
     on<LoadHistoryEvent>(_onLoadHistory);
     on<UpdateNameEvent>(_onUpdateName);
@@ -22,7 +22,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     final currentState = state;
     if (currentState is! ProfileLoaded) {
-      emit(const ProfileState.loading());
+      emit(const ProfileLoading());
     }
 
     try {
@@ -31,7 +31,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (stateAfterLoad is ProfileLoaded) {
         emit(stateAfterLoad.copyWith(user: user));
       } else {
-        emit(ProfileState.loaded(
+        emit(ProfileLoaded(
           user: user,
           history: [],
           isHistoryLoading: false,
@@ -39,7 +39,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ),);
       }
     } catch (e) {
-      emit(ProfileState.error(
+      emit(ProfileError(
         message: e.toString(),
         previousState: state,
       ),);
@@ -91,7 +91,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ),);
       }
     } catch (e) {
-      emit(ProfileState.error(
+      emit(ProfileError(
         message: e.toString(),
         previousState: state,
       ),);
@@ -117,7 +117,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ),);
       }
     } catch (e) {
-      emit(ProfileState.error(
+      emit(ProfileError(
         message: e.toString(),
         previousState: state,
       ),);

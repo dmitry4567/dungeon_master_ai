@@ -1,12 +1,13 @@
-
 import 'package:flutter/foundation.dart';
 
 /// Конфигурация приложения, загружаемая из переменных окружения
 enum AppConfig {
   /// Конфигурация для разработки
   development._(
-    apiBaseUrl: 'http://192.168.0.128:8000/api/v1',
-    wsBaseUrl: 'ws://192.168.0.128:8000/api/v1/ws',
+    // apiBaseUrl: 'http://192.168.0.128:8000/api/v1',
+    // wsBaseUrl: 'ws://192.168.0.128:8000/api/v1/ws',
+    apiBaseUrl: 'https://dungeon-master-ai.onrender.com/api/v1',
+    wsBaseUrl: 'wss://dungeon-master-ai.onrender.com/api/v1/ws',
     environment: Environment.development,
     enableCrashlytics: false,
     enableAnalytics: false,
@@ -70,6 +71,11 @@ enum AppConfig {
 
     const envName = String.fromEnvironment('ENV', defaultValue: 'development');
 
+    // Для web всегда используем production (если не указано иное)
+    if (kIsWeb && envName == 'development') {
+      return production;
+    }
+
     return switch (envName) {
       'production' => production,
       'staging' => staging,
@@ -79,8 +85,4 @@ enum AppConfig {
 }
 
 /// Окружение приложения
-enum Environment {
-  development,
-  staging,
-  production,
-}
+enum Environment { development, staging, production }

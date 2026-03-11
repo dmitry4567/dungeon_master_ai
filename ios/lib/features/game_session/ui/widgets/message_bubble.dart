@@ -269,8 +269,8 @@ class _DmBubbleState extends State<_DmBubble>
     // Сначала отмечаем сообщение как обработанное, потом отправляем результат
     final resultText = _formatRollResult(roll, total, success);
     bloc
-      ..add(GameSessionEvent.markMessageRolled(messageId: widget.message.id))
-      ..add(GameSessionEvent.sendMessage(content: resultText));
+      ..add(MarkMessageRolledEvent(messageId: widget.message.id))
+      ..add(SendMessageEvent(content: resultText));
 
     setState(() {
       _isRolling = false;

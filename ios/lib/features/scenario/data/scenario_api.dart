@@ -13,9 +13,9 @@ class ScenarioApi {
     final queryParams = status != null ? {'status': status} : null;
 
     final response = await _dio.get('/scenarios', queryParameters: queryParams);
-    final data = response.data as List<dynamic>;
+    final data = (response.data as List<dynamic>?) ?? [];
     return data
-        .map((json) => Scenario.fromJson(json as Map<String, dynamic>))
+        .map((json) => Scenario.fromJson(Map<String, dynamic>.from(json as Map)))
         .toList();
   }
 
@@ -25,13 +25,13 @@ class ScenarioApi {
       '/scenarios',
       data: request.toJson(),
     );
-    return Scenario.fromJson(response.data as Map<String, dynamic>);
+    return Scenario.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// Get a specific scenario by ID
   Future<Scenario> getScenario(String id) async {
     final response = await _dio.get('/scenarios/$id');
-    return Scenario.fromJson(response.data as Map<String, dynamic>);
+    return Scenario.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// Refine an existing scenario
@@ -41,16 +41,16 @@ class ScenarioApi {
       '/scenarios/$id/refine',
       data: request.toJson(),
     );
-    return Scenario.fromJson(response.data as Map<String, dynamic>);
+    return Scenario.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// List all versions of a scenario
   Future<List<ScenarioVersionSummary>> listVersions(String id) async {
     final response = await _dio.get('/scenarios/$id/versions');
-    final data = response.data as List<dynamic>;
+    final data = (response.data as List<dynamic>?) ?? [];
     return data
         .map((json) =>
-            ScenarioVersionSummary.fromJson(json as Map<String, dynamic>),)
+            ScenarioVersionSummary.fromJson(Map<String, dynamic>.from(json as Map)),)
         .toList();
   }
 
@@ -58,12 +58,12 @@ class ScenarioApi {
   Future<Scenario> restoreVersion(String id, String versionId) async {
     final response =
         await _dio.post('/scenarios/$id/versions/$versionId/restore');
-    return Scenario.fromJson(response.data as Map<String, dynamic>);
+    return Scenario.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 
   /// Publish a draft scenario
   Future<Scenario> publishScenario(String id) async {
     final response = await _dio.post('/scenarios/$id/publish');
-    return Scenario.fromJson(response.data as Map<String, dynamic>);
+    return Scenario.fromJson(Map<String, dynamic>.from(response.data as Map));
   }
 }

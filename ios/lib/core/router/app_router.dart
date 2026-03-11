@@ -87,7 +87,7 @@ class AppRouter {
             pageBuilder: (context, state) => NoTransitionPage(
               child: BlocProvider(
                 create: (_) =>
-                    getIt<LobbyBloc>()..add(const LobbyEvent.loadRooms()),
+                    getIt<LobbyBloc>()..add(const LoadRoomsEvent()),
                 child: const LobbyPage(),
               ),
             ),
@@ -110,7 +110,7 @@ class AppRouter {
                   final roomId = state.pathParameters['roomId']!;
                   return BlocProvider(
                     create: (_) => getIt<LobbyBloc>()
-                      ..add(LobbyEvent.loadRoom(roomId: roomId)),
+                      ..add(LoadRoomEvent(roomId: roomId)),
                     child: WaitingRoomPage(roomId: roomId),
                   );
                 },
@@ -125,7 +125,7 @@ class AppRouter {
             pageBuilder: (context, state) => NoTransitionPage(
               child: BlocProvider(
                 create: (_) => getIt<ScenarioBloc>()
-                  ..add(const ScenarioEvent.loadScenarios()),
+                  ..add(const LoadScenariosEvent()),
                 child: const ScenarioListPage(),
               ),
             ),
@@ -145,7 +145,7 @@ class AppRouter {
                   final scenarioId = state.pathParameters['scenarioId']!;
                   return BlocProvider(
                     create: (_) => getIt<ScenarioBloc>()
-                      ..add(ScenarioEvent.loadScenario(id: scenarioId)),
+                      ..add(LoadScenarioEvent(id: scenarioId)),
                     child: ScenarioPreviewPage(scenarioId: scenarioId),
                   );
                 },
@@ -173,7 +173,7 @@ class AppRouter {
             pageBuilder: (context, state) => NoTransitionPage(
               child: BlocProvider(
                 create: (_) => getIt<CharacterBloc>()
-                  ..add(const CharacterEvent.loadCharacters()),
+                  ..add(const LoadCharactersEvent()),
                 child: const CharacterListPage(),
               ),
             ),
@@ -183,7 +183,7 @@ class AppRouter {
                 name: 'characterCreate',
                 builder: (context, state) => BlocProvider(
                   create: (_) => getIt<CharacterBloc>()
-                    ..add(const CharacterEvent.startCreation()),
+                    ..add(const StartCreationEvent()),
                   child: const CharacterCreatePage(),
                 ),
               ),
@@ -208,8 +208,8 @@ class AppRouter {
             pageBuilder: (context, state) => NoTransitionPage(
               child: BlocProvider(
                 create: (_) => ProfileBloc(getIt<ProfileRepository>())
-                  ..add(const ProfileEvent.loadProfile())
-                  ..add(const ProfileEvent.loadHistory()),
+                  ..add(const LoadProfileEvent())
+                  ..add(const LoadHistoryEvent()),
                 child: const ProfilePage(),
               ),
             ),
@@ -236,7 +236,7 @@ class AppRouter {
             providers: [
               BlocProvider(
                 create: (_) => getIt<GameSessionBloc>()
-                  ..add(GameSessionEvent.connectToSession(roomId: roomId)),
+                  ..add(ConnectToSessionEvent(roomId: roomId)),
               ),
               BlocProvider(
                 create: (_) => VoiceCubit(
@@ -457,7 +457,7 @@ class _PlaceholderPage extends StatelessWidget {
         body: Center(
           child: GestureDetector(
             onTap: () {
-              getIt<AuthBloc>().add(const AuthEvent.logout());
+              getIt<AuthBloc>().add(const AuthLogout());
             },
             child: Text(
               title,

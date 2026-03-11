@@ -57,18 +57,18 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
   }
 
   void _loadRoom() {
-    context.read<LobbyBloc>().add(LobbyEvent.loadRoom(roomId: widget.roomId));
+    context.read<LobbyBloc>().add(LoadRoomEvent(roomId: widget.roomId));
   }
 
   void _refreshRoom() {
     context
         .read<LobbyBloc>()
-        .add(LobbyEvent.refreshRoom(roomId: widget.roomId));
+        .add(RefreshRoomEvent(roomId: widget.roomId));
   }
 
   void _approvePlayer(String playerId) {
     context.read<LobbyBloc>().add(
-          LobbyEvent.approvePlayer(
+          ApprovePlayerEvent(
             roomId: widget.roomId,
             playerId: playerId,
           ),
@@ -77,7 +77,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
 
   void _declinePlayer(String playerId) {
     context.read<LobbyBloc>().add(
-          LobbyEvent.declinePlayer(
+          DeclinePlayerEvent(
             roomId: widget.roomId,
             playerId: playerId,
           ),
@@ -85,62 +85,75 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
   }
 
   void _startGame() {
-    context.read<LobbyBloc>().add(LobbyEvent.startGame(roomId: widget.roomId));
+    context.read<LobbyBloc>().add(StartGameEvent(roomId: widget.roomId));
   }
 
   @override
   Widget build(BuildContext context) => BlocConsumer<LobbyBloc, LobbyState>(
         listener: (context, state) {
-          state.whenOrNull(
-            roomDetail: (room, isHost) {
-              // Если комната активна и текущий пользователь — участник или хост
-              if (room.status == 'active' && _currentUserId != null) {
-                final isParticipant = room.players.any(
-                  (p) =>
-                      p.userId == _currentUserId &&
-                      p.status != 'declined' &&
-                      (p.isHost ||
-                          p.status == 'ready' ||
-                          p.status == 'approved'),
-                );
-                if (isParticipant) {
-                  _refreshTimer?.cancel();
-                  context.pushReplacement(
-                    Routes.gameSessionPath(room.id, title: room.name),
-                  );
-                }
-              }
-            },
-            gameStarting: (room, session) {
-              _refreshTimer?.cancel();
-              _showCountdownAndNavigate(room, session.id);
-            },
-            error: (message) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(message)),
+          if (state is LobbyRoomDetail) {
+            // Если комната активна и текущий пользователь — участник или хост
+            if (state.room.status == 'active' && _currentUserId != null) {
+              final isParticipant = state.room.players.any(
+                (p) =>
+                    p.userId == _currentUserId &&
+                    p.status != 'declined' &&
+                    (p.isHost ||
+                        p.status == 'ready' ||
+                        p.status == 'approved'),
               );
-            },
+              if (isParticipant) {
+                _refreshTimer?.cancel();
+                context.pushReplacement(
+                  Routes.gameSessionPath(state.room.id, title: state.room.name),
+                );
+              }
+            }
+          } else if (state is LobbyGameStarting) {
+            _refreshTimer?.cancel();
+            _showCountdownAndNavigate(state.room, state.session.id);
+          } else if (state is LobbyError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is LobbyInitial) {
+            return _buildScaffold(
+              body: const Center(child: Text('Загрузка...')),
+            );
+          }
+          if (state is LobbyLoading) {
+            return _buildScaffold(
+              body: const Center(child: DetailSkeleton()),
+            );
+          }
+          if (state is LobbyLoaded) {
+            return _buildScaffold(
+              body: const Center(child: Text('Загрузка комнаты...')),
+            );
+          }
+          if (state is LobbyCreating) {
+            return _buildScaffold(
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (state is LobbyRoomDetail) {
+            return _buildRoomContent(state.room, state.isCurrentUserHost);
+          }
+          if (state is LobbyGameStarting) {
+            return _buildRoomContent(state.room, false);
+          }
+          if (state is LobbyError) {
+            return _buildScaffold(
+              body: ErrorView(message: state.message, onRetry: _loadRoom),
+            );
+          }
+          return _buildScaffold(
+            body: const Center(child: Text('Загрузка...')),
           );
         },
-        builder: (context, state) => state.when(
-          initial: () => _buildScaffold(
-            body: const Center(child: Text('Загрузка...')),
-          ),
-          loading: () => _buildScaffold(
-            body: const Center(child: DetailSkeleton()),
-          ),
-          loaded: (_) => _buildScaffold(
-            body: const Center(child: Text('Загрузка комнаты...')),
-          ),
-          creating: () => _buildScaffold(
-            body: const Center(child: CircularProgressIndicator()),
-          ),
-          roomDetail: _buildRoomContent,
-          gameStarting: (room, _) => _buildRoomContent(room, false),
-          error: (message) => _buildScaffold(
-            body: ErrorView(message: message, onRetry: _loadRoom),
-          ),
-        ),
       );
 
   Widget _buildScaffold({required Widget body}) => Scaffold(
@@ -317,7 +330,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                 icon: Icons.swap_horiz,
                 label: 'Сменить персонажа',
                 onPressed: () => context.read<LobbyBloc>().add(
-                      LobbyEvent.toggleReady(
+                      ToggleReadyEvent(
                           roomId: widget.roomId, ready: false,),
                     ),
               ),
@@ -352,7 +365,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                 icon: Icons.cancel_outlined,
                 label: 'Отменить готовность',
                 onPressed: () => context.read<LobbyBloc>().add(
-                      LobbyEvent.toggleReady(
+                      ToggleReadyEvent(
                           roomId: widget.roomId, ready: false,),
                     ),
               ),
@@ -396,7 +409,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                 label: 'Присоединиться',
                 isPrimary: true,
                 onPressed: () => context.read<LobbyBloc>().add(
-                      LobbyEvent.joinRoom(roomId: widget.roomId),
+                      JoinRoomEvent(roomId: widget.roomId),
                     ),
               ),
             ],
@@ -411,12 +424,12 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
       context: context,
       builder: (sheetContext) => BlocProvider(
         create: (_) =>
-            getIt<CharacterBloc>()..add(const CharacterEvent.loadCharacters()),
+            getIt<CharacterBloc>()..add(const LoadCharactersEvent()),
         child: _CharacterSelectorSheet(
           onSelected: (character) {
             Navigator.of(sheetContext).pop();
             context.read<LobbyBloc>().add(
-                  LobbyEvent.toggleReady(
+                  ToggleReadyEvent(
                     roomId: widget.roomId,
                     characterId: character.id,
                     ready: true,
@@ -496,19 +509,23 @@ class _CharacterSelectorSheet extends StatelessWidget {
             const SizedBox(height: 16),
             Flexible(
               child: BlocBuilder<CharacterBloc, CharacterState>(
-                builder: (context, state) => state.when(
-                  initial: () => const Center(
-                    child: Text(
-                      'Загрузка...',
-                      style: TextStyle(color: Colors.white54),
-                    ),
-                  ),
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(
-                        color: Color(0xFFD4AF37),),
-                  ),
-                  loaded: (characters) {
-                    if (characters.isEmpty) {
+                builder: (context, state) {
+                  if (state is CharacterInitial) {
+                    return const Center(
+                      child: Text(
+                        'Загрузка...',
+                        style: TextStyle(color: Colors.white54),
+                      ),
+                    );
+                  }
+                  if (state is CharacterLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                          color: Color(0xFFD4AF37),),
+                    );
+                  }
+                  if (state is CharacterLoaded) {
+                    if (state.characters.isEmpty) {
                       return const Center(
                         child: Text(
                           'Нет персонажей. Создайте персонажа.',
@@ -518,9 +535,9 @@ class _CharacterSelectorSheet extends StatelessWidget {
                     }
                     return ListView.builder(
                       shrinkWrap: true,
-                      itemCount: characters.length,
+                      itemCount: state.characters.length,
                       itemBuilder: (context, index) {
-                        final character = characters[index];
+                        final character = state.characters[index];
                         return InkWell(
                           onTap: () => onSelected(character),
                           borderRadius: BorderRadius.circular(12),
@@ -591,19 +608,17 @@ class _CharacterSelectorSheet extends StatelessWidget {
                         );
                       },
                     );
-                  },
-                  creating: (_) => const SizedBox.shrink(),
-                  submitting: (_) => const SizedBox.shrink(),
-                  created: (_) => const SizedBox.shrink(),
-                  deleted: (_) => const SizedBox.shrink(),
-                  detail: (_) => const SizedBox.shrink(),
-                  error: (message, _) => Center(
-                    child: Text(
-                      'Ошибка: $message',
-                      style: const TextStyle(color: Colors.white54),
-                    ),
-                  ),
-                ),
+                  }
+                  if (state is CharacterError) {
+                    return Center(
+                      child: Text(
+                        'Ошибка: ${state.message}',
+                        style: const TextStyle(color: Colors.white54),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
             ),
           ],

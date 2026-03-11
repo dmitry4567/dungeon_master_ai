@@ -1,142 +1,212 @@
-import 'package:json_annotation/json_annotation.dart';
-
 import 'dice_result.dart';
 import 'world_state.dart';
 
-part 'websocket_messages.g.dart';
-
 /// Ответ DM (полный, не стриминг)
-@JsonSerializable()
 class DmResponseMessage {
-  DmResponseMessage({
-    required this.content,
-    required this.timestamp, this.diceRequired,
-    this.stateDelta,
-  });
-
-  factory DmResponseMessage.fromJson(Map<String, dynamic> json) =>
-      _$DmResponseMessageFromJson(json);
-
   final String content;
-  @JsonKey(name: 'dice_required')
   final DiceResult? diceRequired;
-  @JsonKey(name: 'state_delta')
   final StateDelta? stateDelta;
   final DateTime timestamp;
 
-  Map<String, dynamic> toJson() => _$DmResponseMessageToJson(this);
+  DmResponseMessage({
+    required this.content,
+    required this.timestamp,
+    this.diceRequired,
+    this.stateDelta,
+  });
+
+  factory DmResponseMessage.fromJson(Map<String, dynamic> json) {
+    return DmResponseMessage(
+      content: json['content'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      diceRequired: json['dice_required'] != null
+          ? DiceResult.fromJson(json['dice_required'] as Map<String, dynamic>)
+          : null,
+      stateDelta: json['state_delta'] != null
+          ? StateDelta.fromJson(json['state_delta'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+      'timestamp': timestamp.toIso8601String(),
+      if (diceRequired != null) 'dice_required': diceRequired!.toJson(),
+      if (stateDelta != null) 'state_delta': stateDelta!.toJson(),
+    };
+  }
 }
 
 /// Запрос на бросок кубиков через WS
-@JsonSerializable()
 class DiceRequestMessage {
-  DiceRequestMessage({required this.dice});
-
-  factory DiceRequestMessage.fromJson(Map<String, dynamic> json) =>
-      _$DiceRequestMessageFromJson(json);
-
   final DiceResult dice;
 
-  Map<String, dynamic> toJson() => _$DiceRequestMessageToJson(this);
+  DiceRequestMessage({required this.dice});
+
+  factory DiceRequestMessage.fromJson(Map<String, dynamic> json) {
+    return DiceRequestMessage(
+      dice: DiceResult.fromJson(json['dice'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'dice': dice.toJson(),
+    };
+  }
 }
 
 /// Обновление состояния мира через WS
-@JsonSerializable()
 class StateUpdateMessage {
-  StateUpdateMessage({required this.worldState});
-
-  factory StateUpdateMessage.fromJson(Map<String, dynamic> json) =>
-      _$StateUpdateMessageFromJson(json);
-
-  @JsonKey(name: 'world_state')
   final WorldState worldState;
 
-  Map<String, dynamic> toJson() => _$StateUpdateMessageToJson(this);
+  StateUpdateMessage({required this.worldState});
+
+  factory StateUpdateMessage.fromJson(Map<String, dynamic> json) {
+    return StateUpdateMessage(
+      worldState: WorldState.fromJson(json['world_state'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'world_state': worldState.toJson(),
+    };
+  }
 }
 
 /// Уведомление о присоединении игрока
-@JsonSerializable()
 class PlayerJoinedMessage {
+  final String playerId;
+  final String playerName;
+
   PlayerJoinedMessage({
     required this.playerId,
     required this.playerName,
   });
 
-  factory PlayerJoinedMessage.fromJson(Map<String, dynamic> json) =>
-      _$PlayerJoinedMessageFromJson(json);
+  factory PlayerJoinedMessage.fromJson(Map<String, dynamic> json) {
+    return PlayerJoinedMessage(
+      playerId: json['player_id'] as String,
+      playerName: json['player_name'] as String,
+    );
+  }
 
-  @JsonKey(name: 'player_id')
-  final String playerId;
-  @JsonKey(name: 'player_name')
-  final String playerName;
-
-  Map<String, dynamic> toJson() => _$PlayerJoinedMessageToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'player_id': playerId,
+      'player_name': playerName,
+    };
+  }
 }
 
 /// Уведомление об уходе игрока
-@JsonSerializable()
 class PlayerLeftMessage {
-  PlayerLeftMessage({required this.playerId});
-
-  factory PlayerLeftMessage.fromJson(Map<String, dynamic> json) =>
-      _$PlayerLeftMessageFromJson(json);
-
-  @JsonKey(name: 'player_id')
   final String playerId;
 
-  Map<String, dynamic> toJson() => _$PlayerLeftMessageToJson(this);
+  PlayerLeftMessage({required this.playerId});
+
+  factory PlayerLeftMessage.fromJson(Map<String, dynamic> json) {
+    return PlayerLeftMessage(
+      playerId: json['player_id'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'player_id': playerId,
+    };
+  }
 }
 
 /// Сообщение об ошибке
-@JsonSerializable()
 class ErrorMessage {
-  ErrorMessage({required this.message, this.code});
-
-  factory ErrorMessage.fromJson(Map<String, dynamic> json) =>
-      _$ErrorMessageFromJson(json);
-
   final String message;
   final String? code;
 
-  Map<String, dynamic> toJson() => _$ErrorMessageToJson(this);
+  ErrorMessage({required this.message, this.code});
+
+  factory ErrorMessage.fromJson(Map<String, dynamic> json) {
+    return ErrorMessage(
+      message: json['message'] as String,
+      code: json['code'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'message': message,
+      if (code != null) 'code': code,
+    };
+  }
 }
 
 /// Ответ синхронизации
-@JsonSerializable()
 class SyncResponseMessage {
+  final List<Map<String, dynamic>> messages;
+  final Map<String, dynamic> worldState;
+
   SyncResponseMessage({
     required this.messages,
     required this.worldState,
   });
 
-  factory SyncResponseMessage.fromJson(Map<String, dynamic> json) =>
-      _$SyncResponseMessageFromJson(json);
+  factory SyncResponseMessage.fromJson(Map<String, dynamic> json) {
+    return SyncResponseMessage(
+      messages: (json['messages'] as List<dynamic>)
+          .map((e) => e as Map<String, dynamic>)
+          .toList(),
+      worldState: json['world_state'] as Map<String, dynamic>,
+    );
+  }
 
-  final List<Map<String, dynamic>> messages;
-  @JsonKey(name: 'world_state')
-  final Map<String, dynamic> worldState;
-
-  Map<String, dynamic> toJson() => _$SyncResponseMessageToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'messages': messages,
+      'world_state': worldState,
+    };
+  }
 }
 
 /// Системное сообщение
-@JsonSerializable()
 class SystemMessage {
-  SystemMessage({required this.event, this.data, this.timestamp});
-
-  factory SystemMessage.fromJson(Map<String, dynamic> json) =>
-      _$SystemMessageFromJson(json);
-
   final String event;
   final Map<String, dynamic>? data;
   final DateTime? timestamp;
 
-  Map<String, dynamic> toJson() => _$SystemMessageToJson(this);
+  SystemMessage({required this.event, this.data, this.timestamp});
+
+  factory SystemMessage.fromJson(Map<String, dynamic> json) {
+    return SystemMessage(
+      event: json['event'] as String,
+      data: json['data'] as Map<String, dynamic>?,
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'] as String)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'event': event,
+      if (data != null) 'data': data,
+      if (timestamp != null) 'timestamp': timestamp!.toIso8601String(),
+    };
+  }
 }
 
 /// Дельта изменения состояния мира
-@JsonSerializable()
 class StateDelta {
+  final List<String> eventsOccurred;
+  final String? locationChanged;
+  final String? sceneCompleted;
+  final Map<String, bool> flagsChanged;
+  final String? actChanged;
+  final bool? combatActive;
+  final List<String> itemsAcquired;
+  final List<String> conditionsApplied;
+
   StateDelta({
     this.eventsOccurred = const [],
     this.locationChanged,
@@ -148,25 +218,40 @@ class StateDelta {
     this.conditionsApplied = const [],
   });
 
-  factory StateDelta.fromJson(Map<String, dynamic> json) =>
-      _$StateDeltaFromJson(json);
+  factory StateDelta.fromJson(Map<String, dynamic> json) {
+    return StateDelta(
+      eventsOccurred: (json['events_occurred'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      locationChanged: json['location_changed'] as String?,
+      sceneCompleted: json['scene_completed'] as String?,
+      flagsChanged: (json['flags_changed'] as Map<String, dynamic>?)
+              ?.map((key, value) => MapEntry(key, value as bool)) ??
+          {},
+      actChanged: json['act_changed'] as String?,
+      combatActive: json['combat_active'] as bool?,
+      itemsAcquired: (json['items_acquired'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      conditionsApplied: (json['conditions_applied'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+    );
+  }
 
-  @JsonKey(name: 'events_occurred')
-  final List<String> eventsOccurred;
-  @JsonKey(name: 'location_changed')
-  final String? locationChanged;
-  @JsonKey(name: 'scene_completed')
-  final String? sceneCompleted;
-  @JsonKey(name: 'flags_changed')
-  final Map<String, bool> flagsChanged;
-  @JsonKey(name: 'act_changed')
-  final String? actChanged;
-  @JsonKey(name: 'combat_active')
-  final bool? combatActive;
-  @JsonKey(name: 'items_acquired')
-  final List<String> itemsAcquired;
-  @JsonKey(name: 'conditions_applied')
-  final List<String> conditionsApplied;
-
-  Map<String, dynamic> toJson() => _$StateDeltaToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      if (eventsOccurred.isNotEmpty) 'events_occurred': eventsOccurred,
+      if (locationChanged != null) 'location_changed': locationChanged,
+      if (sceneCompleted != null) 'scene_completed': sceneCompleted,
+      if (flagsChanged.isNotEmpty) 'flags_changed': flagsChanged,
+      if (actChanged != null) 'act_changed': actChanged,
+      if (combatActive != null) 'combat_active': combatActive,
+      if (itemsAcquired.isNotEmpty) 'items_acquired': itemsAcquired,
+      if (conditionsApplied.isNotEmpty) 'conditions_applied': conditionsApplied,
+    };
+  }
 }

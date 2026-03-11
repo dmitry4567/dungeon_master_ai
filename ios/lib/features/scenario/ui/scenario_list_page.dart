@@ -27,7 +27,7 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
 
   void _loadScenarios() {
     context.read<ScenarioBloc>().add(
-          ScenarioEvent.loadScenarios(status: _statusFilter),
+          const LoadScenariosEvent(status: null),
         );
   }
 
@@ -35,45 +35,60 @@ class _ScenarioListPageState extends State<ScenarioListPage> {
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: const Color(0xFF0D0D1A),
         body: BlocBuilder<ScenarioBloc, ScenarioState>(
-          builder: (context, state) => state.when(
-            initial: () => _buildScrollView(context,
-                child: const SliverFillRemaining(child: _EmptyView()),),
-            loading: () => _buildScrollView(context, isLoading: true),
-            loaded: (scenarios) => RefreshIndicator(
-              color: const Color(0xFFD4AF37),
-              backgroundColor: const Color(0xFF1A1A2E),
-              onRefresh: () async => _loadScenarios(),
-              child: _buildScrollView(
+          builder: (context, state) {
+            if (state is ScenarioInitial) {
+              return _buildScrollView(context,
+                child: const SliverFillRemaining(child: _EmptyView()),);
+            }
+            if (state is ScenarioLoading) {
+              return _buildScrollView(context, isLoading: true);
+            }
+            if (state is ScenarioLoaded) {
+              return RefreshIndicator(
+                color: const Color(0xFFD4AF37),
+                backgroundColor: const Color(0xFF1A1A2E),
+                onRefresh: () async => _loadScenarios(),
+                child: _buildScrollView(
+                  context,
+                  scenarios: state.scenarios,
+                ),
+              );
+            }
+            if (state is ScenarioGenerating) {
+              return _buildScrollView(
                 context,
-                scenarios: scenarios,
-              ),
-            ),
-            generating: (_) => _buildScrollView(
-              context,
-              child: const SliverFillRemaining(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: Color(0xFFD4AF37)),
-                      SizedBox(height: 16),
-                      Text(
-                        'Генерируется сценарий...',
-                        style: TextStyle(color: Colors.white54, fontSize: 14),
-                      ),
-                    ],
+                child: const SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                        SizedBox(height: 16),
+                        Text(
+                          'Генерируется сценарий...',
+                          style: TextStyle(color: Colors.white54, fontSize: 14),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            scenarioDetail: (_) => _buildScrollView(context),
-            versionHistory: (_, __) => _buildScrollView(context),
-            error: (message) => _buildScrollView(
-              context,
-              child: SliverFillRemaining(
-                  child: _ErrorView(message: message, onRetry: _loadScenarios),),
-            ),
-          ),
+              );
+            }
+            if (state is ScenarioDetail) {
+              return _buildScrollView(context);
+            }
+            if (state is ScenarioVersionHistory) {
+              return _buildScrollView(context);
+            }
+            if (state is ScenarioError) {
+              return _buildScrollView(
+                context,
+                child: SliverFillRemaining(
+                    child: _ErrorView(message: state.message, onRetry: _loadScenarios),),
+              );
+            }
+            return _buildScrollView(context);
+          },
         ),
       );
 

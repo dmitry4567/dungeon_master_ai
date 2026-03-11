@@ -1,29 +1,43 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'auth_event.freezed.dart';
-
 /// События аутентификации
-@freezed
-class AuthEvent with _$AuthEvent {
-  /// Проверить сохранённую сессию
-  const factory AuthEvent.checkSession() = AuthCheckSession;
+abstract class AuthEvent {
+  const AuthEvent();
+}
 
-  /// Вход по email
-  const factory AuthEvent.loginWithEmail({
-    required String email,
-    required String password,
-  }) = AuthLoginWithEmail;
+/// Проверить сохранённую сессию
+class AuthCheckSession extends AuthEvent {
+  const AuthCheckSession();
+}
 
-  /// Регистрация
-  const factory AuthEvent.register({
-    required String email,
-    required String password,
-    required String name,
-  }) = AuthRegister;
+/// Вход по email
+class AuthLoginWithEmail extends AuthEvent {
+  final String email;
+  final String password;
 
-  /// Вход через Apple
-  const factory AuthEvent.signInWithApple() = AuthSignInWithApple;
+  const AuthLoginWithEmail({
+    required this.email,
+    required this.password,
+  });
+}
 
-  /// Выход
-  const factory AuthEvent.logout() = AuthLogout;
+/// Регистрация
+class AuthRegister extends AuthEvent {
+  final String email;
+  final String password;
+  final String name;
+
+  const AuthRegister({
+    required this.email,
+    required this.password,
+    required this.name,
+  });
+}
+
+/// Вход через Apple
+class AuthSignInWithApple extends AuthEvent {
+  const AuthSignInWithApple();
+}
+
+/// Выход
+class AuthLogout extends AuthEvent {
+  const AuthLogout();
 }

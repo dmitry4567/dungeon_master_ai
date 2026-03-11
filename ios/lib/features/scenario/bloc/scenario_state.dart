@@ -1,39 +1,55 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import '../models/scenario.dart';
 
-part 'scenario_state.freezed.dart';
+/// Состояния сценариев
+abstract class ScenarioState {
+  const ScenarioState();
+}
 
-@freezed
-class ScenarioState with _$ScenarioState {
-  /// Initial state
-  const factory ScenarioState.initial() = ScenarioInitial;
+/// Initial state
+class ScenarioInitial extends ScenarioState {
+  const ScenarioInitial();
+}
 
-  /// Loading scenarios list
-  const factory ScenarioState.loading() = ScenarioLoading;
+/// Loading scenarios list
+class ScenarioLoading extends ScenarioState {
+  const ScenarioLoading();
+}
 
-  /// Scenarios list loaded successfully
-  const factory ScenarioState.loaded({
-    required List<Scenario> scenarios,
-  }) = ScenarioLoaded;
+/// Scenarios list loaded successfully
+class ScenarioLoaded extends ScenarioState {
+  final List<Scenario> scenarios;
 
-  /// Creating or refining a scenario (AI generation)
-  const factory ScenarioState.generating({
-    String? scenarioId, // null for new, set for refinement
-  }) = ScenarioGenerating;
+  const ScenarioLoaded({required this.scenarios});
+}
 
-  /// Single scenario loaded with details
-  const factory ScenarioState.scenarioDetail({
-    required Scenario scenario,
-  }) = ScenarioDetail;
+/// Creating or refining a scenario (AI generation)
+class ScenarioGenerating extends ScenarioState {
+  final String? scenarioId;
 
-  /// Version history loaded
-  const factory ScenarioState.versionHistory({
-    required Scenario scenario,
-    required List<ScenarioVersionSummary> versions,
-  }) = ScenarioVersionHistory;
+  const ScenarioGenerating({this.scenarioId});
+}
 
-  /// Error state
-  const factory ScenarioState.error({
-    required String message,
-  }) = ScenarioError;
+/// Single scenario loaded with details
+class ScenarioDetail extends ScenarioState {
+  final Scenario scenario;
+
+  const ScenarioDetail({required this.scenario});
+}
+
+/// Version history loaded
+class ScenarioVersionHistory extends ScenarioState {
+  final Scenario scenario;
+  final List<ScenarioVersionSummary> versions;
+
+  const ScenarioVersionHistory({
+    required this.scenario,
+    required this.versions,
+  });
+}
+
+/// Error state
+class ScenarioError extends ScenarioState {
+  final String message;
+
+  const ScenarioError({required this.message});
 }

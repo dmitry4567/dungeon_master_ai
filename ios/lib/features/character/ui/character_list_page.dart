@@ -26,7 +26,7 @@ class CharacterListPage extends StatelessWidget {
                 ),
               );
               context.read<CharacterBloc>().add(
-                    const CharacterEvent.loadCharacters(),
+                    const LoadCharactersEvent(),
                   );
             } else if (state is CharacterError) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -95,7 +95,7 @@ class CharacterListPage extends StatelessWidget {
                         ),
                       ),
                       onPressed: () => context.read<CharacterBloc>().add(
-                            const CharacterEvent.loadCharacters(),
+                            const LoadCharactersEvent(),
                           ),
                       child: const Text('Повторить'),
                     ),
@@ -113,7 +113,7 @@ class CharacterListPage extends StatelessWidget {
         backgroundColor: const Color(0xFF1A1A2E),
         onRefresh: () async {
           context.read<CharacterBloc>().add(
-                const CharacterEvent.loadCharacters(forceRefresh: true),
+                const LoadCharactersEvent(forceRefresh: true),
               );
           await context.read<CharacterBloc>().stream.firstWhere(
                 (s) => s is CharacterLoaded || s is CharacterError,
@@ -207,7 +207,7 @@ class CharacterListPage extends StatelessWidget {
                     final result = await context.push(Routes.characterCreate);
                     if (result == true && context.mounted) {
                       context.read<CharacterBloc>().add(
-                            const CharacterEvent.loadCharacters(
+                            const LoadCharactersEvent(
                                 forceRefresh: true,),
                           );
                     }
@@ -376,7 +376,7 @@ class CharacterListPage extends StatelessWidget {
             onPressed: () {
               Navigator.pop(dialogContext);
               context.read<CharacterBloc>().add(
-                    CharacterEvent.deleteCharacter(id: character.id),
+                    DeleteCharacterEvent(id: character.id),
                   );
             },
             child: const Text('Удалить'),

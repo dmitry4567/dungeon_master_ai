@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
@@ -14,31 +16,32 @@ class ProfileApi {
 
   /// Получить профиль текущего пользователя
   Future<Map<String, dynamic>> getProfile() async {
-    final response = await _dio.get<Map<String, dynamic>>('/users/me');
-    return response.data!;
+    final response = await _dio.get<dynamic>('/users/me');
+    return jsonDecode(jsonEncode(response.data)) as Map<String, dynamic>;
   }
 
   /// Обновить имя пользователя
   Future<Map<String, dynamic>> updateName(String name) async {
-    final response = await _dio.patch<Map<String, dynamic>>(
+    final response = await _dio.patch<dynamic>(
       '/users/me',
       data: {'name': name},
     );
-    return response.data!;
+    return jsonDecode(jsonEncode(response.data)) as Map<String, dynamic>;
   }
 
   /// Обновить аватар пользователя
   Future<Map<String, dynamic>> updateAvatar(String avatarUrl) async {
-    final response = await _dio.patch<Map<String, dynamic>>(
+    final response = await _dio.patch<dynamic>(
       '/users/me',
       data: {'avatar_url': avatarUrl},
     );
-    return response.data!;
+    return jsonDecode(jsonEncode(response.data)) as Map<String, dynamic>;
   }
 
   /// Получить историю игр
   Future<List<Map<String, dynamic>>> getGameHistory() async {
-    final response = await _dio.get<List<dynamic>>('/users/me/history');
-    return response.data!.cast<Map<String, dynamic>>();
+    final response = await _dio.get<dynamic>('/users/me/history');
+    final list = jsonDecode(jsonEncode(response.data ?? <dynamic>[])) as List<dynamic>;
+    return list.cast<Map<String, dynamic>>();
   }
 }

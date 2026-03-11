@@ -55,7 +55,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
 
   void _loadScenario() {
     context.read<ScenarioBloc>().add(
-          ScenarioEvent.loadScenario(id: widget.scenarioId),
+          LoadScenarioEvent(id: widget.scenarioId),
         );
   }
 
@@ -68,7 +68,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
         scenarioId: scenario.id,
         onVersionRestored: () {
           context.read<ScenarioBloc>().add(
-                ScenarioEvent.loadScenario(id: scenario.id),
+                LoadScenarioEvent(id: scenario.id),
               );
         },
       ),
@@ -83,7 +83,7 @@ class _ScenarioPreviewPageState extends State<ScenarioPreviewPage>
   void _publishScenario() {
     HapticFeedback.mediumImpact();
     context.read<ScenarioBloc>().add(
-          ScenarioEvent.publishScenario(scenarioId: widget.scenarioId),
+          PublishScenarioEvent(scenarioId: widget.scenarioId),
         );
   }
 

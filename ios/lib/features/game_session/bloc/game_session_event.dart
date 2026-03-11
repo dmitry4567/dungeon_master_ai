@@ -1,44 +1,64 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// События игровой сессии
+abstract class GameSessionEvent {
+  const GameSessionEvent();
+}
 
-part 'game_session_event.freezed.dart';
+/// Подключиться к сессии (WS + REST)
+class ConnectToSessionEvent extends GameSessionEvent {
+  final String roomId;
 
-@freezed
-class GameSessionEvent with _$GameSessionEvent {
-  /// Подключиться к сессии (WS + REST)
-  const factory GameSessionEvent.connectToSession({
-    required String roomId,
-  }) = ConnectToSessionEvent;
+  const ConnectToSessionEvent({required this.roomId});
+}
 
-  /// Отправить сообщение игрока
-  const factory GameSessionEvent.sendMessage({
-    required String content,
-  }) = SendMessageEvent;
+/// Отправить сообщение игрока
+class SendMessageEvent extends GameSessionEvent {
+  final String content;
 
-  /// Входящее WS-сообщение
-  const factory GameSessionEvent.messageReceived({
-    required String type,
-    required Map<String, dynamic> data,
-  }) = MessageReceivedEvent;
+  const SendMessageEvent({required this.content});
+}
 
-  /// Изменение состояния WS-соединения
-  const factory GameSessionEvent.connectionStateChanged({
-    required String state,
-  }) = ConnectionStateChangedEvent;
+/// Входящее WS-сообщение
+class MessageReceivedEvent extends GameSessionEvent {
+  final String type;
+  final Map<String, dynamic> data;
 
-  /// Хост завершает игру
-  const factory GameSessionEvent.endSession() = EndSessionEvent;
+  const MessageReceivedEvent({
+    required this.type,
+    required this.data,
+  });
+}
 
-  /// Игрок покидает сессию
-  const factory GameSessionEvent.leaveSession() = LeaveSessionEvent;
+/// Изменение состояния WS-соединения
+class ConnectionStateChangedEvent extends GameSessionEvent {
+  final String state;
 
-  /// Игрок бросает кубик в ответ на запрос
-  const factory GameSessionEvent.rollDice({
-    required String requestId,
-    required List<int> rolls,
-  }) = RollDiceEvent;
+  const ConnectionStateChangedEvent({required this.state});
+}
 
-  /// Отметить сообщение DM как обработанное (бросок уже выполнен)
-  const factory GameSessionEvent.markMessageRolled({
-    required String messageId,
-  }) = MarkMessageRolledEvent;
+/// Хост завершает игру
+class EndSessionEvent extends GameSessionEvent {
+  const EndSessionEvent();
+}
+
+/// Игрок покидает сессию
+class LeaveSessionEvent extends GameSessionEvent {
+  const LeaveSessionEvent();
+}
+
+/// Игрок бросает кубик в ответ на запрос
+class RollDiceEvent extends GameSessionEvent {
+  final String requestId;
+  final List<int> rolls;
+
+  const RollDiceEvent({
+    required this.requestId,
+    required this.rolls,
+  });
+}
+
+/// Отметить сообщение DM как обработанное (бросок уже выполнен)
+class MarkMessageRolledEvent extends GameSessionEvent {
+  final String messageId;
+
+  const MarkMessageRolledEvent({required this.messageId});
 }

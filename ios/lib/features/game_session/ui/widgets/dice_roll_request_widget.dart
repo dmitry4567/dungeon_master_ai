@@ -57,7 +57,7 @@ class _DiceRollRequestWidgetState extends State<DiceRollRequestWidget>
     );
 
     context.read<GameSessionBloc>().add(
-          GameSessionEvent.rollDice(
+          RollDiceEvent(
             requestId: widget.request.requestId,
             rolls: rolls,
           ),

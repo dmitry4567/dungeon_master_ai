@@ -2,26 +2,46 @@ import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../data/game_session_repository.dart';
 import '../models/voice_models.dart';
 
-part 'voice_cubit.freezed.dart';
-
 /// Voice channel state
-@freezed
-class VoiceState with _$VoiceState {
-  const factory VoiceState({
-    @Default(VoiceConnectionStatus.disconnected)
-    VoiceConnectionStatus connectionStatus,
-    @Default(false) bool isMuted,
-    @Default({}) Map<int, VoiceParticipant> participants,
+class VoiceState {
+  final VoiceConnectionStatus connectionStatus;
+  final bool isMuted;
+  final Map<int, VoiceParticipant> participants;
+  final VoiceToken? token;
+  final String? errorMessage;
+  final String? roomId;
+
+  const VoiceState({
+    this.connectionStatus = VoiceConnectionStatus.disconnected,
+    this.isMuted = false,
+    this.participants = const {},
+    this.token,
+    this.errorMessage,
+    this.roomId,
+  });
+
+  VoiceState copyWith({
+    VoiceConnectionStatus? connectionStatus,
+    bool? isMuted,
+    Map<int, VoiceParticipant>? participants,
     VoiceToken? token,
     String? errorMessage,
     String? roomId,
-  }) = _VoiceState;
+  }) {
+    return VoiceState(
+      connectionStatus: connectionStatus ?? this.connectionStatus,
+      isMuted: isMuted ?? this.isMuted,
+      participants: participants ?? this.participants,
+      token: token ?? this.token,
+      errorMessage: errorMessage ?? this.errorMessage,
+      roomId: roomId ?? this.roomId,
+    );
+  }
 }
 
 /// Cubit for managing Agora voice channel

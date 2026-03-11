@@ -17,7 +17,7 @@ class App extends StatelessWidget {
     final appRouter = getIt<AppRouter>();
 
     // Используем singleton AuthBloc и запускаем проверку сессии
-    final authBloc = getIt<AuthBloc>()..add(const AuthEvent.checkSession());
+    final authBloc = getIt<AuthBloc>()..add(const AuthCheckSession());
 
     return BlocProvider.value(
       value: authBloc,

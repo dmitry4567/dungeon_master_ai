@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
@@ -15,26 +17,29 @@ class CharacterApi {
 
   /// Получить список персонажей текущего пользователя
   Future<List<Character>> getCharacters() async {
-    final response = await _dio.get<List<dynamic>>('/characters');
-    final data = response.data ?? [];
+    final response = await _dio.get<dynamic>('/characters');
+    final data = (response.data ?? <dynamic>[]) as List<dynamic>;
     return data
-        .map((json) => Character.fromJson(json as Map<String, dynamic>))
+        .map((json) => Character.fromJson(
+            jsonDecode(jsonEncode(json)) as Map<String, dynamic>))
         .toList();
   }
 
   /// Получить персонажа по ID
   Future<Character> getCharacter(String id) async {
-    final response = await _dio.get<Map<String, dynamic>>('/characters/$id');
-    return Character.fromJson(response.data!);
+    final response = await _dio.get<dynamic>('/characters/$id');
+    return Character.fromJson(
+        jsonDecode(jsonEncode(response.data)) as Map<String, dynamic>);
   }
 
   /// Создать нового персонажа
   Future<Character> createCharacter(CreateCharacterRequest request) async {
-    final response = await _dio.post<Map<String, dynamic>>(
+    final response = await _dio.post<dynamic>(
       '/characters',
       data: request.toJson(),
     );
-    return Character.fromJson(response.data!);
+    return Character.fromJson(
+        jsonDecode(jsonEncode(response.data)) as Map<String, dynamic>);
   }
 
   /// Обновить персонажа
@@ -42,15 +47,16 @@ class CharacterApi {
     String id,
     UpdateCharacterRequest request,
   ) async {
-    final response = await _dio.patch<Map<String, dynamic>>(
+    final response = await _dio.patch<dynamic>(
       '/characters/$id',
       data: request.toJson(),
     );
-    return Character.fromJson(response.data!);
+    return Character.fromJson(
+        jsonDecode(jsonEncode(response.data)) as Map<String, dynamic>);
   }
 
   /// Удалить персонажа
   Future<void> deleteCharacter(String id) async {
-    await _dio.delete<void>('/characters/$id');
+    await _dio.delete<dynamic>('/characters/$id');
   }
 }

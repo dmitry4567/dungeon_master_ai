@@ -50,9 +50,9 @@ class _RoomCreateViewState extends State<_RoomCreateView>
   void initState() {
     super.initState();
     context.read<ScenarioBloc>().add(
-          const ScenarioEvent.loadScenarios(status: 'published'),
+          const LoadScenariosEvent(status: 'published'),
         );
-    context.read<CharacterBloc>().add(const CharacterEvent.loadCharacters());
+    context.read<CharacterBloc>().add(const LoadCharactersEvent());
 
     _animationController = AnimationController(
       vsync: this,
@@ -108,7 +108,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
     HapticFeedback.mediumImpact();
 
     context.read<LobbyBloc>().add(
-          LobbyEvent.createRoom(
+          CreateRoomEvent(
             name: _nameController.text.trim(),
             scenarioVersionId: versionId,
             maxPlayers: _isSinglePlayer ? 1 : _maxPlayers,
@@ -124,30 +124,26 @@ class _RoomCreateViewState extends State<_RoomCreateView>
           onTap: () => FocusScope.of(context).unfocus(),
           child: BlocListener<LobbyBloc, LobbyState>(
             listener: (context, state) {
-              state.whenOrNull(
-                roomDetail: (room, _) {
-                  if (_isSinglePlayer) {
-                    context.read<LobbyBloc>().add(
-                          LobbyEvent.startGame(roomId: room.id),
-                        );
-                  } else {
-                    context.pushReplacement(Routes.waitingRoomPath(room.id));
-                  }
-                },
-                gameStarting: (room, session) {
-                  context.pushReplacement(
-                    Routes.gameSessionPath(room.id, title: room.name),
-                  );
-                },
-                error: (message) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(message),
-                      backgroundColor: const Color(0xFF8B3333),
-                    ),
-                  );
-                },
-              );
+              if (state is LobbyRoomDetail) {
+                if (_isSinglePlayer) {
+                  context.read<LobbyBloc>().add(
+                        StartGameEvent(roomId: state.room.id),
+                      );
+                } else {
+                  context.pushReplacement(Routes.waitingRoomPath(state.room.id));
+                }
+              } else if (state is LobbyGameStarting) {
+                context.pushReplacement(
+                  Routes.gameSessionPath(state.room.id, title: state.room.name),
+                );
+              } else if (state is LobbyError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: const Color(0xFF8B3333),
+                  ),
+                );
+              }
             },
             child: CustomScrollView(
               slivers: [
@@ -553,13 +549,17 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             ),
             const SizedBox(height: 16),
             BlocBuilder<CharacterBloc, CharacterState>(
-              builder: (context, state) => state.when(
-                initial: () => const Text('Загрузка...',
-                    style: TextStyle(color: Colors.white54),),
-                loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
-                loaded: (characters) {
-                  if (characters.isEmpty) {
+              builder: (context, state) {
+                if (state is CharacterInitial) {
+                  return const Text('Загрузка...',
+                      style: TextStyle(color: Colors.white54),);
+                }
+                if (state is CharacterLoading) {
+                  return const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),);
+                }
+                if (state is CharacterLoaded) {
+                  if (state.characters.isEmpty) {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -584,7 +584,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     );
                   }
                   return Column(
-                    children: characters.map((character) {
+                    children: state.characters.map((character) {
                       final isSelected = _selectedCharacter?.id == character.id;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
@@ -599,15 +599,13 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                       );
                     }).toList(),
                   );
-                },
-                error: (message, _) => Text('Ошибка: $message',
-                    style: const TextStyle(color: Color(0xFFE76F51)),),
-                creating: (_) => const SizedBox.shrink(),
-                submitting: (_) => const SizedBox.shrink(),
-                created: (_) => const SizedBox.shrink(),
-                deleted: (_) => const SizedBox.shrink(),
-                detail: (_) => const SizedBox.shrink(),
-              ),
+                }
+                if (state is CharacterError) {
+                  return Text('Ошибка: ${state.message}',
+                      style: const TextStyle(color: Color(0xFFE76F51)),);
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ],
         ),
@@ -651,13 +649,17 @@ class _RoomCreateViewState extends State<_RoomCreateView>
             ),
             const SizedBox(height: 16),
             BlocBuilder<ScenarioBloc, ScenarioState>(
-              builder: (context, state) => state.when(
-                initial: () => const Text('Загрузка...',
-                    style: TextStyle(color: Colors.white54),),
-                loading: () => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
-                loaded: (scenarios) {
-                  if (scenarios.isEmpty) {
+              builder: (context, state) {
+                if (state is ScenarioInitial) {
+                  return const Text('Загрузка...',
+                      style: TextStyle(color: Colors.white54),);
+                }
+                if (state is ScenarioLoading) {
+                  return const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),);
+                }
+                if (state is ScenarioLoaded) {
+                  if (state.scenarios.isEmpty) {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -682,7 +684,7 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                     );
                   }
                   return Column(
-                    children: scenarios.map((scenario) {
+                    children: state.scenarios.map((scenario) {
                       final isSelected = _selectedScenario?.id == scenario.id;
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
@@ -697,14 +699,23 @@ class _RoomCreateViewState extends State<_RoomCreateView>
                       );
                     }).toList(),
                   );
-                },
-                generating: (_) => const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),),
-                scenarioDetail: (_) => const SizedBox.shrink(),
-                versionHistory: (_, __) => const SizedBox.shrink(),
-                error: (message) => Text('Ошибка: $message',
-                    style: const TextStyle(color: Color(0xFFE76F51)),),
-              ),
+                }
+                if (state is ScenarioGenerating) {
+                  return const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFD4AF37)),);
+                }
+                if (state is ScenarioDetail) {
+                  return const SizedBox.shrink();
+                }
+                if (state is ScenarioVersionHistory) {
+                  return const SizedBox.shrink();
+                }
+                if (state is ScenarioError) {
+                  return Text('Ошибка: ${state.message}',
+                      style: const TextStyle(color: Color(0xFFE76F51)),);
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ],
         ),
@@ -712,9 +723,8 @@ class _RoomCreateViewState extends State<_RoomCreateView>
 
   Widget _buildCreateButton() =>
       BlocBuilder<LobbyBloc, LobbyState>(builder: (context, state) {
-        final isCreating = state.whenOrNull(creating: () => true) ?? false;
-        final isStarting =
-            state.whenOrNull(gameStarting: (_, __) => true) ?? false;
+        final isCreating = state is LobbyCreating;
+        final isStarting = state is LobbyGameStarting;
         final isLoading = isCreating || isStarting;
 
         String buttonText;

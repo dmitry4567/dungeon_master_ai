@@ -1,23 +1,53 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../../auth/models/user.dart';
 import '../models/game_history.dart';
 
-part 'profile_state.freezed.dart';
-
 /// Состояния ProfileBloc
-@freezed
-class ProfileState with _$ProfileState {
-  const factory ProfileState.initial() = ProfileInitial;
-  const factory ProfileState.loading() = ProfileLoading;
-  const factory ProfileState.loaded({
-    required User user,
-    required List<GameHistory> history,
-    required bool isHistoryLoading,
-    required bool isUpdating,
-  }) = ProfileLoaded;
-  const factory ProfileState.error({
-    required String message,
-    ProfileState? previousState,
-  }) = ProfileError;
+abstract class ProfileState {
+  const ProfileState();
+}
+
+class ProfileInitial extends ProfileState {
+  const ProfileInitial();
+}
+
+class ProfileLoading extends ProfileState {
+  const ProfileLoading();
+}
+
+class ProfileLoaded extends ProfileState {
+  final User user;
+  final List<GameHistory> history;
+  final bool isHistoryLoading;
+  final bool isUpdating;
+
+  const ProfileLoaded({
+    required this.user,
+    required this.history,
+    required this.isHistoryLoading,
+    required this.isUpdating,
+  });
+
+  ProfileLoaded copyWith({
+    User? user,
+    List<GameHistory>? history,
+    bool? isHistoryLoading,
+    bool? isUpdating,
+  }) {
+    return ProfileLoaded(
+      user: user ?? this.user,
+      history: history ?? this.history,
+      isHistoryLoading: isHistoryLoading ?? this.isHistoryLoading,
+      isUpdating: isUpdating ?? this.isUpdating,
+    );
+  }
+}
+
+class ProfileError extends ProfileState {
+  final String message;
+  final ProfileState? previousState;
+
+  const ProfileError({
+    required this.message,
+    this.previousState,
+  });
 }

@@ -18,88 +18,96 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: const Color(0xFF0D0D1A),
         body: BlocBuilder<ProfileBloc, ProfileState>(
-          builder: (context, state) => state.when(
-            initial: () => _buildInitialState(context),
-            loading: _buildLoadingState,
-            loaded: (user, history, isHistoryLoading, isUpdating) =>
-                RefreshIndicator(
-              color: const Color(0xFFD4AF37),
-              backgroundColor: const Color(0xFF1A1A2E),
-              onRefresh: () async {
-                context
-                    .read<ProfileBloc>()
-                    .add(const ProfileEvent.loadProfile());
-                context
-                    .read<ProfileBloc>()
-                    .add(const ProfileEvent.loadHistory());
-              },
-              child: CustomScrollView(
-                slivers: [
-                  _buildSliverAppBar(context, user, isUpdating),
-                  SliverToBoxAdapter(
-                    child: _buildStatsRow(context, history.length),
-                  ),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                    sliver: SliverToBoxAdapter(
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.auto_stories,
-                            color: Color(0xFFD4AF37),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'История приключений',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                          ),
-                          const Spacer(),
-                          if (isHistoryLoading)
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFFD4AF37),
-                              ),
-                            ),
-                        ],
-                      ),
+          builder: (context, state) {
+            if (state is ProfileInitial) {
+              return _buildInitialState(context);
+            }
+            if (state is ProfileLoading) {
+              return _buildLoadingState();
+            }
+            if (state is ProfileLoaded) {
+              return RefreshIndicator(
+                color: const Color(0xFFD4AF37),
+                backgroundColor: const Color(0xFF1A1A2E),
+                onRefresh: () async {
+                  context
+                      .read<ProfileBloc>()
+                      .add(const LoadProfileEvent());
+                  context
+                      .read<ProfileBloc>()
+                      .add(const LoadHistoryEvent());
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    _buildSliverAppBar(context, state.user, state.isUpdating),
+                    SliverToBoxAdapter(
+                      child: _buildStatsRow(context, state.history.length),
                     ),
-                  ),
-                  if (history.isEmpty && !isHistoryLoading)
                     SliverPadding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
                       sliver: SliverToBoxAdapter(
-                        child: _buildEmptyHistory(context),
-                      ),
-                    )
-                  else
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: GameHistoryCard(game: history[index]),
-                          ),
-                          childCount: history.length,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.auto_stories,
+                              color: Color(0xFFD4AF37),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'История приключений',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                            ),
+                            const Spacer(),
+                            if (state.isHistoryLoading)
+                              const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFFD4AF37),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ),
-                ],
-              ),
-            ),
-            error: (message, _) => _buildErrorState(context, message),
-          ),
+                    if (state.history.isEmpty && !state.isHistoryLoading)
+                      SliverPadding(
+                        padding: const EdgeInsets.all(16),
+                        sliver: SliverToBoxAdapter(
+                          child: _buildEmptyHistory(context),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: GameHistoryCard(game: state.history[index]),
+                            ),
+                            childCount: state.history.length,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }
+            if (state is ProfileError) {
+              return _buildErrorState(context, state.message);
+            }
+            return _buildLoadingState();
+          },
         ),
       );
 
@@ -231,7 +239,7 @@ class ProfilePage extends StatelessWidget {
                                 onPressed: () {
                                   context
                                       .read<AuthBloc>()
-                                      .add(const AuthEvent.logout());
+                                      .add(const AuthLogout());
                                 },
                               ),
                             ],
@@ -335,10 +343,10 @@ class ProfilePage extends StatelessWidget {
               onPressed: () {
                 context
                     .read<ProfileBloc>()
-                    .add(const ProfileEvent.loadProfile());
+                    .add(const LoadProfileEvent());
                 context
                     .read<ProfileBloc>()
-                    .add(const ProfileEvent.loadHistory());
+                    .add(const LoadHistoryEvent());
               },
               child: const Text('Загрузить профиль'),
             ),
@@ -373,10 +381,10 @@ class ProfilePage extends StatelessWidget {
                 onPressed: () {
                   context
                       .read<ProfileBloc>()
-                      .add(const ProfileEvent.loadProfile());
+                      .add(const LoadProfileEvent());
                   context
                       .read<ProfileBloc>()
-                      .add(const ProfileEvent.loadHistory());
+                      .add(const LoadHistoryEvent());
                 },
                 child: const Text('Повторить'),
               ),
@@ -418,7 +426,7 @@ class ProfilePage extends StatelessWidget {
           autofocus: true,
           onSubmitted: (value) {
             if (value.trim().isNotEmpty) {
-              profileBloc.add(ProfileEvent.updateName(value.trim()));
+              profileBloc.add(UpdateNameEvent(value.trim()));
               Navigator.pop(dialogContext);
             }
           },
@@ -439,7 +447,7 @@ class ProfilePage extends StatelessWidget {
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
                 profileBloc
-                    .add(ProfileEvent.updateName(controller.text.trim()));
+                    .add(UpdateNameEvent(controller.text.trim()));
                 Navigator.pop(dialogContext);
               }
             },

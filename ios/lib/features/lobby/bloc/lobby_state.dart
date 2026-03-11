@@ -1,38 +1,57 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import '../models/room.dart';
 
-part 'lobby_state.freezed.dart';
+/// Состояния лобби
+abstract class LobbyState {
+  const LobbyState();
+}
 
-@freezed
-class LobbyState with _$LobbyState {
-  /// Начальное состояние
-  const factory LobbyState.initial() = LobbyInitial;
+/// Начальное состояние
+class LobbyInitial extends LobbyState {
+  const LobbyInitial();
+}
 
-  /// Загрузка списка комнат
-  const factory LobbyState.loading() = LobbyLoading;
+/// Загрузка списка комнат
+class LobbyLoading extends LobbyState {
+  const LobbyLoading();
+}
 
-  /// Список комнат загружен
-  const factory LobbyState.loaded({
-    required List<RoomSummary> rooms,
-  }) = LobbyLoaded;
+/// Список комнат загружен
+class LobbyLoaded extends LobbyState {
+  final List<RoomSummary> rooms;
 
-  /// Создание комнаты
-  const factory LobbyState.creating() = LobbyCreating;
+  const LobbyLoaded({required this.rooms});
+}
 
-  /// Детали комнаты (комната ожидания)
-  const factory LobbyState.roomDetail({
-    required Room room,
-    required bool isCurrentUserHost,
-  }) = LobbyRoomDetail;
+/// Создание комнаты
+class LobbyCreating extends LobbyState {
+  const LobbyCreating();
+}
 
-  /// Игра запускается (countdown 3-2-1)
-  const factory LobbyState.gameStarting({
-    required Room room,
-    required GameSessionResponse session,
-  }) = LobbyGameStarting;
+/// Детали комнаты (комната ожидания)
+class LobbyRoomDetail extends LobbyState {
+  final Room room;
+  final bool isCurrentUserHost;
 
-  /// Ошибка
-  const factory LobbyState.error({
-    required String message,
-  }) = LobbyError;
+  const LobbyRoomDetail({
+    required this.room,
+    required this.isCurrentUserHost,
+  });
+}
+
+/// Игра запускается (countdown 3-2-1)
+class LobbyGameStarting extends LobbyState {
+  final Room room;
+  final GameSessionResponse session;
+
+  const LobbyGameStarting({
+    required this.room,
+    required this.session,
+  });
+}
+
+/// Ошибка
+class LobbyError extends LobbyState {
+  final String message;
+
+  const LobbyError({required this.message});
 }

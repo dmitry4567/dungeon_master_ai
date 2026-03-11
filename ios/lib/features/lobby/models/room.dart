@@ -1,42 +1,103 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../character/models/character.dart';
 import '../../scenario/models/scenario.dart';
 
-part 'room.freezed.dart';
-part 'room.g.dart';
+Character? _characterFromJson(Map<String, dynamic>? json) =>
+    json == null ? null : Character.fromJson(json);
+
+Map<String, dynamic>? _characterToJson(Character? character) {
+  if (character == null) return null;
+  return character.toJson();
+}
 
 /// Room player in a game room
-@freezed
-class RoomPlayer with _$RoomPlayer {
-  const factory RoomPlayer({
-    required String id,
-    required String userId,
-    required String name,
-    required String status,
-    required bool isHost,
-    Character? character,
-  }) = _RoomPlayer;
+class RoomPlayer {
+  final String id;
+  final String userId;
+  final String name;
+  final String status;
+  final bool isHost;
+  final Character? character;
 
-  factory RoomPlayer.fromJson(Map<String, dynamic> json) =>
-      _$RoomPlayerFromJson(json);
+  const RoomPlayer({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.status,
+    required this.isHost,
+    this.character,
+  });
+
+  factory RoomPlayer.fromJson(Map<String, dynamic> json) {
+    return RoomPlayer(
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      name: json['name'] as String,
+      status: json['status'] as String,
+      isHost: json['is_host'] as bool? ?? false,
+      character: _characterFromJson(json['character'] as Map<String, dynamic>?),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'name': name,
+      'status': status,
+      'is_host': isHost,
+      if (character != null) 'character': _characterToJson(character),
+    };
+  }
 }
 
 /// Full room detail response
-@freezed
-class Room with _$Room {
-  const factory Room({
-    required String id,
-    required String name,
-    required String status,
-    required int maxPlayers,
-    required DateTime createdAt,
-    Scenario? scenario,
-    @Default([]) List<RoomPlayer> players,
-  }) = _Room;
-  const Room._();
+class Room {
+  final String id;
+  final String name;
+  final String status;
+  final int maxPlayers;
+  final DateTime createdAt;
+  final Scenario? scenario;
+  final List<RoomPlayer> players;
 
-  factory Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
+  const Room({
+    required this.id,
+    required this.name,
+    required this.status,
+    required this.maxPlayers,
+    required this.createdAt,
+    this.scenario,
+    this.players = const [],
+  });
 
+  factory Room.fromJson(Map<String, dynamic> json) {
+    return Room(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      status: json['status'] as String,
+      maxPlayers: (json['max_players'] as num?)?.toInt() ?? 5,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      scenario: json['scenario'] != null 
+          ? Scenario.fromJson(json['scenario'] as Map<String, dynamic>) 
+          : null,
+      players: (json['players'] as List<dynamic>?)
+              ?.map((p) => RoomPlayer.fromJson(p as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'status': status,
+      'max_players': maxPlayers,
+      'created_at': createdAt.toIso8601String(),
+      if (scenario != null) 'scenario': scenario!.toJson(),
+      'players': players.map((p) => p.toJson()).toList(),
+    };
+  }
   /// Count of non-declined players
   int get activePlayerCount =>
       players.where((p) => p.status != 'declined').length;
@@ -58,58 +119,141 @@ class Room with _$Room {
 }
 
 /// Room summary for list view
-@freezed
-class RoomSummary with _$RoomSummary {
-  const factory RoomSummary({
-    required String id,
-    required String name,
-    required String scenarioTitle,
-    required String hostName,
-    required int playerCount,
-    required int maxPlayers,
-    required String status,
-    @Default(false) bool isCurrentUserPlayer,
-  }) = _RoomSummary;
+class RoomSummary {
+  final String id;
+  final String name;
+  final String scenarioTitle;
+  final String hostName;
+  final int playerCount;
+  final int maxPlayers;
+  final String status;
+  final bool isCurrentUserPlayer;
 
-  factory RoomSummary.fromJson(Map<String, dynamic> json) =>
-      _$RoomSummaryFromJson(json);
+  const RoomSummary({
+    required this.id,
+    required this.name,
+    required this.scenarioTitle,
+    required this.hostName,
+    required this.playerCount,
+    required this.maxPlayers,
+    required this.status,
+    this.isCurrentUserPlayer = false,
+  });
+
+  factory RoomSummary.fromJson(Map<String, dynamic> json) {
+    return RoomSummary(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      scenarioTitle: json['scenario_title'] as String,
+      hostName: json['host_name'] as String,
+      playerCount: (json['player_count'] as num?)?.toInt() ?? 0,
+      maxPlayers: (json['max_players'] as num?)?.toInt() ?? 5,
+      status: json['status'] as String,
+      isCurrentUserPlayer: json['is_current_user_player'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'scenario_title': scenarioTitle,
+      'host_name': hostName,
+      'player_count': playerCount,
+      'max_players': maxPlayers,
+      'status': status,
+      'is_current_user_player': isCurrentUserPlayer,
+    };
+  }
 }
 
 /// Request to create a new room
-@freezed
-class CreateRoomRequest with _$CreateRoomRequest {
-  const factory CreateRoomRequest({
-    required String name,
-    required String scenarioVersionId,
-    @Default(5) int maxPlayers,
-    String? characterId,
-  }) = _CreateRoomRequest;
+class CreateRoomRequest {
+  final String name;
+  final String scenarioVersionId;
+  final int maxPlayers;
+  final String? characterId;
 
-  factory CreateRoomRequest.fromJson(Map<String, dynamic> json) =>
-      _$CreateRoomRequestFromJson(json);
+  const CreateRoomRequest({
+    required this.name,
+    required this.scenarioVersionId,
+    this.maxPlayers = 5,
+    this.characterId,
+  });
+
+  factory CreateRoomRequest.fromJson(Map<String, dynamic> json) {
+    return CreateRoomRequest(
+      name: json['name'] as String,
+      scenarioVersionId: json['scenario_version_id'] as String,
+      maxPlayers: (json['max_players'] as num?)?.toInt() ?? 5,
+      characterId: json['character_id'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'scenario_version_id': scenarioVersionId,
+      'max_players': maxPlayers,
+      if (characterId != null) 'character_id': characterId,
+    };
+  }
 }
 
 /// Request to toggle ready status
-@freezed
-class ReadyRequest with _$ReadyRequest {
-  const factory ReadyRequest({
-    required bool ready, String? characterId,
-  }) = _ReadyRequest;
+class ReadyRequest {
+  final bool ready;
+  final String? characterId;
 
-  factory ReadyRequest.fromJson(Map<String, dynamic> json) =>
-      _$ReadyRequestFromJson(json);
+  const ReadyRequest({
+    required this.ready,
+    this.characterId,
+  });
+
+  factory ReadyRequest.fromJson(Map<String, dynamic> json) {
+    return ReadyRequest(
+      ready: json['ready'] as bool,
+      characterId: json['character_id'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'ready': ready,
+      if (characterId != null) 'character_id': characterId,
+    };
+  }
 }
 
 /// Game session response from start endpoint
-@freezed
-class GameSessionResponse with _$GameSessionResponse {
-  const factory GameSessionResponse({
-    required String id,
-    required String roomId,
-    required Map<String, dynamic> worldState,
-    required DateTime startedAt,
-  }) = _GameSessionResponse;
+class GameSessionResponse {
+  final String id;
+  final String roomId;
+  final Map<String, dynamic> worldState;
+  final DateTime startedAt;
 
-  factory GameSessionResponse.fromJson(Map<String, dynamic> json) =>
-      _$GameSessionResponseFromJson(json);
+  const GameSessionResponse({
+    required this.id,
+    required this.roomId,
+    required this.worldState,
+    required this.startedAt,
+  });
+
+  factory GameSessionResponse.fromJson(Map<String, dynamic> json) {
+    return GameSessionResponse(
+      id: json['id'] as String,
+      roomId: json['room_id'] as String,
+      worldState: json['world_state'] as Map<String, dynamic>,
+      startedAt: DateTime.parse(json['started_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'room_id': roomId,
+      'world_state': worldState,
+      'started_at': startedAt.toIso8601String(),
+    };
+  }
 }

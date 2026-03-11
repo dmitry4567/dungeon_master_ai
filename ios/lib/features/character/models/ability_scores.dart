@@ -1,24 +1,43 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'ability_scores.freezed.dart';
-part 'ability_scores.g.dart';
-
 /// Характеристики персонажа D&D 5e
-@freezed
-class AbilityScores with _$AbilityScores {
+class AbilityScores {
+  final int strength;
+  final int dexterity;
+  final int constitution;
+  final int intelligence;
+  final int wisdom;
+  final int charisma;
 
-  const factory AbilityScores({
-    @Default(10) int strength,
-    @Default(10) int dexterity,
-    @Default(10) int constitution,
-    @Default(10) int intelligence,
-    @Default(10) int wisdom,
-    @Default(10) int charisma,
-  }) = _AbilityScores;
-  const AbilityScores._();
+  const AbilityScores({
+    this.strength = 10,
+    this.dexterity = 10,
+    this.constitution = 10,
+    this.intelligence = 10,
+    this.wisdom = 10,
+    this.charisma = 10,
+  });
 
-  factory AbilityScores.fromJson(Map<String, dynamic> json) =>
-      _$AbilityScoresFromJson(json);
+  factory AbilityScores.fromJson(Map<String, dynamic> json) {
+    return AbilityScores(
+      strength: (json['strength'] as num?)?.toInt() ?? 10,
+      dexterity: (json['dexterity'] as num?)?.toInt() ?? 10,
+      constitution: (json['constitution'] as num?)?.toInt() ?? 10,
+      intelligence: (json['intelligence'] as num?)?.toInt() ?? 10,
+      wisdom: (json['wisdom'] as num?)?.toInt() ?? 10,
+      charisma: (json['charisma'] as num?)?.toInt() ?? 10,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'strength': strength,
+      'dexterity': dexterity,
+      'constitution': constitution,
+      'intelligence': intelligence,
+      'wisdom': wisdom,
+      'charisma': charisma,
+    };
+  }
+
 
   /// Расчёт модификатора по правилам D&D 5e: floor((score - 10) / 2)
   /// Используем floor division для корректной обработки отрицательных чисел
@@ -80,6 +99,25 @@ class AbilityScores with _$AbilityScores {
       [strength, dexterity, constitution, intelligence, wisdom, charisma];
 
   /// Создать копию с изменённой характеристикой
+  AbilityScores copyWith({
+    int? strength,
+    int? dexterity,
+    int? constitution,
+    int? intelligence,
+    int? wisdom,
+    int? charisma,
+  }) {
+    return AbilityScores(
+      strength: strength ?? this.strength,
+      dexterity: dexterity ?? this.dexterity,
+      constitution: constitution ?? this.constitution,
+      intelligence: intelligence ?? this.intelligence,
+      wisdom: wisdom ?? this.wisdom,
+      charisma: charisma ?? this.charisma,
+    );
+  }
+
+  /// Создать копию с изменённой характеристикой (по названию)
   AbilityScores withAbility(String ability, int value) => switch (ability.toLowerCase()) {
       'strength' || 'str' || 'сила' => copyWith(strength: value),
       'dexterity' || 'dex' || 'ловкость' => copyWith(dexterity: value),

@@ -1,41 +1,66 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// События сценариев
+abstract class ScenarioEvent {
+  const ScenarioEvent();
+}
 
-part 'scenario_event.freezed.dart';
+/// Load list of scenarios
+class LoadScenariosEvent extends ScenarioEvent {
+  final String? status;
 
-@freezed
-class ScenarioEvent with _$ScenarioEvent {
-  /// Load list of scenarios
-  const factory ScenarioEvent.loadScenarios({String? status}) =
-      LoadScenariosEvent;
+  const LoadScenariosEvent({this.status});
+}
 
-  /// Create a new scenario from description
-  const factory ScenarioEvent.createScenario({required String description}) =
-      CreateScenarioEvent;
+/// Create a new scenario from description
+class CreateScenarioEvent extends ScenarioEvent {
+  final String description;
 
-  /// Load a specific scenario
-  const factory ScenarioEvent.loadScenario({required String id}) =
-      LoadScenarioEvent;
+  const CreateScenarioEvent({required this.description});
+}
 
-  /// Refine an existing scenario
-  const factory ScenarioEvent.refineScenario({
-    required String id,
-    required String prompt,
-  }) = RefineScenarioEvent;
+/// Load a specific scenario
+class LoadScenarioEvent extends ScenarioEvent {
+  final String id;
 
-  /// Load version history for a scenario
-  const factory ScenarioEvent.loadVersionHistory({required String scenarioId}) =
-      LoadVersionHistoryEvent;
+  const LoadScenarioEvent({required this.id});
+}
 
-  /// Restore a previous version
-  const factory ScenarioEvent.restoreVersion({
-    required String scenarioId,
-    required String versionId,
-  }) = RestoreVersionEvent;
+/// Refine an existing scenario
+class RefineScenarioEvent extends ScenarioEvent {
+  final String id;
+  final String prompt;
 
-  /// Publish a draft scenario
-  const factory ScenarioEvent.publishScenario({required String scenarioId}) =
-      PublishScenarioEvent;
+  const RefineScenarioEvent({
+    required this.id,
+    required this.prompt,
+  });
+}
 
-  /// Clear error state
-  const factory ScenarioEvent.clearError() = ClearErrorEvent;
+/// Load version history for a scenario
+class LoadVersionHistoryEvent extends ScenarioEvent {
+  final String scenarioId;
+
+  const LoadVersionHistoryEvent({required this.scenarioId});
+}
+
+/// Restore a previous version
+class RestoreVersionEvent extends ScenarioEvent {
+  final String scenarioId;
+  final String versionId;
+
+  const RestoreVersionEvent({
+    required this.scenarioId,
+    required this.versionId,
+  });
+}
+
+/// Publish a draft scenario
+class PublishScenarioEvent extends ScenarioEvent {
+  final String scenarioId;
+
+  const PublishScenarioEvent({required this.scenarioId});
+}
+
+/// Clear error state
+class ClearErrorEvent extends ScenarioEvent {
+  const ClearErrorEvent();
 }

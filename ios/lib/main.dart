@@ -23,7 +23,7 @@ Future<void> main() async {
           (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
         sqfliteFfiInit();
       }
-      
+
       // System UI
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,

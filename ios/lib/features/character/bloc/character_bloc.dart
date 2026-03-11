@@ -8,7 +8,7 @@ import 'character_state.dart';
 /// Bloc для управления персонажами
 @injectable
 class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
-  CharacterBloc(this._repository) : super(const CharacterState.initial()) {
+  CharacterBloc(this._repository) : super(const CharacterInitial()) {
     on<LoadCharactersEvent>(_onLoadCharacters);
     on<LoadCharacterEvent>(_onLoadCharacter);
     on<StartCreationEvent>(_onStartCreation);
@@ -31,15 +31,15 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     LoadCharactersEvent event,
     Emitter<CharacterState> emit,
   ) async {
-    emit(const CharacterState.loading());
+    emit(const CharacterLoading());
 
     try {
       final characters = await _repository.getCharacters(
         forceRefresh: event.forceRefresh,
       );
-      emit(CharacterState.loaded(characters: characters));
+      emit(CharacterLoaded(characters: characters));
     } catch (e) {
-      emit(CharacterState.error(
+      emit(CharacterError(
         message: 'Не удалось загрузить персонажей: $e',
         previousState: state,
       ),);
@@ -50,16 +50,16 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     LoadCharacterEvent event,
     Emitter<CharacterState> emit,
   ) async {
-    emit(const CharacterState.loading());
+    emit(const CharacterLoading());
 
     try {
       final character = await _repository.getCharacter(
         event.id,
         forceRefresh: event.forceRefresh,
       );
-      emit(CharacterState.detail(character: character));
+      emit(CharacterDetail(character: character));
     } catch (e) {
-      emit(CharacterState.error(
+      emit(CharacterError(
         message: 'Не удалось загрузить персонажа: $e',
         previousState: state,
       ),);
@@ -70,7 +70,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     StartCreationEvent event,
     Emitter<CharacterState> emit,
   ) {
-    emit(const CharacterState.creating(
+    emit(const CharacterCreating(
       form: CharacterCreationForm(),
     ),);
   }
@@ -81,7 +81,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   ) {
     final currentState = state;
     if (currentState is CharacterCreating) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: currentState.form.copyWith(
           selectedClass: event.selectedClass,
         ),
@@ -95,7 +95,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   ) {
     final currentState = state;
     if (currentState is CharacterCreating) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: currentState.form.copyWith(
           selectedRace: event.selectedRace,
         ),
@@ -109,7 +109,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   ) {
     final currentState = state;
     if (currentState is CharacterCreating) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: currentState.form.copyWith(
           abilityScores: event.abilityScores,
         ),
@@ -123,7 +123,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   ) {
     final currentState = state;
     if (currentState is CharacterCreating) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: currentState.form.copyWith(
           name: event.name,
         ),
@@ -137,7 +137,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   ) {
     final currentState = state;
     if (currentState is CharacterCreating) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: currentState.form.copyWith(
           backstory: event.backstory,
         ),
@@ -158,7 +158,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     if (form.selectedClass == null ||
         form.selectedRace == null ||
         form.name.trim().isEmpty) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: form.copyWith(
           validationErrors: ['Заполните все обязательные поля'],
         ),
@@ -166,7 +166,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       return;
     }
 
-    emit(CharacterState.submitting(form: form));
+    emit(CharacterSubmitting(form: form));
 
     try {
       final request = form.toRequest();
@@ -174,22 +174,22 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
       // Валидация через репозиторий
       final validationErrors = _repository.validateCharacter(request);
       if (validationErrors.isNotEmpty) {
-        emit(CharacterState.creating(
+        emit(CharacterCreating(
           form: form.copyWith(validationErrors: validationErrors),
         ),);
         return;
       }
 
       final character = await _repository.createCharacter(request);
-      emit(CharacterState.created(character: character));
+      emit(CharacterCreated(character: character));
     } on CharacterValidationException catch (e) {
-      emit(CharacterState.creating(
+      emit(CharacterCreating(
         form: form.copyWith(validationErrors: e.errors),
       ),);
     } catch (e) {
-      emit(CharacterState.error(
+      emit(CharacterError(
         message: 'Не удалось создать персонажа: $e',
-        previousState: CharacterState.creating(form: form),
+        previousState: CharacterCreating(form: form),
       ),);
     }
   }
@@ -199,13 +199,13 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     Emitter<CharacterState> emit,
   ) async {
     final previousState = state;
-    emit(const CharacterState.loading());
+    emit(const CharacterLoading());
 
     try {
       await _repository.deleteCharacter(event.id);
-      emit(CharacterState.deleted(characterId: event.id));
+      emit(CharacterDeleted(characterId: event.id));
     } catch (e) {
-      emit(CharacterState.error(
+      emit(CharacterError(
         message: 'Не удалось удалить персонажа: $e',
         previousState: previousState,
       ),);
@@ -217,16 +217,16 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     Emitter<CharacterState> emit,
   ) async {
     final previousState = state;
-    emit(const CharacterState.loading());
+    emit(const CharacterLoading());
 
     try {
       final character = await _repository.updateCharacter(
         event.id,
         event.request,
       );
-      emit(CharacterState.detail(character: character));
+      emit(CharacterDetail(character: character));
     } catch (e) {
-      emit(CharacterState.error(
+      emit(CharacterError(
         message: 'Не удалось обновить персонажа: $e',
         previousState: previousState,
       ),);
@@ -241,7 +241,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     if (currentState is CharacterCreating) {
       final form = currentState.form;
       if (form.canProceed && !form.isLastStep) {
-        emit(CharacterState.creating(
+        emit(CharacterCreating(
           form: form.copyWith(
             currentStep: form.currentStep + 1,
             validationErrors: [],
@@ -259,7 +259,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     if (currentState is CharacterCreating) {
       final form = currentState.form;
       if (!form.isFirstStep) {
-        emit(CharacterState.creating(
+        emit(CharacterCreating(
           form: form.copyWith(
             currentStep: form.currentStep - 1,
             validationErrors: [],
@@ -277,7 +277,7 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     if (currentState is CharacterError && currentState.previousState != null) {
       emit(currentState.previousState!);
     } else {
-      emit(const CharacterState.initial());
+      emit(const CharacterInitial());
     }
   }
 }

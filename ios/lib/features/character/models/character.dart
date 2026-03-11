@@ -1,28 +1,58 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import 'ability_scores.dart';
 
-part 'character.freezed.dart';
-part 'character.g.dart';
-
 /// Модель персонажа D&D 5e
-@freezed
-class Character with _$Character {
+class Character {
+  final String id;
+  final String name;
+  final String characterClass;
+  final String race;
+  final AbilityScores abilityScores;
+  final DateTime createdAt;
+  final int level;
+  final String? backstory;
+  final DateTime? updatedAt;
 
-  const factory Character({
-    required String id,
-    required String name,
-    @JsonKey(name: 'class')
-    required String characterClass,
-    required String race,
-    required AbilityScores abilityScores, required DateTime createdAt, @Default(1) int level,
-    String? backstory,
-    DateTime? updatedAt,
-  }) = _Character;
-  const Character._();
+  const Character({
+    required this.id,
+    required this.name,
+    required this.characterClass,
+    required this.race,
+    required this.abilityScores,
+    required this.createdAt,
+    this.level = 1,
+    this.backstory,
+    this.updatedAt,
+  });
 
-  factory Character.fromJson(Map<String, dynamic> json) =>
-      _$CharacterFromJson(json);
+  factory Character.fromJson(Map<String, dynamic> json) {
+    return Character(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      characterClass: json['class'] as String,
+      race: json['race'] as String,
+      abilityScores: AbilityScores.fromJson(json['ability_scores'] as Map<String, dynamic>),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      level: (json['level'] as num?)?.toInt() ?? 1,
+      backstory: json['backstory'] as String?,
+      updatedAt: json['updated_at'] != null 
+          ? DateTime.parse(json['updated_at'] as String) 
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'class': characterClass,
+      'race': race,
+      'ability_scores': abilityScores.toJson(),
+      'created_at': createdAt.toIso8601String(),
+      'level': level,
+      if (backstory != null) 'backstory': backstory,
+      if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
+    };
+  }
 
   /// Бонус мастерства по уровню (D&D 5e)
   int get proficiencyBonus => ((level - 1) ~/ 4) + 2;
@@ -63,28 +93,63 @@ class Character with _$Character {
 }
 
 /// Запрос на создание персонажа
-@freezed
-class CreateCharacterRequest with _$CreateCharacterRequest {
-  const factory CreateCharacterRequest({
-    required String name,
-    required String characterClass,
-    required String race,
-    required AbilityScores abilityScores,
-    String? backstory,
-  }) = _CreateCharacterRequest;
+class CreateCharacterRequest {
+  final String name;
+  final String characterClass;
+  final String race;
+  final AbilityScores abilityScores;
+  final String? backstory;
 
-  factory CreateCharacterRequest.fromJson(Map<String, dynamic> json) =>
-      _$CreateCharacterRequestFromJson(json);
+  const CreateCharacterRequest({
+    required this.name,
+    required this.characterClass,
+    required this.race,
+    required this.abilityScores,
+    this.backstory,
+  });
+
+  factory CreateCharacterRequest.fromJson(Map<String, dynamic> json) {
+    return CreateCharacterRequest(
+      name: json['name'] as String,
+      characterClass: json['character_class'] as String,
+      race: json['race'] as String,
+      abilityScores: AbilityScores.fromJson(json['ability_scores'] as Map<String, dynamic>),
+      backstory: json['backstory'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'character_class': characterClass,
+      'race': race,
+      'ability_scores': abilityScores.toJson(),
+      if (backstory != null) 'backstory': backstory,
+    };
+  }
 }
 
 /// Запрос на обновление персонажа
-@freezed
-class UpdateCharacterRequest with _$UpdateCharacterRequest {
-  const factory UpdateCharacterRequest({
-    String? name,
-    String? backstory,
-  }) = _UpdateCharacterRequest;
+class UpdateCharacterRequest {
+  final String? name;
+  final String? backstory;
 
-  factory UpdateCharacterRequest.fromJson(Map<String, dynamic> json) =>
-      _$UpdateCharacterRequestFromJson(json);
+  const UpdateCharacterRequest({
+    this.name,
+    this.backstory,
+  });
+
+  factory UpdateCharacterRequest.fromJson(Map<String, dynamic> json) {
+    return UpdateCharacterRequest(
+      name: json['name'] as String?,
+      backstory: json['backstory'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (name != null) 'name': name,
+      if (backstory != null) 'backstory': backstory,
+    };
+  }
 }

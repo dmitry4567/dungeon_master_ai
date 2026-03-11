@@ -7,7 +7,7 @@ import 'scenario_state.dart';
 @injectable
 class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
 
-  ScenarioBloc(this._repository) : super(const ScenarioState.initial()) {
+  ScenarioBloc(this._repository) : super(const ScenarioInitial()) {
     on<LoadScenariosEvent>(_onLoadScenarios);
     on<CreateScenarioEvent>(_onCreateScenario);
     on<LoadScenarioEvent>(_onLoadScenario);
@@ -23,12 +23,12 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     LoadScenariosEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.loading());
+    emit(const ScenarioLoading());
     try {
       final scenarios = await _repository.listScenarios(status: event.status);
-      emit(ScenarioState.loaded(scenarios: scenarios));
+      emit(ScenarioLoaded(scenarios: scenarios));
     } catch (e) {
-      emit(ScenarioState.error(message: e.toString()));
+      emit(ScenarioError(message: e.toString()));
     }
   }
 
@@ -36,12 +36,12 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     CreateScenarioEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.generating());
+    emit(const ScenarioGenerating());
     try {
       final scenario = await _repository.createScenario(event.description);
-      emit(ScenarioState.scenarioDetail(scenario: scenario));
+      emit(ScenarioDetail(scenario: scenario));
     } catch (e) {
-      emit(ScenarioState.error(
+      emit(ScenarioError(
         message: 'Failed to create scenario: $e',
       ),);
     }
@@ -51,12 +51,12 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     LoadScenarioEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.loading());
+    emit(const ScenarioLoading());
     try {
       final scenario = await _repository.getScenario(event.id);
-      emit(ScenarioState.scenarioDetail(scenario: scenario));
+      emit(ScenarioDetail(scenario: scenario));
     } catch (e) {
-      emit(ScenarioState.error(
+      emit(ScenarioError(
         message: 'Failed to load scenario: $e',
       ),);
     }
@@ -66,12 +66,12 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     RefineScenarioEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(ScenarioState.generating(scenarioId: event.id));
+    emit(ScenarioGenerating(scenarioId: event.id));
     try {
       final scenario = await _repository.refineScenario(event.id, event.prompt);
-      emit(ScenarioState.scenarioDetail(scenario: scenario));
+      emit(ScenarioDetail(scenario: scenario));
     } catch (e) {
-      emit(ScenarioState.error(
+      emit(ScenarioError(
         message: 'Failed to refine scenario: $e',
       ),);
     }
@@ -81,16 +81,16 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     LoadVersionHistoryEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.loading());
+    emit(const ScenarioLoading());
     try {
       final scenario = await _repository.getScenario(event.scenarioId);
       final versions = await _repository.listVersions(event.scenarioId);
-      emit(ScenarioState.versionHistory(
+      emit(ScenarioVersionHistory(
         scenario: scenario,
         versions: versions,
       ),);
     } catch (e) {
-      emit(ScenarioState.error(
+      emit(ScenarioError(
         message: 'Failed to load version history: $e',
       ),);
     }
@@ -100,15 +100,15 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     RestoreVersionEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.loading());
+    emit(const ScenarioLoading());
     try {
       final scenario = await _repository.restoreVersion(
         event.scenarioId,
         event.versionId,
       );
-      emit(ScenarioState.scenarioDetail(scenario: scenario));
+      emit(ScenarioDetail(scenario: scenario));
     } catch (e) {
-      emit(ScenarioState.error(
+      emit(ScenarioError(
         message: 'Failed to restore version: $e',
       ),);
     }
@@ -118,12 +118,12 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     PublishScenarioEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.loading());
+    emit(const ScenarioLoading());
     try {
       final scenario = await _repository.publishScenario(event.scenarioId);
-      emit(ScenarioState.scenarioDetail(scenario: scenario));
+      emit(ScenarioDetail(scenario: scenario));
     } catch (e) {
-      emit(ScenarioState.error(
+      emit(ScenarioError(
         message: 'Failed to publish scenario: $e',
       ),);
     }
@@ -133,6 +133,6 @@ class ScenarioBloc extends Bloc<ScenarioEvent, ScenarioState> {
     ClearErrorEvent event,
     Emitter<ScenarioState> emit,
   ) async {
-    emit(const ScenarioState.initial());
+    emit(const ScenarioInitial());
   }
 }

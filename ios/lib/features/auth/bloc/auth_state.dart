@@ -1,24 +1,35 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../models/user.dart';
 
-part 'auth_state.freezed.dart';
-
 /// Состояние аутентификации
-@freezed
-class AuthState with _$AuthState {
-  /// Начальное состояние
-  const factory AuthState.initial() = AuthInitial;
+abstract class AuthState {
+  const AuthState();
+}
 
-  /// Загрузка
-  const factory AuthState.loading() = AuthLoading;
+/// Начальное состояние
+class AuthInitial extends AuthState {
+  const AuthInitial();
+}
 
-  /// Пользователь авторизован
-  const factory AuthState.authenticated(User user) = AuthAuthenticated;
+/// Загрузка
+class AuthLoading extends AuthState {
+  const AuthLoading();
+}
 
-  /// Пользователь не авторизован
-  const factory AuthState.unauthenticated() = AuthUnauthenticated;
+/// Пользователь авторизован
+class AuthAuthenticated extends AuthState {
+  final User user;
 
-  /// Ошибка
-  const factory AuthState.error(String message) = AuthError;
+  const AuthAuthenticated(this.user);
+}
+
+/// Пользователь не авторизован
+class AuthUnauthenticated extends AuthState {
+  const AuthUnauthenticated();
+}
+
+/// Ошибка
+class AuthError extends AuthState {
+  final String message;
+
+  const AuthError(this.message);
 }

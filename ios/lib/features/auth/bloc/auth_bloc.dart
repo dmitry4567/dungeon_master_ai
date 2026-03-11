@@ -9,7 +9,7 @@ import 'auth_state.dart';
 /// BLoC аутентификации
 @lazySingleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(this._authRepository) : super(const AuthState.initial()) {
+  AuthBloc(this._authRepository) : super(const AuthInitial()) {
     on<AuthCheckSession>(_onCheckSession);
     on<AuthLoginWithEmail>(_onLoginWithEmail);
     on<AuthRegister>(_onRegister);
@@ -23,17 +23,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthCheckSession event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
     try {
       final user = await _authRepository.checkSession();
       if (user != null) {
-        emit(AuthState.authenticated(user));
+        emit(AuthAuthenticated(user));
       } else {
-        emit(const AuthState.unauthenticated());
+        emit(const AuthUnauthenticated());
       }
     } catch (e) {
-      emit(const AuthState.unauthenticated());
+      emit(const AuthUnauthenticated());
     }
   }
 
@@ -41,16 +41,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginWithEmail event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
     try {
       final user = await _authRepository.loginWithEmail(
         email: event.email,
         password: event.password,
       );
-      emit(AuthState.authenticated(user));
+      emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthState.error(_extractErrorMessage(e)));
+      emit(AuthError(_extractErrorMessage(e)));
     }
   }
 
@@ -58,7 +58,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthRegister event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
     try {
       final user = await _authRepository.register(
@@ -66,9 +66,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         password: event.password,
         name: event.name,
       );
-      emit(AuthState.authenticated(user));
+      emit(AuthAuthenticated(user));
     } catch (e) {
-      emit(AuthState.error(_extractErrorMessage(e)));
+      emit(AuthError(_extractErrorMessage(e)));
     }
   }
 
@@ -76,18 +76,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSignInWithApple event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
     try {
       final user = await _authRepository.signInWithApple();
       if (user != null) {
-        emit(AuthState.authenticated(user));
+        emit(AuthAuthenticated(user));
       } else {
         // Пользователь отменил
-        emit(const AuthState.unauthenticated());
+        emit(const AuthUnauthenticated());
       }
     } catch (e) {
-      emit(AuthState.error(_extractErrorMessage(e)));
+      emit(AuthError(_extractErrorMessage(e)));
     }
   }
 
@@ -95,14 +95,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLogout event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
+    emit(const AuthLoading());
 
     try {
       await _authRepository.logout();
-      emit(const AuthState.unauthenticated());
+      emit(const AuthUnauthenticated());
     } catch (e) {
       // Всё равно выходим
-      emit(const AuthState.unauthenticated());
+      emit(const AuthUnauthenticated());
     }
   }
 

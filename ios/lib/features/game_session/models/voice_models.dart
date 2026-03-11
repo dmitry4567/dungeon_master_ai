@@ -1,8 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'voice_models.freezed.dart';
-part 'voice_models.g.dart';
-
 /// Voice channel connection status
 enum VoiceConnectionStatus {
   disconnected,
@@ -13,32 +8,97 @@ enum VoiceConnectionStatus {
 }
 
 /// Agora voice token received from backend
-@freezed
-class VoiceToken with _$VoiceToken {
-  const factory VoiceToken({
-    required String token,
-    @JsonKey(name: 'channel_name') required String channelName,
-    required int uid,
-    @JsonKey(name: 'app_id') required String appId,
-    @JsonKey(name: 'expires_at') required DateTime expiresAt,
-  }) = _VoiceToken;
+class VoiceToken {
+  final String token;
+  final String channelName;
+  final int uid;
+  final String appId;
+  final DateTime expiresAt;
 
-  factory VoiceToken.fromJson(Map<String, dynamic> json) =>
-      _$VoiceTokenFromJson(json);
+  const VoiceToken({
+    required this.token,
+    required this.channelName,
+    required this.uid,
+    required this.appId,
+    required this.expiresAt,
+  });
+
+  factory VoiceToken.fromJson(Map<String, dynamic> json) {
+    return VoiceToken(
+      token: json['token'] as String,
+      channelName: json['channel_name'] as String,
+      uid: (json['uid'] as num).toInt(),
+      appId: json['app_id'] as String,
+      expiresAt: DateTime.parse(json['expires_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'token': token,
+      'channel_name': channelName,
+      'uid': uid,
+      'app_id': appId,
+      'expires_at': expiresAt.toIso8601String(),
+    };
+  }
 }
 
 /// Voice participant in the channel
-@freezed
-class VoiceParticipant with _$VoiceParticipant {
-  const factory VoiceParticipant({
-    required int uid,
-    required String userId,
-    required String displayName,
-    @Default(false) bool isSpeaking,
-    @Default(false) bool isMuted,
-    @Default(false) bool isConnected,
-  }) = _VoiceParticipant;
+class VoiceParticipant {
+  final int uid;
+  final String userId;
+  final String displayName;
+  final bool isSpeaking;
+  final bool isMuted;
+  final bool isConnected;
 
-  factory VoiceParticipant.fromJson(Map<String, dynamic> json) =>
-      _$VoiceParticipantFromJson(json);
+  const VoiceParticipant({
+    required this.uid,
+    required this.userId,
+    required this.displayName,
+    this.isSpeaking = false,
+    this.isMuted = false,
+    this.isConnected = false,
+  });
+
+  factory VoiceParticipant.fromJson(Map<String, dynamic> json) {
+    return VoiceParticipant(
+      uid: (json['uid'] as num).toInt(),
+      userId: json['user_id'] as String,
+      displayName: json['display_name'] as String,
+      isSpeaking: json['is_speaking'] as bool? ?? false,
+      isMuted: json['is_muted'] as bool? ?? false,
+      isConnected: json['is_connected'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'uid': uid,
+      'user_id': userId,
+      'display_name': displayName,
+      'is_speaking': isSpeaking,
+      'is_muted': isMuted,
+      'is_connected': isConnected,
+    };
+  }
+
+  VoiceParticipant copyWith({
+    int? uid,
+    String? userId,
+    String? displayName,
+    bool? isSpeaking,
+    bool? isMuted,
+    bool? isConnected,
+  }) {
+    return VoiceParticipant(
+      uid: uid ?? this.uid,
+      userId: userId ?? this.userId,
+      displayName: displayName ?? this.displayName,
+      isSpeaking: isSpeaking ?? this.isSpeaking,
+      isMuted: isMuted ?? this.isMuted,
+      isConnected: isConnected ?? this.isConnected,
+    );
+  }
 }

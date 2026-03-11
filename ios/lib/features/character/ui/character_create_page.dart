@@ -41,7 +41,7 @@ class CharacterCreatePage extends StatelessWidget {
             if (state is! CharacterCreating && state is! CharacterSubmitting) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 context.read<CharacterBloc>().add(
-                      const CharacterEvent.startCreation(),
+                      const StartCreationEvent(),
                     );
               });
               return const Scaffold(
@@ -60,7 +60,7 @@ class CharacterCreatePage extends StatelessWidget {
               onWillPop: () async {
                 if (form.currentStep > 0) {
                   context.read<CharacterBloc>().add(
-                        const CharacterEvent.previousStep(),
+                        const PreviousStepEvent(),
                       );
                   return false;
                 }
@@ -235,7 +235,7 @@ class _StepContent extends StatelessWidget {
             selectedClass: form.selectedClass,
             onSelect: (dndClass) {
               context.read<CharacterBloc>().add(
-                    CharacterEvent.selectClass(selectedClass: dndClass),
+                    SelectClassEvent(selectedClass: dndClass),
                   );
             },
           ),
@@ -243,7 +243,7 @@ class _StepContent extends StatelessWidget {
             selectedRace: form.selectedRace,
             onSelect: (race) {
               context.read<CharacterBloc>().add(
-                    CharacterEvent.selectRace(selectedRace: race),
+                    SelectRaceEvent(selectedRace: race),
                   );
             },
           ),
@@ -253,7 +253,7 @@ class _StepContent extends StatelessWidget {
             highlightedAbilities: form.selectedClass?.primaryAbilities ?? [],
             onChanged: (scores) {
               context.read<CharacterBloc>().add(
-                    CharacterEvent.updateAbilityScores(abilityScores: scores),
+                    UpdateAbilityScoresEvent(abilityScores: scores),
                   );
             },
           ),
@@ -307,7 +307,7 @@ class _BackstoryStepState extends State<_BackstoryStep> {
               hintText: 'Введите имя...',
               onChanged: (value) {
                 context.read<CharacterBloc>().add(
-                      CharacterEvent.updateName(name: value),
+                      UpdateNameEvent(name: value),
                     );
               },
             ),
@@ -323,7 +323,7 @@ class _BackstoryStepState extends State<_BackstoryStep> {
               maxLength: 2000,
               onChanged: (value) {
                 context.read<CharacterBloc>().add(
-                      CharacterEvent.updateBackstory(backstory: value),
+                      UpdateBackstoryEvent(backstory: value),
                     );
               },
             ),
@@ -581,7 +581,7 @@ class _NavigationButtons extends StatelessWidget {
                       ? null
                       : () {
                           context.read<CharacterBloc>().add(
-                                const CharacterEvent.previousStep(),
+                                const PreviousStepEvent(),
                               );
                         },
                 ),
@@ -603,7 +603,7 @@ class _NavigationButtons extends StatelessWidget {
                           }
                           HapticFeedback.mediumImpact();
                           context.read<CharacterBloc>().add(
-                                const CharacterEvent.submitCreation(),
+                                const SubmitCreationEvent(),
                               );
                         } else {
                           if (!form.canProceed) {
@@ -612,7 +612,7 @@ class _NavigationButtons extends StatelessWidget {
                           }
                           HapticFeedback.selectionClick();
                           context.read<CharacterBloc>().add(
-                                const CharacterEvent.nextStep(),
+                                const NextStepEvent(),
                               );
                         }
                       }

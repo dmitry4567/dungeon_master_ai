@@ -17,7 +17,7 @@ import 'game_session_state.dart';
 @injectable
 class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
   GameSessionBloc(this._repository, this._secureStorage)
-      : super(const GameSessionState.initial()) {
+      : super(const GameSessionInitial()) {
     on<ConnectToSessionEvent>(_onConnectToSession);
     on<SendMessageEvent>(_onSendMessage);
     on<MessageReceivedEvent>(_onMessageReceived);
@@ -39,7 +39,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     ConnectToSessionEvent event,
     Emitter<GameSessionState> emit,
   ) async {
-    emit(const GameSessionState.connecting());
+    emit(const GameSessionConnecting());
 
     try {
       // 1. Загрузить сессию по ID комнаты
@@ -61,18 +61,18 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
       // Подписаться на WS-события
       _messagesSubscription = _repository.messagesStream.listen((message) {
         final type = message['type'] as String? ?? '';
-        add(GameSessionEvent.messageReceived(type: type, data: message));
+        add(MessageReceivedEvent(type: type, data: message));
       });
 
       _connectionSubscription =
           _repository.connectionStateStream.listen((wsState) {
-        add(GameSessionEvent.connectionStateChanged(state: wsState.name));
+        add(ConnectionStateChangedEvent(state: wsState.name));
       });
 
       // Подключить WS
       await _repository.connectToSession(event.roomId);
 
-      emit(GameSessionState.active(
+      emit(GameSessionActive(
         sessionId: session.id,
         roomId: event.roomId,
         messages: messages,
@@ -81,7 +81,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
         isHost: isHost,
       ),);
     } catch (e) {
-      emit(GameSessionState.error(
+      emit(GameSessionError(
         message: 'Не удалось подключиться к сессии: $e',
       ),);
     }
@@ -428,9 +428,9 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     try {
       await _repository.endSession(currentState.sessionId);
       await _repository.disconnectFromSession();
-      emit(GameSessionState.ended(messages: currentState.messages));
+      emit(GameSessionEnded(messages: currentState.messages));
     } catch (e) {
-      emit(GameSessionState.error(
+      emit(GameSessionError(
         message: 'Не удалось завершить сессию: $e',
       ),);
     }
@@ -441,7 +441,7 @@ class GameSessionBloc extends Bloc<GameSessionEvent, GameSessionState> {
     Emitter<GameSessionState> emit,
   ) async {
     await _cleanup();
-    emit(const GameSessionState.initial());
+    emit(const GameSessionInitial());
   }
 
   String _formatDiceResult(DiceResult result) {

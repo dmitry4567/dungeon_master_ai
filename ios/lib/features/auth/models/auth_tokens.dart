@@ -1,30 +1,43 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import 'user.dart';
 
-part 'auth_tokens.freezed.dart';
-part 'auth_tokens.g.dart';
-
 /// Токены авторизации
-@freezed
-class AuthTokens with _$AuthTokens {
-  const factory AuthTokens({
-    required String accessToken,
-    required String refreshToken,
-    required int expiresIn,
-  }) = _AuthTokens;
+class AuthTokens {
+  final String accessToken;
+  final String refreshToken;
+  final int expiresIn;
 
-  factory AuthTokens.fromJson(Map<String, dynamic> json) =>
-      _$AuthTokensFromJson(json);
+  const AuthTokens({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.expiresIn,
+  });
+
+  factory AuthTokens.fromJson(Map<String, dynamic> json) {
+    return AuthTokens(
+      accessToken: json['access_token'] as String,
+      refreshToken: json['refresh_token'] as String,
+      expiresIn: (json['expires_in'] as num).toInt(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+      'refresh_token': refreshToken,
+      'expires_in': expiresIn,
+    };
+  }
 }
 
 /// Ответ авторизации (токены + пользователь)
-@freezed
-class AuthResponse with _$AuthResponse {
-  const factory AuthResponse({
-    required AuthTokens tokens,
-    required User user,
-  }) = _AuthResponse;
+class AuthResponse {
+  final AuthTokens tokens;
+  final User user;
+
+  const AuthResponse({
+    required this.tokens,
+    required this.user,
+  });
 
   /// Парсинг ответа от backend API
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -35,46 +48,104 @@ class AuthResponse with _$AuthResponse {
       email: json['email'] as String,
       name: json['name'] as String,
       createdAt: DateTime.now(),
+      avatarUrl: null,
     );
     return AuthResponse(tokens: tokens, user: user);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'tokens': tokens.toJson(),
+      'user_id': user.id,
+      'email': user.email,
+      'name': user.name,
+    };
   }
 }
 
 /// Запрос на вход по email
-@freezed
-class LoginRequest with _$LoginRequest {
-  const factory LoginRequest({
-    required String email,
-    required String password,
-  }) = _LoginRequest;
+class LoginRequest {
+  final String email;
+  final String password;
 
-  factory LoginRequest.fromJson(Map<String, dynamic> json) =>
-      _$LoginRequestFromJson(json);
+  const LoginRequest({
+    required this.email,
+    required this.password,
+  });
+
+  factory LoginRequest.fromJson(Map<String, dynamic> json) {
+    return LoginRequest(
+      email: json['email'] as String,
+      password: json['password'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'password': password,
+    };
+  }
 }
 
 /// Запрос на регистрацию
-@freezed
-class RegisterRequest with _$RegisterRequest {
-  const factory RegisterRequest({
-    required String email,
-    required String password,
-    required String name,
-  }) = _RegisterRequest;
+class RegisterRequest {
+  final String email;
+  final String password;
+  final String name;
 
-  factory RegisterRequest.fromJson(Map<String, dynamic> json) =>
-      _$RegisterRequestFromJson(json);
+  const RegisterRequest({
+    required this.email,
+    required this.password,
+    required this.name,
+  });
+
+  factory RegisterRequest.fromJson(Map<String, dynamic> json) {
+    return RegisterRequest(
+      email: json['email'] as String,
+      password: json['password'] as String,
+      name: json['name'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'password': password,
+      'name': name,
+    };
+  }
 }
 
 /// Запрос на вход через Apple
-@freezed
-class AppleSignInRequest with _$AppleSignInRequest {
-  const factory AppleSignInRequest({
-    required String identityToken,
-    required String authorizationCode,
-    String? name,
-    String? email,
-  }) = _AppleSignInRequest;
+class AppleSignInRequest {
+  final String identityToken;
+  final String authorizationCode;
+  final String? name;
+  final String? email;
 
-  factory AppleSignInRequest.fromJson(Map<String, dynamic> json) =>
-      _$AppleSignInRequestFromJson(json);
+  const AppleSignInRequest({
+    required this.identityToken,
+    required this.authorizationCode,
+    this.name,
+    this.email,
+  });
+
+  factory AppleSignInRequest.fromJson(Map<String, dynamic> json) {
+    return AppleSignInRequest(
+      identityToken: json['identity_token'] as String,
+      authorizationCode: json['authorization_code'] as String,
+      name: json['name'] as String?,
+      email: json['email'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'identity_token': identityToken,
+      'authorization_code': authorizationCode,
+      if (name != null) 'name': name,
+      if (email != null) 'email': email,
+    };
+  }
 }

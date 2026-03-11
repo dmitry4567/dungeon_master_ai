@@ -1,55 +1,131 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'world_state.freezed.dart';
-part 'world_state.g.dart';
-
 /// Состояние игрового мира
-@freezed
-class WorldState with _$WorldState {
-  const factory WorldState({
-    @JsonKey(name: 'current_act') @Default('act_1') String currentAct,
-    @JsonKey(name: 'current_scene') String? currentScene,
-    @JsonKey(name: 'current_location') String? currentLocation,
-    @JsonKey(name: 'completed_scenes')
-    @Default([])
-    List<String> completedScenes,
-    @Default({}) Map<String, dynamic> flags,
-    @JsonKey(name: 'combat_active') @Default(false) bool combatActive,
-  }) = _WorldState;
+class WorldState {
+  final String currentAct;
+  final String? currentScene;
+  final String? currentLocation;
+  final List<String> completedScenes;
+  final Map<String, dynamic> flags;
+  final bool combatActive;
 
-  factory WorldState.fromJson(Map<String, dynamic> json) =>
-      _$WorldStateFromJson(json);
+  const WorldState({
+    this.currentAct = 'act_1',
+    this.currentScene,
+    this.currentLocation,
+    this.completedScenes = const [],
+    this.flags = const {},
+    this.combatActive = false,
+  });
+
+  factory WorldState.fromJson(Map<String, dynamic> json) {
+    return WorldState(
+      currentAct: json['current_act'] as String? ?? 'act_1',
+      currentScene: json['current_scene'] as String?,
+      currentLocation: json['current_location'] as String?,
+      completedScenes: (json['completed_scenes'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      flags: json['flags'] as Map<String, dynamic>? ?? {},
+      combatActive: json['combat_active'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'current_act': currentAct,
+      if (currentScene != null) 'current_scene': currentScene,
+      if (currentLocation != null) 'current_location': currentLocation,
+      'completed_scenes': completedScenes,
+      'flags': flags,
+      'combat_active': combatActive,
+    };
+  }
 }
 
 /// Игровая сессия
-@freezed
-class GameSession with _$GameSession {
-  const factory GameSession({
-    required String id,
-    @JsonKey(name: 'room_id') required String roomId,
-    @JsonKey(name: 'world_state') required WorldState worldState,
-    @JsonKey(name: 'started_at') required DateTime startedAt,
-    @JsonKey(name: 'ended_at') DateTime? endedAt,
-  }) = _GameSession;
+class GameSession {
+  final String id;
+  final String roomId;
+  final WorldState worldState;
+  final DateTime startedAt;
+  final DateTime? endedAt;
 
-  factory GameSession.fromJson(Map<String, dynamic> json) =>
-      _$GameSessionFromJson(json);
+  const GameSession({
+    required this.id,
+    required this.roomId,
+    required this.worldState,
+    required this.startedAt,
+    this.endedAt,
+  });
+
+  factory GameSession.fromJson(Map<String, dynamic> json) {
+    return GameSession(
+      id: json['id'] as String,
+      roomId: json['room_id'] as String,
+      worldState: WorldState.fromJson(json['world_state'] as Map<String, dynamic>),
+      startedAt: DateTime.parse(json['started_at'] as String),
+      endedAt: json['ended_at'] != null
+          ? DateTime.parse(json['ended_at'] as String)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'room_id': roomId,
+      'world_state': worldState.toJson(),
+      'started_at': startedAt.toIso8601String(),
+      if (endedAt != null) 'ended_at': endedAt!.toIso8601String(),
+    };
+  }
 }
 
 /// Статус сессии
-@freezed
-class SessionStatus with _$SessionStatus {
-  const factory SessionStatus({
-    @JsonKey(name: 'session_id') required String sessionId,
-    @JsonKey(name: 'is_active') required bool isActive,
-    @JsonKey(name: 'current_act') String? currentAct,
-    @JsonKey(name: 'current_scene') String? currentScene,
-    @JsonKey(name: 'current_location') String? currentLocation,
-    @JsonKey(name: 'combat_active') @Default(false) bool combatActive,
-    @JsonKey(name: 'player_count') @Default(0) int playerCount,
-    @JsonKey(name: 'message_count') @Default(0) int messageCount,
-  }) = _SessionStatus;
+class SessionStatus {
+  final String sessionId;
+  final bool isActive;
+  final String? currentAct;
+  final String? currentScene;
+  final String? currentLocation;
+  final bool combatActive;
+  final int playerCount;
+  final int messageCount;
 
-  factory SessionStatus.fromJson(Map<String, dynamic> json) =>
-      _$SessionStatusFromJson(json);
+  const SessionStatus({
+    required this.sessionId,
+    required this.isActive,
+    this.currentAct,
+    this.currentScene,
+    this.currentLocation,
+    this.combatActive = false,
+    this.playerCount = 0,
+    this.messageCount = 0,
+  });
+
+  factory SessionStatus.fromJson(Map<String, dynamic> json) {
+    return SessionStatus(
+      sessionId: json['session_id'] as String,
+      isActive: json['is_active'] as bool,
+      currentAct: json['current_act'] as String?,
+      currentScene: json['current_scene'] as String?,
+      currentLocation: json['current_location'] as String?,
+      combatActive: json['combat_active'] as bool? ?? false,
+      playerCount: (json['player_count'] as num?)?.toInt() ?? 0,
+      messageCount: (json['message_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'session_id': sessionId,
+      'is_active': isActive,
+      if (currentAct != null) 'current_act': currentAct,
+      if (currentScene != null) 'current_scene': currentScene,
+      if (currentLocation != null) 'current_location': currentLocation,
+      'combat_active': combatActive,
+      'player_count': playerCount,
+      'message_count': messageCount,
+    };
+  }
 }
