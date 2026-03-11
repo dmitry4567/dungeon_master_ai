@@ -12,6 +12,9 @@ COPY assets/ ./assets/
 # Get dependencies
 RUN flutter pub get
 
+# Generate code (freezed, json_serializable, injectable)
+RUN flutter pub run build_runner build --delete-conflicting-outputs
+
 # Build for web
 RUN flutter build web --release
 
