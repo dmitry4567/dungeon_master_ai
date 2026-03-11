@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM ghcr.io/cirruslabs/flutter:3.27.0 AS builder
+FROM ghcr.io/cirruslabs/flutter:3.29.0 AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ COPY assets/ ./assets/
 RUN flutter pub get
 
 # Build for web
-RUN flutter build web --release --no-tree-shake-icons
+RUN flutter build web --release
 
 # ---- Runtime stage ----
 FROM nginx:alpine AS runtime

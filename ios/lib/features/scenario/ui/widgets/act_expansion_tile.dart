@@ -45,7 +45,6 @@ class ActExpansionTile extends StatelessWidget {
           ),
           shape: const Border(),
           collapsedShape: const Border(),
-          splashColor: Colors.transparent,
           children: [
             // Entry condition
             _InfoRow(

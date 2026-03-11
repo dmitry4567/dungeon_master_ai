@@ -1,4 +1,6 @@
 
+import 'package:flutter/foundation.dart';
+
 /// Конфигурация приложения, загружаемая из переменных окружения
 enum AppConfig {
   /// Конфигурация для разработки
@@ -62,18 +64,17 @@ enum AppConfig {
 
   /// Текущая конфигурация приложения
   static AppConfig get current {
-    return development;
-    // if (kReleaseMode) {
-    //   return production;
-    // }
+    if (kReleaseMode) {
+      return production;
+    }
 
-    // const envName = String.fromEnvironment('ENV', defaultValue: 'development');
+    const envName = String.fromEnvironment('ENV', defaultValue: 'development');
 
-    // return switch (envName) {
-    //   'production' => production,
-    //   'staging' => staging,
-    //   _ => development,
-    // };
+    return switch (envName) {
+      'production' => production,
+      'staging' => staging,
+      _ => development,
+    };
   }
 }
 

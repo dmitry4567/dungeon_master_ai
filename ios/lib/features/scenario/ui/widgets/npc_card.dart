@@ -38,7 +38,6 @@ class NpcCard extends StatelessWidget {
           ),
           shape: const Border(),
           collapsedShape: const Border(),
-          splashColor: Colors.transparent,
           children: [
             // Personality
             _InfoSection(
