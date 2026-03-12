@@ -7,7 +7,7 @@ enum AppConfig {
     // apiBaseUrl: 'http://192.168.0.128:8000/api/v1',
     // wsBaseUrl: 'ws://192.168.0.128:8000/api/v1/ws',
     apiBaseUrl: 'https://dungeon-master-ai.onrender.com/api/v1',
-    wsBaseUrl: 'wss://dungeon-master-ai.onrender.com/api/v1/ws',
+    wsBaseUrl: 'wss://dungeon-master-ai.onrender.com/api/ws',
     environment: Environment.development,
     enableCrashlytics: false,
     enableAnalytics: false,
@@ -25,7 +25,7 @@ enum AppConfig {
   /// Конфигурация для продакшена
   production._(
     apiBaseUrl: 'https://dungeon-master-ai.onrender.com/api/v1',
-    wsBaseUrl: 'wss://dungeon-master-ai.onrender.com/api/v1/ws',
+    wsBaseUrl: 'wss://dungeon-master-ai.onrender.com/api/ws',
     environment: Environment.production,
     enableCrashlytics: true,
     enableAnalytics: true,
