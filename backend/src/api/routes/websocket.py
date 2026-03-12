@@ -538,9 +538,9 @@ async def websocket_session(
                 full_response = ""
 
                 try:
-                     await websocket.send_json({
-                         "type": "processing"
-                     })
+                    await websocket.send_json({
+                        "type": "processing"
+                    })
   
                     # Stream DM response token by token
                     chunk_count = 0
