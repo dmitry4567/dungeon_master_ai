@@ -754,7 +754,6 @@ async def websocket_session(
 
     except WebSocketDisconnect:
         logger.info("User disconnected: user_id=%s", user_id)
-        manager.disconnect(websocket)
     except Exception as e:
         logger.exception("WebSocket error for user=%s: %s", user_id, str(e))
     finally:
