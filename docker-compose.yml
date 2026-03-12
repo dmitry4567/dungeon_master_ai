@@ -6,17 +6,7 @@ services:
     container_name: aidm-backend
     ports:
       - "8000:8000"
-  web:
-    build:
-      context: ./ios
-      dockerfile: Dockerfile
-    container_name: aidm-web
-    ports:
-      - "80:80"
-    depends_on:
-      backend:
-        condition: service_started
-
+      
   # postgres:
   #   image: postgres:16-alpine
   #   container_name: aidm-postgres
