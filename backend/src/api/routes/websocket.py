@@ -472,10 +472,6 @@ async def websocket_session(
             # Receive message from client
             data = await websocket.receive_json()
             
-            await websocket.send_json({
-                "type": "ack"
-            })
-            
             msg_type = data.get("type")
 
             if msg_type == WSMessageType.PLAYER_MESSAGE:
@@ -538,10 +534,6 @@ async def websocket_session(
                 full_response = ""
 
                 try:
-                    await websocket.send_json({
-                        "type": "processing"
-                    })
-  
                     # Stream DM response token by token
                     chunk_count = 0
                     logger.info("Starting DM response streaming: room_id=%s", room_id)
