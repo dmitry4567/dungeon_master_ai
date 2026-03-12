@@ -12,6 +12,8 @@ COPY assets/ ./assets/
 # Get dependencies
 RUN flutter pub get
 
+RUN flutter upgrade
+
 # Build for web with production environment
 RUN flutter build web --release --web-renderer canvaskit
 
