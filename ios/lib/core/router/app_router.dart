@@ -46,7 +46,8 @@ class AuthStateNotifier extends ChangeNotifier {
   final AuthBloc _authBloc;
 
   bool get isAuthenticated => _authBloc.state is AuthAuthenticated;
-  bool get isLoading => _authBloc.state is AuthLoading || _authBloc.state is AuthInitial;
+  bool get isLoading =>
+      _authBloc.state is AuthLoading || _authBloc.state is AuthInitial;
 }
 
 /// Конфигурация go_router
@@ -84,24 +85,26 @@ class AppRouter {
           GoRoute(
             path: Routes.lobby,
             name: 'lobby',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: BlocProvider(
-                create: (_) =>
-                    getIt<LobbyBloc>()..add(const LoadRoomsEvent()),
-                child: const LobbyPage(),
-              ),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  child: BlocProvider(
+                    create:
+                        (_) => getIt<LobbyBloc>()..add(const LoadRoomsEvent()),
+                    child: const LobbyPage(),
+                  ),
+                ),
             routes: [
               GoRoute(
                 path: 'create',
                 name: 'roomCreate',
-                builder: (context, state) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(create: (_) => getIt<LobbyBloc>()),
-                    BlocProvider(create: (_) => getIt<ScenarioBloc>()),
-                  ],
-                  child: const RoomCreatePage(),
-                ),
+                builder:
+                    (context, state) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider(create: (_) => getIt<LobbyBloc>()),
+                        BlocProvider(create: (_) => getIt<ScenarioBloc>()),
+                      ],
+                      child: const RoomCreatePage(),
+                    ),
               ),
               GoRoute(
                 path: 'room/:roomId',
@@ -109,8 +112,10 @@ class AppRouter {
                 builder: (context, state) {
                   final roomId = state.pathParameters['roomId']!;
                   return BlocProvider(
-                    create: (_) => getIt<LobbyBloc>()
-                      ..add(LoadRoomEvent(roomId: roomId)),
+                    create:
+                        (_) =>
+                            getIt<LobbyBloc>()
+                              ..add(LoadRoomEvent(roomId: roomId)),
                     child: WaitingRoomPage(roomId: roomId),
                   );
                 },
@@ -122,21 +127,25 @@ class AppRouter {
           GoRoute(
             path: Routes.scenarios,
             name: 'scenarios',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: BlocProvider(
-                create: (_) => getIt<ScenarioBloc>()
-                  ..add(const LoadScenariosEvent()),
-                child: const ScenarioListPage(),
-              ),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  child: BlocProvider(
+                    create:
+                        (_) =>
+                            getIt<ScenarioBloc>()
+                              ..add(const LoadScenariosEvent()),
+                    child: const ScenarioListPage(),
+                  ),
+                ),
             routes: [
               GoRoute(
                 path: 'builder',
                 name: 'scenarioBuilder',
-                builder: (context, state) => BlocProvider(
-                  create: (_) => getIt<ScenarioBloc>(),
-                  child: const ScenarioBuilderPage(),
-                ),
+                builder:
+                    (context, state) => BlocProvider(
+                      create: (_) => getIt<ScenarioBloc>(),
+                      child: const ScenarioBuilderPage(),
+                    ),
               ),
               GoRoute(
                 path: ':scenarioId',
@@ -144,8 +153,10 @@ class AppRouter {
                 builder: (context, state) {
                   final scenarioId = state.pathParameters['scenarioId']!;
                   return BlocProvider(
-                    create: (_) => getIt<ScenarioBloc>()
-                      ..add(LoadScenarioEvent(id: scenarioId)),
+                    create:
+                        (_) =>
+                            getIt<ScenarioBloc>()
+                              ..add(LoadScenarioEvent(id: scenarioId)),
                     child: ScenarioPreviewPage(scenarioId: scenarioId),
                   );
                 },
@@ -170,22 +181,28 @@ class AppRouter {
           GoRoute(
             path: Routes.characters,
             name: 'characters',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: BlocProvider(
-                create: (_) => getIt<CharacterBloc>()
-                  ..add(const LoadCharactersEvent()),
-                child: const CharacterListPage(),
-              ),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  child: BlocProvider(
+                    create:
+                        (_) =>
+                            getIt<CharacterBloc>()
+                              ..add(const LoadCharactersEvent()),
+                    child: const CharacterListPage(),
+                  ),
+                ),
             routes: [
               GoRoute(
                 path: 'create',
                 name: 'characterCreate',
-                builder: (context, state) => BlocProvider(
-                  create: (_) => getIt<CharacterBloc>()
-                    ..add(const StartCreationEvent()),
-                  child: const CharacterCreatePage(),
-                ),
+                builder:
+                    (context, state) => BlocProvider(
+                      create:
+                          (_) =>
+                              getIt<CharacterBloc>()
+                                ..add(const StartCreationEvent()),
+                      child: const CharacterCreatePage(),
+                    ),
               ),
               GoRoute(
                 path: ':characterId',
@@ -205,14 +222,17 @@ class AppRouter {
           GoRoute(
             path: Routes.profile,
             name: 'profile',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: BlocProvider(
-                create: (_) => ProfileBloc(getIt<ProfileRepository>())
-                  ..add(const LoadProfileEvent())
-                  ..add(const LoadHistoryEvent()),
-                child: const ProfilePage(),
-              ),
-            ),
+            pageBuilder:
+                (context, state) => NoTransitionPage(
+                  child: BlocProvider(
+                    create:
+                        (_) =>
+                            ProfileBloc(getIt<ProfileRepository>())
+                              ..add(const LoadProfileEvent())
+                              ..add(const LoadHistoryEvent()),
+                    child: const ProfilePage(),
+                  ),
+                ),
             routes: [
               GoRoute(
                 path: 'settings',
@@ -235,19 +255,18 @@ class AppRouter {
           return MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (_) => getIt<GameSessionBloc>()
-                  ..add(ConnectToSessionEvent(roomId: roomId)),
+                create:
+                    (_) =>
+                        getIt<GameSessionBloc>()
+                          ..add(ConnectToSessionEvent(roomId: roomId)),
               ),
               BlocProvider(
-                create: (_) => VoiceCubit(
-                  repository: getIt<GameSessionRepository>(),
-                ),
+                create:
+                    (_) =>
+                        VoiceCubit(repository: getIt<GameSessionRepository>()),
               ),
             ],
-            child: GameSessionPage(
-              roomId: roomId,
-              title: title,
-            ),
+            child: GameSessionPage(roomId: roomId, title: title),
           );
         },
       ),
@@ -256,11 +275,9 @@ class AppRouter {
   );
 
   /// Guard routes based on authentication
-  Future<String?> _guardRoute(
-    BuildContext context,
-    GoRouterState state,
-  ) async {
-    final isAuthRoute = state.matchedLocation == Routes.login ||
+  Future<String?> _guardRoute(BuildContext context, GoRouterState state) async {
+    final isAuthRoute =
+        state.matchedLocation == Routes.login ||
         state.matchedLocation == Routes.register;
 
     // Ждём пока AuthBloc завершит проверку сессии
@@ -297,7 +314,8 @@ class _MainShell extends StatelessWidget {
     final selectedIndex = _calculateSelectedIndex(location);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D1A),
+      // backgroundColor: const Color(0xFF0D0D1A),
+      drawer: const _Drawer(),
       body: child,
       bottomNavigationBar: _DungeonNavBar(
         selectedIndex: selectedIndex,
@@ -338,10 +356,26 @@ class _DungeonNavBar extends StatelessWidget {
   final ValueChanged<int> onItemTapped;
 
   static const _items = [
-    _NavItem(icon: Icons.sports_esports_outlined, activeIcon: Icons.sports_esports, label: 'Играть'),
-    _NavItem(icon: Icons.auto_stories_outlined, activeIcon: Icons.auto_stories, label: 'Сценарии'),
-    _NavItem(icon: Icons.shield_outlined, activeIcon: Icons.shield, label: 'Персонажи'),
-    _NavItem(icon: Icons.account_circle_outlined, activeIcon: Icons.account_circle, label: 'Профиль'),
+    _NavItem(
+      icon: Icons.sports_esports_outlined,
+      activeIcon: Icons.sports_esports,
+      label: 'Играть',
+    ),
+    _NavItem(
+      icon: Icons.auto_stories_outlined,
+      activeIcon: Icons.auto_stories,
+      label: 'Сценарии',
+    ),
+    _NavItem(
+      icon: Icons.shield_outlined,
+      activeIcon: Icons.shield,
+      label: 'Персонажи',
+    ),
+    _NavItem(
+      icon: Icons.account_circle_outlined,
+      activeIcon: Icons.account_circle,
+      label: 'Профиль',
+    ),
   ];
 
   @override
@@ -351,9 +385,7 @@ class _DungeonNavBar extends StatelessWidget {
     return DecoratedBox(
       decoration: const BoxDecoration(
         color: Color(0xFF0D0D1A),
-        border: Border(
-          top: BorderSide(color: Color(0xFF2A2A4E), width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: Color(0xFF2A2A4E), width: 0.5)),
       ),
       child: Padding(
         padding: EdgeInsets.only(
@@ -401,48 +433,47 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          decoration: BoxDecoration(
-            color: isSelected
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color:
+            isSelected
                 ? const Color(0xFFD4AF37).withOpacity(0.12)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(
-                    color: const Color(0xFFD4AF37).withOpacity(0.25),
-                  )
+        borderRadius: BorderRadius.circular(12),
+        border:
+            isSelected
+                ? Border.all(color: const Color(0xFFD4AF37).withOpacity(0.25))
                 : null,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSelected ? item.activeIcon : item.icon,
+            size: 24,
+            color:
+                isSelected ? const Color(0xFFD4AF37) : const Color(0xFF5A5A7E),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? item.activeIcon : item.icon,
-                size: 24,
-                color: isSelected
-                    ? const Color(0xFFD4AF37)
-                    : const Color(0xFF5A5A7E),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                item.label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected
+          const SizedBox(height: 3),
+          Text(
+            item.label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              color:
+                  isSelected
                       ? const Color(0xFFD4AF37)
                       : const Color(0xFF5A5A7E),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 /// Placeholder page for routes not yet implemented
@@ -453,19 +484,16 @@ class _PlaceholderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(title)),
-        body: Center(
-          child: GestureDetector(
-            onTap: () {
-              getIt<AuthBloc>().add(const AuthLogout());
-            },
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ),
-        ),
-      );
+    appBar: AppBar(title: Text(title)),
+    body: Center(
+      child: GestureDetector(
+        onTap: () {
+          getIt<AuthBloc>().add(const AuthLogout());
+        },
+        child: Text(title, style: Theme.of(context).textTheme.headlineMedium),
+      ),
+    ),
+  );
 }
 
 /// Error page
@@ -476,31 +504,47 @@ class _ErrorPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Ошибка')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                'Страница не найдена',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              if (error != null)
-                Text(
-                  error.toString(),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => context.go(Routes.lobby),
-                child: const Text('На главную'),
-              ),
-            ],
+    appBar: AppBar(title: const Text('Ошибка')),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+            'Страница не найдена',
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
-        ),
-      );
+          const SizedBox(height: 8),
+          if (error != null)
+            Text(
+              error.toString(),
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => context.go(Routes.lobby),
+            child: const Text('На главную'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _Drawer extends StatelessWidget {
+  const _Drawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      shape: BeveledRectangleBorder(),
+      backgroundColor: Colors.red,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+              ]),
+    );
+  }
 }
