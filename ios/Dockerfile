@@ -13,7 +13,7 @@ COPY assets/ ./assets/
 RUN flutter pub get
 
 # Build for web with production environment
-RUN flutter build web --release
+RUN flutter build web --release --no-wasm-dry-run --no-tree-shake-icons
 
 # ---- Runtime stage ----
 FROM nginx:alpine AS runtime
