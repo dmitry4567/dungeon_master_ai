@@ -73,6 +73,9 @@ app.include_router(sessions.router, prefix="/api/v1")
 app.include_router(voice.router, prefix="/api/v1")
 app.include_router(websocket.router, prefix="/api/v1")
 
+@app.get("/")
+async def root():
+    return {"status": "ok"}
 
 @app.get("/health", tags=["Health"])
 async def health_check():
