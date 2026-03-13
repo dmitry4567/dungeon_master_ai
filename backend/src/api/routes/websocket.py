@@ -563,7 +563,7 @@ async def websocket_session(
                         message_id=dm_message_id,
                         full_content=full_response,
                     )
-                    await manager.broadcast_to_room(room_id, end_msg.model_dump(mode="json"))
+                    await manager.broadcast_to_room_direct(room_id, end_msg.model_dump(mode="json"))
 
                 except Exception as e:
                     logger.error("AI streaming error: %s", str(e))
@@ -732,7 +732,7 @@ async def websocket_session(
                         message_id=continuation_message_id,
                         full_content=continuation_response,
                     )
-                    await manager.broadcast_to_room(pending["room_id"], end_msg.model_dump(mode="json"))
+                    await manager.broadcast_to_room_direct(pending["room_id"], end_msg.model_dump(mode="json"))
 
                 except Exception as e:
                     logger.error("AI continuation error: %s", str(e))
